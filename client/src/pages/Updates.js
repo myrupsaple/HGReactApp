@@ -23,6 +23,11 @@ const Updates = () => {
             <ol>
                 <li>Took a break to work and learn new stuff</li>
             </ol>
+            <h5>January 9</h5>
+            <ol>
+                <li>Migrated the entire site onto React</li>
+                <li>Set up the API to handle login and user identification</li>
+            </ol>
         </div>
     );
 };

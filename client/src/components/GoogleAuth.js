@@ -1,12 +1,15 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import axios from 'axios';
+
 import { signIn, signOut } from '../actions';
+
 
 class GoogleAuth extends React.Component {
     componentDidMount() {
-        window.gapi.load('client:auth2', () => {
-            window.gapi.client.init({
-                clientId: '906388098693-2css3jquc1jtk8ntjgfseeb352obit2o.apps.googleusercontent.com',
+        window.gapi.load('client:auth2', async () => {
+            await window.gapi.client.init({
+                clientId: '909644843745-9sk4i4dtp3tbpkbsfkpvbn7td3d4164k.apps.googleusercontent.com',
                 scope: 'email'
             }).then(() => {
                 this.auth = window.gapi.auth2.getAuthInstance();
@@ -18,7 +21,9 @@ class GoogleAuth extends React.Component {
 
     onAuthChange = (isSignedIn) => {
         if(isSignedIn){
-            this.props.signIn(this.auth.currentUser.get().getId());
+            // Upon sign in, load up user data given their email
+            const userEmail = this.auth.currentUser.get().w3.getEmail();
+            this.props.signIn(userEmail);
         } else {
             this.props.signOut();
         }
@@ -37,8 +42,7 @@ class GoogleAuth extends React.Component {
             return null;
         } else if(this.props.isSignedIn) {
             return (
-                <button onClick={this.onSignOutClick} className="ui red google button">
-                    <i className="google icon" />
+                <button onClick={this.onSignOutClick} className="ui red button">
                     Sign Out
                 </button>
             );
