@@ -24,8 +24,10 @@ class GoogleAuth extends React.Component {
             // Upon sign in, load up user data given their email
             const userEmail = this.auth.currentUser.get().w3.getEmail();
             this.props.signIn(userEmail);
+            console.log('ATTEMPTED SIGN IN');
         } else {
             this.props.signOut();
+            console.log('ATTEMPTED SIGN OUT');
         }
     }
 
@@ -38,7 +40,7 @@ class GoogleAuth extends React.Component {
     }
 
     renderAuthButton() {
-        if(this.props.isSignedIn === null) {
+        if(this.props.firstSignIn) {
             return null;
         } else if(this.props.isSignedIn) {
             return (
@@ -66,7 +68,10 @@ class GoogleAuth extends React.Component {
 }
 
 const mapStateToProps = state => {
-    return { isSignedIn: state.auth.isSignedIn };
+    return { 
+        firstSignIn: state.auth.firstSignIn,
+        isSignedIn: state.auth.isSignedIn 
+    };
 }
 
 export default connect(mapStateToProps, { signIn, signOut })(GoogleAuth);

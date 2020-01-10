@@ -6,6 +6,7 @@ import GoogleAuth from '../components/GoogleAuth';
 
 class LogIn extends React.Component {
     greetUser() {
+        console.log('b ' + this.props.firstSignIn)
         if(this.props.userFirstName) {
             return (
                 <div className="ui medium header">
@@ -18,12 +19,24 @@ class LogIn extends React.Component {
                 <div className="ui medium header">
                     Hello {this.props.userEmail}.
                     I'm sorry, but you don't appear to have an active account.
-                    Please contact the Head Gamemaker if you need an account.</div>
+                    Please contact the Head Gamemaker if you need an account.
+                </div>
+            );
+        } else if(this.props.firstSignIn){
+            return(
+                <div className="ui medium header">Loading...</div>
+            );
+        } else if(this.props.isSignedIn) {
+            return(
+                <div className="ui medium header">
+                    We apologize, but there was an issue retreiving your data. 
+                    Please contact a Gamemaker or try again later.
+                </div>
             );
         } else {
             return(
-                <div className="description">Hello! Please sign in to continue.</div>
-            )
+                <div className="ui medium header">Hello! Please sign in to continue.</div>
+            );
         }
     }
 
@@ -47,7 +60,9 @@ const mapStateToProps = state => {
     return {
         userFirstName: state.auth.userFirstName,
         userEmail: state.auth.userEmail,
-        userPerms: state.auth.userPerms
+        userPerms: state.auth.userPerms,
+        firstSignIn: state.auth.firstSignIn,
+        isSignedIn: state.auth.isSignedIn
     }
 }
 

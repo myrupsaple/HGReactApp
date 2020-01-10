@@ -7,11 +7,31 @@ import {
 } from './types';
 
 export const signIn = (userEmail) => async (dispatch) => {
-    const response = await users.get(`/user/${userEmail}`);
-    const data = response.data[0];
-    const { id, first_name, last_name, email, permissions } = data;
+    var response = null;
+    // Helper function prevents immediate return of signIn function upon error
+    await users.get(`/user/${userEmail}`)
+        .then(res => {
+            response = res;
+        })
+        .catch(err =>{
+            console.log(err);
+        });
     
-    console.log(data);
+    var id = null;
+    var first_name = null;
+    var last_name = null;
+    var email = null;
+    var permissions = null;
+
+    // If no response (likely CORS error), we will send null values to the reducer
+    if(response){
+        const data = response.data[0];
+        id = data.id;
+        first_name = data.first_name;
+        last_name = data.last_name;
+        email = data.email;
+        permissions = data.permissions;
+    }
 
     dispatch ({
         type: SIGN_IN,
