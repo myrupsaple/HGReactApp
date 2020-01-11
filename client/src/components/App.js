@@ -23,7 +23,7 @@ import AppHome from '../_App/components/AppHome';
 // General Tabs
 import GameStatus from '../_App/pages/GameStatus';
 import MapRules from '../_App/pages/MapRules';
-import Messaging from '../_App/pages/zMessaging/Messaging';
+import Messaging from '../_App/pages/Messaging';
 // Tribute Tools
 import SubmitResource from '../_App/pages/tribute/SubmitResource';
 // Helper Tools

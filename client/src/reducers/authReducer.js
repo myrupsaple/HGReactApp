@@ -1,7 +1,7 @@
 import { SIGN_IN, SIGN_OUT } from '../actions/types';
 
 const INITIAL_STATE = {
-    firstSignIn: true,
+    loaded: false,
     authorized: false,
     isSignedIn: false,
     userId: null,
@@ -17,7 +17,7 @@ export default (state = INITIAL_STATE, action) => {
             console.log('AuthReducer: Sign in change state');
             return {
                 ...state, 
-                firstSignIn: false,
+                loaded: true,
                 authorized: action.payload.authorized,
                 isSignedIn: true,
                 userId: action.payload.id,
@@ -30,7 +30,6 @@ export default (state = INITIAL_STATE, action) => {
             console.log('AuthReducer: Sign out change state');
             return {
                 ...state, 
-                firstSignIn: false,
                 authorized: false,
                 isSignedIn: false, 
                 userId: null,

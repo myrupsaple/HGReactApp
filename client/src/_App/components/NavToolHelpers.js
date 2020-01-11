@@ -1,110 +1,88 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Dropdown } from "semantic-ui-react";
+import { NavDropdown, Nav } from 'react-bootstrap';
 
 //------------------------------OWNER, ADMIN, GM--------------------------------//
 
 const ModifyUsersOwner = (
-    <Dropdown.Item>
-        <Link to="/App/owner/modify-users">
+    <NavDropdown.Item as={Nav.Link} href="/App/owner/modify-users">
             Modify Users (Owner)
-        </Link>
-    </Dropdown.Item>
+    </NavDropdown.Item>
 );
 
 const ModifyUsers = (
-    <Dropdown.Item>
-        <Link to="/App/admin/modify-users">
+    <NavDropdown.Item as={Nav.Link} href="/App/admin/modify-users">
             Modify Users
-        </Link>
-    </Dropdown.Item>
+    </NavDropdown.Item>
 );
 
 const ManageGameState = (
-    <Dropdown.Item>
-        <Link to="/App/gamemaker/manage-game">
+    <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/manage-game">
             Manage Game State
-        </Link>
-    </Dropdown.Item>
+    </NavDropdown.Item>
 );
 
 const ModifyTributeStats = (
-    <Dropdown.Item>
-        <Link to="/App/gamemaker/manage-tribute-stats">
+    <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/manage-tribute-stats">
             Modify Tribute Stats
-        </Link>
-    </Dropdown.Item>
+    </NavDropdown.Item>
 );
 
 const ManageResources = (
-    <Dropdown.Item>
-        <Link to="/App/gamemaker/manage-resources">
+    <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/manage-resources">
             Manage Resources
-        </Link>
-    </Dropdown.Item>
+    </NavDropdown.Item>
 );
 
 const ManageItems = (
-    <Dropdown.Item>
-        <Link to="/App/gamemaker/manage-items">
+    <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/manage-items">
             Update Item Inventory
-        </Link>
-    </Dropdown.Item>
+    </NavDropdown.Item>
 );
 
 const UpdateFunds = (
-    <Dropdown.Item>
-        <Link to="/App/gamemaker/manage-funds">
+    <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/manage-funds">
             Update Funds
-        </Link>
-    </Dropdown.Item>
+    </NavDropdown.Item>
 );
 
 //---------------------------------MENTORS------------------------------------//
 
 const RequestPurchase = (
-    <Dropdown.Item>
-        <Link to="/App/mentor/request">
+    <NavDropdown.Item as={Nav.Link} href="/App/mentor/request">
             Request Purchase
-        </Link>
-    </Dropdown.Item>
+    </NavDropdown.Item>
 );
 
 //---------------------------------TRIBUTES-----------------------------------//
 
 const SubmitCodes = (
-    <Dropdown.Item>
-        <Link to="/App/tribute/submit">
+    <NavDropdown.Item as={Nav.Link} href="/App/tribute/submit">
             Submit Resource Code
-        </Link>
-    </Dropdown.Item>
+    </NavDropdown.Item>
 );
 
 //---------------------------------HELPERS------------------------------------//
 
 // Also should be accesible to gamemakers
 const ViewLocations = (
-    <Dropdown.Item>
-        <Link to="/App/helper/locations">
+    <NavDropdown.Item as={Nav.Link} href="/App/helper/locations">
             View Tribute Locations
-        </Link>
-    </Dropdown.Item>
+    </NavDropdown.Item>
 );
 
 //---------------------------------GENERAL------------------------------------//
 
 const Messaging = (
-    <Dropdown.Item>
-        <Link to="/App/messaging">
+    <NavDropdown.Item as={Nav.Link} href="/App/messaging">
             Messaging
-        </Link>
-    </Dropdown.Item>
+    </NavDropdown.Item>
 );
 
 //---------------------------------EXPORTS------------------------------------//
 
 export const OwnerTools = (
-        <Dropdown.Menu>
+        <>
             {ModifyUsersOwner}
             {Messaging}
             {ManageGameState}
@@ -113,11 +91,11 @@ export const OwnerTools = (
             {ManageItems}
             {UpdateFunds}
             {ViewLocations}
-        </Dropdown.Menu>
+        </>
 )
 
 export const AdminTools = (
-        <Dropdown.Menu>
+        <>
             {ModifyUsers}
             {Messaging}
             {ManageGameState}
@@ -126,11 +104,11 @@ export const AdminTools = (
             {ManageItems}
             {UpdateFunds}
             {ViewLocations}
-        </Dropdown.Menu>
+        </>
 );
 
 export const GMTools = (
-        <Dropdown.Menu>
+        <>
             {Messaging}
             {ManageGameState}
             {ModifyTributeStats}
@@ -138,26 +116,26 @@ export const GMTools = (
             {ManageItems}
             {UpdateFunds}
             {ViewLocations}
-        </Dropdown.Menu>
+        </>
 );
 
 export const MentorTools = (
-        <Dropdown.Menu>
+        <>
             {Messaging}
             {RequestPurchase}
-        </Dropdown.Menu>
+        </>
 );
 
 export const TributeTools = (
-        <Dropdown.Menu>
+        <>
             {Messaging}
             {SubmitCodes}
-        </Dropdown.Menu>
+        </>
 );
 
 export const HelperTools = (
-        <Dropdown.Menu>
+        <>
             {Messaging}
             {ViewLocations}
-        </Dropdown.Menu>
+        </>
 );

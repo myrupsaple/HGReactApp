@@ -1,8 +1,9 @@
-import users from '../_Website/api/users';
+import users from '../api/users';
 
 import {
     SIGN_IN,
     SIGN_OUT,
+    FETCH_USERS,
     FETCH_USER
 } from './types';
 
@@ -11,6 +12,7 @@ export const signIn = (userEmail) => async (dispatch) => {
     // Multiple sign in requests received upon sign in
     setTimeout(() => { return null }, 500);
     var response = null;
+
     // Helper function prevents immediate return of signIn function upon error
     await users.get(`/user/${userEmail}`)
         .then(res => {
@@ -20,6 +22,7 @@ export const signIn = (userEmail) => async (dispatch) => {
         .catch(err =>{
             console.log(err);
         });
+
     var authorized = false;
     var id = null;
     var first_name = null;
@@ -64,9 +67,26 @@ export const signOut = () => (dispatch) => {
     });
 };
 
+export const fetchUsers = () => async (dispatch) => {
+    console.log('Actions: Fetching users list');
+    var response = null;
+    await users.get(`/users`)
+        .then(res => {
+        response = res;
+        console.log('Successfully retrieved users list');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+
+    if(response.data){
+        dispatch ({ type: FETCH_USERS, payload: response.data });
+    }
+};
+
 export const fetchUser = () => (dispatch) => {
     console.log('Actions: Fetch user initiated');
     dispatch ({
         type: FETCH_USER
     });
-}
+};

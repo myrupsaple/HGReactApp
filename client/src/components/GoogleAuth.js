@@ -1,14 +1,33 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { Button } from 'react-bootstrap';
 
 import { signIn, signOut } from '../actions';
 
 
 class GoogleAuth extends React.Component {
-    componentDidMount() {
+    async componentDidMount() {
         // window.gapi is sometimes not initialized before calling .load, causing
         // an 'property of undefined' error
-        setTimeout(() => { return; }, 1000);
+        // The workaround ended up being a lot larger than expected.
+        // https://codingwithspike.wordpress.com/2018/03/10/making-settimeout-an-async-await-function/
+        var counter = 1;
+        function wait() {
+            return new Promise(resolve => {
+              setTimeout(resolve, 200);
+            });
+        }
+        async function checkForGapi () {
+            while(!window.gapi){
+                console.log('GAPI LOAD FAILED: waited 200ms ' + counter + ' time(s)');
+                counter += 0;
+                await wait();
+            }
+        }
+        await checkForGapi();
+        // End of workaround... now for some actual useful code
+        
+
         window.gapi.load('client:auth2', async () => {
             await window.gapi.client.init({
                 clientId: '909644843745-9sk4i4dtp3tbpkbsfkpvbn7td3d4164k.apps.googleusercontent.com',
@@ -42,23 +61,23 @@ class GoogleAuth extends React.Component {
     }
 
     renderAuthButton() {
-        if(this.props.firstSignIn) {
+        if(!this.props.loaded) {
             return null;
         } else if(this.props.isSignedIn) {
             return (
                 // <button onClick={this.onSignOutClick} className="ui red button">
                 //     Sign Out
                 // </button>
-                <button onClick={this.onSignOutClick}>
+                <Button variant="danger" onClick={this.onSignOutClick}>
                     Sign Out
-                </button>
+                </Button>
             );
         } else {
             return (
-                <button onClick={this.onSignInClick} className="ui red google button">
+                <Button variant ="danger" onClick={this.onSignInClick}>
                     <i className="google icon" />
                     Participant Sign In
-                </button>
+                </Button>
             );
         }
     }
@@ -74,7 +93,7 @@ class GoogleAuth extends React.Component {
 
 const mapStateToProps = state => {
     return { 
-        firstSignIn: state.auth.firstSignIn,
+        loaded: state.auth.loaded,
         isSignedIn: state.auth.isSignedIn 
     };
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { Dropdown, Menu } from 'semantic-ui-react';
+import { Navbar, NavDropdown, Nav, NavItem }from 'react-bootstrap';
 
 import { signIn } from '../../actions';
 import GoogleAuth from '../../components/GoogleAuth';
@@ -20,161 +20,138 @@ class AppNavBar extends React.Component {
     renderLeftMenu() {
         if(this.props.name) {
             return (
-                <Menu.Menu>
-                    <Menu.Item>
-                        <Link to="/">
-                            Return to Website
-                        </Link>
-                    </Menu.Item>
-                    <Menu.Item>
-                        <Link to="/App/game-status">
-                            Game Status
-                        </Link>
-                    </Menu.Item>
-                    <Menu.Item>
-                        <Link to="/App/map-rules">
-                            Map & Rules
-                        </Link>
-                    </Menu.Item>
-
-                    {this.renderToolsList()}
-
-                </Menu.Menu>
+                <>
+                    <Nav.Link href="/">
+                        Return to Website
+                    </Nav.Link>
+                   <Nav.Link href="/App/game-status">
+                        Game Status
+                    </Nav.Link>
+                   <Nav.Link href="/App/map-rules">
+                        Map & Rules
+                    </Nav.Link>
+                   <NavDropdown title={this.renderToolsText()} className="nav-dropdown">
+                        {this.renderToolsList()}
+                    </NavDropdown>
+                </>
             );
         }
         else {
             return (
-                <Menu.Menu>
-                    <Menu.Item>
-                        <Link to="/">
-                            Return to Website
-                        </Link>
-                    </Menu.Item>
-                </Menu.Menu>
+                <>
+                    <Nav.Link href="/">
+                        Return to Website
+                    </Nav.Link>
+               </>
             )
         }
     }
-
+    
     renderToolsText() {
-        return this.capitalizeFirst(this.props.perms) + ' Tools';
+        return this.capitalizeFirstLetter(this.props.perms) + ' Tools';
     }
 
+    capitalizeFirstLetter(text) {
+        return text.slice(0, 1).toUpperCase() + text.slice(1, text.length);
+    }
+    
     renderToolsList() {
         // If no perms or perms not loaded, do not display tools menu
         if(!this.props.perms){
             return null;
         }
 
-        var toolMenu = null;
         switch(this.props.perms){
             case 'owner':
-                toolMenu = OwnerTools;
-                break;
+                return OwnerTools;
             case 'admin':
-                toolMenu = AdminTools;
-                break;
+                return AdminTools;
             case 'gamemaker':
-                toolMenu = GMTools;
-                break;
+                return GMTools;
             case 'mentor':
-                toolMenu = MentorTools;
-                break;
+                return MentorTools;
             case 'tribute':
-                toolMenu = TributeTools;
-                break;
+                return TributeTools;
             case 'helper':
-                toolMenu = HelperTools;
-                break;
+                return HelperTools;
             default:
-                toolMenu = null;
+                return null;
         }
 
-        return(
-            <Dropdown text={this.renderToolsText()} className="link item">
-                {toolMenu}
-            </Dropdown>
-        );
-
     }
-
-    GAuthMenuItem(){
-        return (
-            <Menu.Item>
-                <GoogleAuth />
-            </Menu.Item>
-        );
-    };
     
-    renderRightMenu({ name, email, signedIn, authorized, perms }) {
+    renderRightMenu({ authLoaded, name, email, signedIn, authorized, perms }) {
+        if(!authLoaded){
+            return <GoogleAuth />;
+        }
         if(name){
             const welcomeAuthenticated = (
-                `Welcome, ${name}! Your permissions: ${this.capitalizeFirst(perms)}`
+                `Welcome, ${name}! Your permissions: ${this.capitalizeFirstLetter(perms)}`
             );
 
             return(
-                <Menu.Menu position="right">
-                    <Menu.Item>
-                        <Dropdown text={welcomeAuthenticated}>
-                            <Dropdown.Menu>
-                                <Dropdown.Item>
-                                    <GoogleAuth />
-                                </Dropdown.Item>
-                            </Dropdown.Menu>
-                        </Dropdown>
-                    </Menu.Item>
-                </Menu.Menu>
+                <NavDropdown title={welcomeAuthenticated}>
+                    <NavDropdown.Item>
+                       <GoogleAuth />
+                    </NavDropdown.Item>
+               </NavDropdown>
             );
             // email only returned if data was attempted to be fetched
             // Authorized is true if the email was matched to a user in the database
         } else if(email && !authorized){
             return(
-                <Menu.Menu position="right">
-                    <Menu.Item>
-                        {email} is not authorized to use the app.
-                    </Menu.Item>
-                    {this.GAuthMenuItem()}
-                </Menu.Menu>
+                <>
+                    <NavItem>
+                       {email} is not authorized to use the app.
+                    </NavItem>
+                   <NavItem>
+                       <GoogleAuth />
+                    </NavItem>
+               </>
             );
         } else if(signedIn){
             return(
-                <Menu.Menu position="right">
-                    <Menu.Item>
-                        Error retrieving user info.
-                    </Menu.Item>
-                    {this.GAuthMenuItem()}
-                </Menu.Menu>
+                <>
+                    <NavItem>
+                       Error retrieving user info.
+                    </NavItem>
+                   <NavItem>
+                       <GoogleAuth />
+                    </NavItem>
+               </>
             );
         } else {
             return(
-                <Menu.Menu position="right">
-                    <Menu.Item>
-                        You must be signed in to use the app.
-                    </Menu.Item>
-                    {this.GAuthMenuItem()}
-                </Menu.Menu>
+                <>
+                    <NavItem>
+                       You must be signed in to use the app.
+                    </NavItem>
+                   <NavItem>
+                       <GoogleAuth />
+                    </NavItem>
+               </>
             );
         }
     }
 
-    capitalizeFirst(text) {
-        return text.slice(0, 1).toUpperCase() + text.slice(1, text.length);
-    }
-
     render(){
         return(
-            <div className="ui container">
-                <Menu color="red">
-                    {this.renderLeftMenu()}
-
-                    {this.renderRightMenu(this.props)}
-                </Menu>
-            </div>
+            <Navbar variant="light" expand="sm">
+                <Navbar.Brand>IVHG 20 App</Navbar.Brand>
+                    <Nav className="mr-auto">
+                        {this.renderLeftMenu()}
+                    </Nav>
+                    <Nav className="mr-auto">
+                        {this.renderRightMenu(this.props)}
+                    </Nav>
+            </Navbar>
         );
     }
 };
 
 const mapStateToProps = (state) => {
     return {
+        authLoaded: state.auth.loaded,
         authorized: state.auth.authorized,
         signedIn: state.auth.isSignedIn,
         name: state.auth.userFirstName,
