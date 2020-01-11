@@ -2,6 +2,7 @@ import { SIGN_IN, SIGN_OUT } from '../actions/types';
 
 const INITIAL_STATE = {
     firstSignIn: true,
+    authorized: false,
     isSignedIn: false,
     userId: null,
     userFirstName: null,
@@ -11,13 +12,13 @@ const INITIAL_STATE = {
 };
 
 export default (state = INITIAL_STATE, action) => {
-    console.log('a ' + state.firstSignIn)
     switch (action.type) {
         case SIGN_IN:
-            console.log(action.type);
+            console.log('AuthReducer: Sign in change state');
             return {
                 ...state, 
                 firstSignIn: false,
+                authorized: action.payload.authorized,
                 isSignedIn: true,
                 userId: action.payload.id,
                 userFirstName: action.payload.first_name,
@@ -26,10 +27,11 @@ export default (state = INITIAL_STATE, action) => {
                 userPerms: action.payload.permissions
             };
         case SIGN_OUT:
-            console.log(action.type);
+            console.log('AuthReducer: Sign out change state');
             return {
                 ...state, 
                 firstSignIn: false,
+                authorized: false,
                 isSignedIn: false, 
                 userId: null,
                 userFirstName: null,
