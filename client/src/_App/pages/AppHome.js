@@ -1,13 +1,13 @@
 import React from 'react';
 
-import AppNavBar from './AppNavBar';
+import AppNavBar from '../components/AppNavBar';
 
 const AppHome = () => {
     return(
-        <div>
+        <>
             <AppNavBar />
             AppHome
-        </div>
+        </>
     );
 };
 

@@ -30,6 +30,7 @@ export default (state = INITIAL_STATE, action) => {
             console.log('AuthReducer: Sign out change state');
             return {
                 ...state, 
+                loaded: true,
                 authorized: false,
                 isSignedIn: false, 
                 userId: null,

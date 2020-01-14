@@ -4,6 +4,8 @@ import { Button } from 'react-bootstrap';
 
 import { signIn, signOut } from '../actions';
 
+import GoogleIcon from '../_App/_graphics/GoogleIcon.png';
+
 
 class GoogleAuth extends React.Component {
     async componentDidMount() {
@@ -62,20 +64,24 @@ class GoogleAuth extends React.Component {
 
     renderAuthButton() {
         if(!this.props.loaded) {
-            return null;
+            return (
+                <>
+                Loading...
+                </>
+            );
         } else if(this.props.isSignedIn) {
             return (
                 // <button onClick={this.onSignOutClick} className="ui red button">
                 //     Sign Out
                 // </button>
-                <Button variant="danger" onClick={this.onSignOutClick}>
+                <Button className="coolor-bg-light-blue-darken-1" onClick={this.onSignOutClick}>
                     Sign Out
                 </Button>
             );
         } else {
             return (
-                <Button variant ="danger" onClick={this.onSignInClick}>
-                    <i className="google icon" />
+                <Button className="coolor-bg-light-blue-darken-1" onClick={this.onSignInClick}>
+                    <img src={GoogleIcon} alt="GoogleIcon" height="21" width="21"/>
                     Participant Sign In
                 </Button>
             );
@@ -84,9 +90,9 @@ class GoogleAuth extends React.Component {
 
     render() {
         return (
-            <div>
+            <>
                 {this.renderAuthButton()}
-            </div>
+            </>
         )
     }
 }

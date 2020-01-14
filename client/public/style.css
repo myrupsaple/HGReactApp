@@ -1,0 +1,11 @@
+.custom-dropdown-bg-aliceblue > .dropdown > .dropdown-menu {
+    background-color: #E0F7FA;
+}
+
+.custom-dropdown-bg-bluergrey > .dropdown > .dropdown-menu {
+    background-color: #37474F;
+}
+
+.navbar {
+    margin: 0px;
+}

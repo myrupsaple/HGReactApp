@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
-import { Navbar, NavDropdown, Nav, NavItem }from 'react-bootstrap';
+import { Navbar, NavDropdown, Nav, NavItem } from 'react-bootstrap';
 
 import { signIn } from '../../actions';
 import GoogleAuth from '../../components/GoogleAuth';
@@ -24,13 +23,16 @@ class AppNavBar extends React.Component {
                     <Nav.Link href="/">
                         Return to Website
                     </Nav.Link>
-                   <Nav.Link href="/App/game-status">
+
+                    <Nav.Link href="/App/game-status">
                         Game Status
                     </Nav.Link>
-                   <Nav.Link href="/App/map-rules">
+
+                    <Nav.Link href="/App/map-rules">
                         Map & Rules
                     </Nav.Link>
-                   <NavDropdown title={this.renderToolsText()} className="nav-dropdown">
+
+                    <NavDropdown title={this.renderToolsText()}>
                         {this.renderToolsList()}
                     </NavDropdown>
                 </>
@@ -102,9 +104,9 @@ class AppNavBar extends React.Component {
             return(
                 <>
                     <NavItem>
-                       {email} is not authorized to use the app.
+                        {email} is not authorized to use the app.
                     </NavItem>
-                   <NavItem>
+                    <NavItem>
                        <GoogleAuth />
                     </NavItem>
                </>
@@ -113,9 +115,9 @@ class AppNavBar extends React.Component {
             return(
                 <>
                     <NavItem>
-                       Error retrieving user info.
+                        Error retrieving user info.
                     </NavItem>
-                   <NavItem>
+                    <NavItem>
                        <GoogleAuth />
                     </NavItem>
                </>
@@ -124,9 +126,10 @@ class AppNavBar extends React.Component {
             return(
                 <>
                     <NavItem>
-                       You must be signed in to use the app.
+                        
+                        You must be signed in to use the app.
                     </NavItem>
-                   <NavItem>
+                    <NavItem>
                        <GoogleAuth />
                     </NavItem>
                </>
@@ -135,13 +138,14 @@ class AppNavBar extends React.Component {
     }
 
     render(){
+        const menuCoolor = "coolor-bg-light-blue-lighten-4"
         return(
-            <Navbar variant="light" expand="sm">
-                <Navbar.Brand>IVHG 20 App</Navbar.Brand>
-                    <Nav className="mr-auto">
+            <Navbar variant="light" className={menuCoolor}>
+                <Navbar.Brand href="/App">IVHG 20 App</Navbar.Brand>
+                    <Nav className={`mr-auto custom-dropdown-bg-aliceblue navbar-left`}>
                         {this.renderLeftMenu()}
                     </Nav>
-                    <Nav className="mr-auto">
+                    <Nav className={`mr-auto custom-dropdown-bg-aliceblue navbar-right`}>
                         {this.renderRightMenu(this.props)}
                     </Nav>
             </Navbar>

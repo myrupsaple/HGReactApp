@@ -1,48 +1,47 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { NavDropdown, Nav } from 'react-bootstrap';
 
 //------------------------------OWNER, ADMIN, GM--------------------------------//
 
 const ModifyUsersOwner = (
     <NavDropdown.Item as={Nav.Link} href="/App/owner/modify-users">
-            Modify Users (Owner)
+        Modify Users (Owner)
     </NavDropdown.Item>
 );
 
 const ModifyUsers = (
     <NavDropdown.Item as={Nav.Link} href="/App/admin/modify-users">
-            Modify Users
+        Modify Users
     </NavDropdown.Item>
 );
 
 const ManageGameState = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/manage-game">
-            Manage Game State
+        Manage Game State
     </NavDropdown.Item>
 );
 
 const ModifyTributeStats = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/manage-tribute-stats">
-            Modify Tribute Stats
+        Modify Tribute Stats
     </NavDropdown.Item>
 );
 
 const ManageResources = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/manage-resources">
-            Manage Resources
+        Manage Resources
     </NavDropdown.Item>
 );
 
 const ManageItems = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/manage-items">
-            Update Item Inventory
+        Update Item Inventory
     </NavDropdown.Item>
 );
 
 const UpdateFunds = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/manage-funds">
-            Update Funds
+        Update Funds
     </NavDropdown.Item>
 );
 
@@ -50,7 +49,7 @@ const UpdateFunds = (
 
 const RequestPurchase = (
     <NavDropdown.Item as={Nav.Link} href="/App/mentor/request">
-            Request Purchase
+        Request Purchase
     </NavDropdown.Item>
 );
 
@@ -58,7 +57,7 @@ const RequestPurchase = (
 
 const SubmitCodes = (
     <NavDropdown.Item as={Nav.Link} href="/App/tribute/submit">
-            Submit Resource Code
+        Submit Resource Code
     </NavDropdown.Item>
 );
 
@@ -67,7 +66,7 @@ const SubmitCodes = (
 // Also should be accesible to gamemakers
 const ViewLocations = (
     <NavDropdown.Item as={Nav.Link} href="/App/helper/locations">
-            View Tribute Locations
+        View Tribute Locations
     </NavDropdown.Item>
 );
 
@@ -75,7 +74,7 @@ const ViewLocations = (
 
 const Messaging = (
     <NavDropdown.Item as={Nav.Link} href="/App/messaging">
-            Messaging
+        Messaging
     </NavDropdown.Item>
 );
 

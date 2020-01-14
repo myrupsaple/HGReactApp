@@ -1,8 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import GoogleAuth from '../../components/GoogleAuth';
-import { Link } from 'react-router-dom';
-import { Dropdown, Menu } from 'semantic-ui-react';
+import { Navbar, NavDropdown, Nav, NavItem }from 'react-bootstrap';
 
 // TODO: Add admin powers to modify tribute pages
 
@@ -13,75 +12,67 @@ class NavBar extends React.Component {
 
     renderLeftMenu() {
         return(
-            <Menu.Menu>
-                <Menu.Item><Link to="/">
+            <>
+                <Nav.Link href="/">
                     Home
-                </Link></Menu.Item>
+                </Nav.Link>
 
-                <Dropdown text="About" className="link item">
-                    <Dropdown.Menu>
-                        <Dropdown.Item>
-                            <Link to="/about/hg">About Hunger Games</Link>
-                        </Dropdown.Item>
-                        <Dropdown.Item>
-                            <Link to="/about/iv">About InterVarsity</Link>
-                        </Dropdown.Item>
-                        <Dropdown.Item>
-                            <Link to="/about/rules">Rules</Link>
-                        </Dropdown.Item>
-                    </Dropdown.Menu>
-                </Dropdown>
+                <NavDropdown title="About">
+                    <NavDropdown.Item as={Nav.Link} href="/about/hg">
+                        About Hunger Games
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Nav.Link} href="/about/iv">
+                        About InterVarsity
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Nav.Link} href="/about/rules">
+                        Rules
+                    </NavDropdown.Item>
+                </NavDropdown>
 
-                <Dropdown text="Districts" pointing className="link item">
-                    <Dropdown.Menu>
-                        <Dropdown.Item>
-                            <Link to="/districts">Overview</Link>
-                        </Dropdown.Item>
-                        <Dropdown.Item>
-                            <Link to="/districts/1">District 1</Link>
-                        </Dropdown.Item>
-                        <Dropdown.Item>
-                            <Link to="/districts/2">District 2</Link>
-                        </Dropdown.Item>
-                        <Dropdown.Item>
-                            <Link to="/districts/3">District 3</Link>
-                        </Dropdown.Item>
-                    </Dropdown.Menu>
-                </Dropdown>
+                <NavDropdown title="Districts">
+                    <NavDropdown.Item as={Nav.Link} href="/districts" >
+                        Overview
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Nav.Link} href="/districts/1" >
+                        District 1
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Nav.Link} href="/districts/2" >
+                        District 2
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Nav.Link} href="/districts/3" >
+                        District 3
+                    </NavDropdown.Item>
+                </NavDropdown>
 
-                <Menu.Item><Link to="/watch">
+                <Nav.Link href="/watch">
                     Watch
-                </Link></Menu.Item>
+                </Nav.Link>
 
-                <Menu.Item><Link to="/donate">
+                <Nav.Link href="/donate">
                     Donate
-                </Link></Menu.Item>
+                </Nav.Link>
 
-                <Dropdown text="Misc." pointing className="link item">
-                    <Dropdown.Menu>
-                        <Dropdown.Item>
-                            <Link to="/updates">Site Updates</Link>
-                        </Dropdown.Item>
-                        <Dropdown.Item>
-                            <a 
-                            href="https://graceskalin10.wixsite.com/mysite"
-                            rel="noopener noreferrer"
-                            target="_blank"
-                            >
-                                2019 HG Site
-                            </a>
-                        </Dropdown.Item>
-                    </Dropdown.Menu>
-                </Dropdown>
-            </Menu.Menu>
+                <NavDropdown title="Misc.">
+                    <NavDropdown.Item as={Nav.Link} href="/updates" >
+                        Site Updates
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Nav.Link} 
+                        href="https://graceskalin10.wixsite.com/mysite" 
+                        rel="noopener noreferrer" 
+                        target="_blank" 
+                    >
+                        2019 HG Site
+                    </NavDropdown.Item>
+                </NavDropdown>
+            </>
         );
     }
 
     GAuthMenuItem(){
         return (
-            <Menu.Item>
+            <>
                 <GoogleAuth />
-            </Menu.Item>
+            </>
         );
     };
 
@@ -96,63 +87,64 @@ class NavBar extends React.Component {
             );
 
             return(
-                <div>
-                    <Menu.Menu position="right">
-                        <Menu.Item>
-                            <Dropdown text={authorizedWelcome}>
-                                <Dropdown.Menu>
-                                    <Dropdown.Item>
-                                        <Link to="/App">
-                                            Access App
-                                        </Link>
-                                    </Dropdown.Item>
-                                    <Dropdown.Item>
-                                        <GoogleAuth />
-                                    </Dropdown.Item>
-                                </Dropdown.Menu>
-                            </Dropdown>
-                        </Menu.Item>
-                    </Menu.Menu>
-                </div>
+                <>
+                    <NavDropdown title={authorizedWelcome}>
+                        <NavDropdown.Item as={Nav.Link} href="/App">
+                            Access App
+                        </NavDropdown.Item>
+                        <NavDropdown.Item>
+                            <GoogleAuth />
+                        </NavDropdown.Item>
+                    </NavDropdown>
+                </>
             );
             // email only returned if data was attempted to be fetched
             // Authorized is true if the email was matched to a user in the database
         } else if(email && !authorized){
             return(
-                <Menu.Menu position="right">
-                    <Menu.Item>
+                <>
+                    <NavItem>
                         {email} is not authorized.
-                    </Menu.Item>
-                    {this.GAuthMenuItem()}
-                </Menu.Menu>
+                    </NavItem>
+                    <NavItem>
+                        {this.GAuthMenuItem()}
+                    </NavItem>
+                </>
             );
         } else if(signedIn){
             return(
-                <Menu.Menu position="right">
-                    <Menu.Item>
+                <>
+                    <NavItem>
                         Error retrieving user info.
-                    </Menu.Item>
-                    {this.GAuthMenuItem()}
-                </Menu.Menu>
+                    </NavItem>
+                    <NavItem>
+                        {this.GAuthMenuItem()}
+                    </NavItem>
+                </>
             );
         } else {
             return(
-                <Menu.Menu position="right">
-                    {this.GAuthMenuItem()}
-                </Menu.Menu>
+                <>
+                    <NavItem>
+                        {this.GAuthMenuItem()}
+                    </NavItem>
+                </>
             );
         }
     }
     
     render() {
+        const menuCoolor = "coolor-bg-bluergrey-darken-1";
         return(
-            <div className="ui container">
-                <Menu>
-                    {this.renderLeftMenu()}
-
-                    {this.renderRightMenu(this.props)}
-                </Menu>
-            </div>
+            <Navbar variant="light" expand="sm" className={menuCoolor}>
+                <Navbar.Brand>IVHG 20</Navbar.Brand>
+                    <Nav className="mr-auto custom-dropdown-bg-bluergrey">
+                        {this.renderLeftMenu()}
+                    </Nav>
+                    <Nav className="mr-auto custom-dropdown-bg-bluergrey">
+                        {this.renderRightMenu(this.props)}
+                    </Nav>
+            </Navbar>
         );
     };
 };
