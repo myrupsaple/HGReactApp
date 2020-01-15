@@ -5,7 +5,9 @@ const SubmitResource = () => {
     return(
         <div>
             <AppNavBar />
-            Submit Resource
+            <div className="ui-container">
+                Submit Resource
+            </div>
         </div>
     );
 };

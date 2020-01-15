@@ -5,7 +5,9 @@ const ManageResources = () => {
     return(
         <div>
             <AppNavBar />
-            Manage Resources
+            <div className="ui-container">
+                Manage Resources
+            </div>
         </div>
     );
 };

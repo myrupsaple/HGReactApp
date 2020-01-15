@@ -9,3 +9,15 @@
 .navbar {
     margin: 0px;
 }
+
+.ui-container {
+    margin: 0 5vw;
+}
+
+.navbar {
+    padding: .75vh 5vw;
+}
+
+.navbar-right {
+    margin-left: auto;
+}

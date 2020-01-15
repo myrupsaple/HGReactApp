@@ -5,7 +5,9 @@ const ManageTributeStats = () =>{
     return(
         <div>
             <AppNavBar />
-            Manage Tribute Stats
+            <div className="ui-container">
+                Manage Tribute Stats
+            </div>
         </div>
     );
 };

@@ -4,7 +4,7 @@ import { Form, Col, Button } from 'react-bootstrap';
 
 import { fetchUsers, fetchAllUsers } from '../../../actions';
 import AppNavBar from '../../components/AppNavBar';
-import EditUser from './components/EditUser';
+import UserForm from './components/UserForm';
 import DeleteUser from './components/DeleteUser';
 
 class ModifyUsersOwner extends React.Component {
@@ -14,6 +14,7 @@ class ModifyUsersOwner extends React.Component {
             queried: false,
             searchType: 'First Name',
             searchTerm: '',
+            showCreate: false,
             showEdit: false,
             showDelete: false,
             isShowing: false,
@@ -25,7 +26,6 @@ class ModifyUsersOwner extends React.Component {
         this.handleSearchType = this.handleSearchType.bind(this);
         this.handleSearchTerm = this.handleSearchTerm.bind(this);
         this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
-        this.handleRetrieveAll = this.handleRetrieveAll.bind(this);
         this.showModal = this.showModal.bind(this);
     }
 
@@ -59,10 +59,6 @@ class ModifyUsersOwner extends React.Component {
         }
         this.setState({ queried: true });
         this.props.fetchUsers(searchType, searchTerm);
-    }
-    
-    handleRetrieveAll(){
-        this.props.fetchAllUsers();
     }
 
     renderUsers(){
@@ -168,23 +164,34 @@ class ModifyUsersOwner extends React.Component {
                         </Form.Group>
                     </Col>
                 </Form.Row>
+                <Form.Row>
+                    <Col>
+                        <Button className="coolor-bg-purple-lighten-2" 
+                        onClick={() => this.setState({ showCreate: true })}
+                        >
+                            Create User
+                        </Button>
+                    </Col>
+                    <Col>
+                        <Button className="coolor-bg-blue-darken-2" onClick={this.props.fetchAllUsers}>Show All Users</Button>
+                    </Col>
+                    <Col>
+                        <Button className="coolor-bg-blue-lighten-2" type="submit">Search</Button>
+                    </Col>
+                </Form.Row>
             </Form>
-            <Form.Row>
-                <Col>
-                    <Button variant="primary" onClick={this.handleRetrieveAll}>Show All Users</Button>
-                </Col>
-                <Col>
-                    <Button variant="primary" type="submit">Submit</Button>
-                </Col>
-            </Form.Row>
             </>
         )
     }
 
     showModal(){
-        if(this.state.showEdit){
+        if(this.state.showCreate){
             return(
-                <EditUser email={this.state.selectedEmail} id={this.state.selectedId} updateShow={this.updateShowFromChild} />
+                <UserForm updateShow={this.updateShowFromChild} mode='create'/>
+            );
+        } else if(this.state.showEdit){
+            return(
+                <UserForm email={this.state.selectedEmail} id={this.state.selectedId} updateShow={this.updateShowFromChild} mode='edit'/>
             );
         } else if(this.state.showDelete){
             return(
@@ -196,8 +203,10 @@ class ModifyUsersOwner extends React.Component {
     }
 
     updateShowFromChild = (currentValueOfShow) => {
-        if(this.state.showEdit){
+        if(this.state.showCreate){
             console.log('ess ' + currentValueOfShow);
+            this.setState({ showCreate: currentValueOfShow })
+        } else if(this.state.showEdit){
             this.setState({ showEdit: currentValueOfShow })
         } else if(this.state.showDelete){
             this.setState({ showDelete: currentValueOfShow })
@@ -210,10 +219,12 @@ class ModifyUsersOwner extends React.Component {
         return(
             <>
                 <AppNavBar />
-                {this.renderSearchForm()}
-                {this.renderUsers()}
-                {this.showModal()}
-                {this.modalLogic}
+                <div className="ui-container">
+                    {this.renderSearchForm()}
+                    {this.renderUsers()}
+                    {this.showModal()}
+                    {this.modalLogic}
+                </div>
             </>
         );
     }

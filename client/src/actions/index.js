@@ -133,6 +133,17 @@ export const updateUser = user => async dispatch => {
         });
 }
 
+export const createUser = user => async dispatch => {
+    console.log('Actions: Create user initiated');
+    await users.post(`/user/post/${user.first_name}/${user.last_name}/${user.email}/${user.permissions}`)
+        .then(res => {
+            console.log('Successfully updated user');
+        })
+        .catch(err => {
+            console.log(err);
+        })
+}
+
 export const deleteUser = id => async dispatch => {
     console.log(`Actions: DELETE user initiated with id ${id}`);
     await users.delete(`/user/delete/${id}`)

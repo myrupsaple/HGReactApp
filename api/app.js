@@ -1,19 +1,38 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
 const morgan = require('morgan');
 const mysql = require('mysql');
 
 app.use(morgan('short'));
 
+const _currentOrigin = 'http://localhost:3000'
+
+const corsOptions = {
+    origin: _currentOrigin,
+    optionsSuccessStatus: 200
+}
+
+const _CORS_ALLOW = (res) => {
+    return res.setHeader('Access-Control-Allow-Origin', _currentOrigin);
+};
+
 const connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
+    password: '#DankDenyk420@Chelsey',
     database: 'HGApp'
+})
+
+app.options('*', cors(corsOptions), (req, res) => {
+    return;
 })
 
 app.get('/', (req, res) => {
     console.log('Responding to root route');
     res.send('Responding from root!');
+
+    _CORS_ALLOW(res);
 })
 
 //FETCH_USER
@@ -28,6 +47,8 @@ app.get('/user/get/:email', (req, res) => {
             res.end();
             return;
         }
+
+        _CORS_ALLOW(res);
         
         res.json(rows);
     });
@@ -47,6 +68,8 @@ app.get('/users/get/:type/:query', (req, res) => {
             return;
         }
 
+        _CORS_ALLOW(res);
+
         res.json(rows);
     });
 })
@@ -62,6 +85,8 @@ app.get('/users/get', (req, res) => {
             res.end();
             return;
         }
+
+        _CORS_ALLOW(res);
 
         res.json(rows);
     });
@@ -80,6 +105,27 @@ app.put('/user/put/:id/:firstname/:lastname/:email/:permissions', (req, res) => 
             return;
         }
 
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// CREATE_USER
+app.post('/user/post/:firstname/:lastname/:email/:permissions', (req, res) => {
+    const { firstname, lastname, email, permissions } = req.params;
+    const queryStringUpdateUser = `INSERT INTO users (first_name, last_name, email, permissions) VALUES ('${firstname}', '${lastname}', '${email}', '${permissions}')`
+    console.log(queryStringUpdateUser);
+    connection.query(queryStringUpdateUser, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for users: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
         res.json(rows);
     });
 })
@@ -97,9 +143,12 @@ app.delete('/user/delete/:id', (req, res) => {
             return;
         }
 
+        _CORS_ALLOW(res);
+
         res.json(rows);
     });
 })
+
 
 app.listen(3001, () => {
     console.log('Server is up and listening on port 3001...');

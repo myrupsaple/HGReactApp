@@ -5,7 +5,9 @@ const ManageGame = () => {
     return(
         <div>
             <AppNavBar />
-            ManageGame
+            <div className="ui-container">
+                ManageGame
+            </div>
         </div>
     );
 };

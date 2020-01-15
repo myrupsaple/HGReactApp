@@ -66,7 +66,7 @@ class GoogleAuth extends React.Component {
         if(!this.props.loaded) {
             return (
                 <>
-                Loading...
+                Checking sign in status...
                 </>
             );
         } else if(this.props.isSignedIn) {

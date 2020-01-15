@@ -7,7 +7,9 @@ class Messaging extends React.Component {
         return(
             <div>
                 <AppNavBar />
-                Messaging for {this.props.perms}
+                <div className="ui-container">
+                    Messaging for {this.props.perms}
+                </div>
             </div>
         );
     }

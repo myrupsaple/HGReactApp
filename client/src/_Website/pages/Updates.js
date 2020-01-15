@@ -42,6 +42,17 @@ const Updates = () => {
                 <li>Added routes to the App side</li>
                 <li>Added template pages to the App side</li>
             </ol>
+            <h5>January 11</h5>
+            <ol>
+                <li>Began implementation of modify users page</li>
+                <li>The list of users can be stored and rendered out</li>
+            </ol>
+            <h5>January 13</h5>
+            <ol>
+                <li>Fixed the navbar color bug</li>
+                <li>Finished implementing user edit/delete features</li>
+                <li>Also added some styling to make things look nicer</li>
+            </ol>
         </div>
     );
 };

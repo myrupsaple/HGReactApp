@@ -40,8 +40,7 @@ import ManageItems from '../_App/pages/gamemaker/ManageItems';
 import ManageFunds from '../_App/pages/gamemaker/ManageFunds';
 // Owner and Admin Tools
 import ModifyUsersOwner from '../_App/pages/owner_admin/ModifyUsersOwner';
-import ModifyUsersAdmin from '../_App/pages/owner_admin/ModifyUsersAdmin';
-    import EditUser from '../_App/pages/owner_admin/components/EditUser';
+// import ModifyUsersAdmin from '../_App/pages/owner_admin/ModifyUsersAdmin';
 
 class App extends React.Component {
     renderNav(){
@@ -57,7 +56,7 @@ class App extends React.Component {
         return(
             <>
             {/* {this.renderNav()} */}
-            <div className="ui container">
+            <div className="">
                 <Router history={history}>
                     <Switch>
                         {/* WEBSITE LINKS */}
@@ -95,8 +94,7 @@ class App extends React.Component {
                         <Route path="/App/gamemaker/manage-funds" exact component={ManageFunds} />
                         {/* Owner and Admin Tools */}
                         <Route path="/App/owner/modify-users" exact component={ModifyUsersOwner} />
-                        <Route path="/App/admin/modify-users" exact component={ModifyUsersAdmin} />
-                            <Route path="/App/admin/modify-users/edit/:email" exact component={EditUser} />
+                        <Route path="/App/admin/modify-users" exact component={ModifyUsersOwner} />
 
                     </Switch>
                 </Router>

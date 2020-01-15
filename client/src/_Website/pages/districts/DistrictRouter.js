@@ -23,10 +23,12 @@ class DistrictRouter extends React.Component {
     }
     render() {
         return (
-            <div>
+            <>
                 <NavBar />
-                {this.state.page}
-            </div>
+                <div className="ui-container">
+                    {this.state.page}
+                </div>
+            </>
         );
     }
 }

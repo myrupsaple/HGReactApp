@@ -5,7 +5,9 @@ const ViewLocations = () => {
     return(
         <div>
             <AppNavBar />
-            View Locations
+            <div className="ui-container">
+                View Locations
+            </div>
         </div>
     );
 };

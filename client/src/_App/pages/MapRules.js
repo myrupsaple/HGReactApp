@@ -6,8 +6,10 @@ const MapRules = () => {
     return(
         <>
             <AppNavBar />
-            Map
-            Rules
+            <div className="ui-container">
+                Map
+                Rules
+            </div>
         </>
     );
 };

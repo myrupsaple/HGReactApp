@@ -5,7 +5,9 @@ const RequestItems = () => {
     return(
         <div>
             <AppNavBar />
-            Request Items
+            <div className="ui-container">
+                Request Items
+            </div>
         </div>
     );
 };

@@ -5,7 +5,9 @@ const ManageFunds = () => {
     return(
         <div>
             <AppNavBar />
-            Update Funds
+            <div className="ui-container">
+                Update Funds
+            </div>
         </div>
     );
 };

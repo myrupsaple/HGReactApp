@@ -21,15 +21,17 @@ class AppNavBar extends React.Component {
             return (
                 <>
                     <Nav.Link href="/">
-                        Return to Website
+                        <div className="coolor-text-special-color-dark">
+                            Return to Website
+                        </div>
                     </Nav.Link>
 
                     <Nav.Link href="/App/game-status">
-                        Game Status
+                        Game Status^
                     </Nav.Link>
 
                     <Nav.Link href="/App/map-rules">
-                        Map & Rules
+                        Map & Rules*
                     </Nav.Link>
 
                     <NavDropdown title={this.renderToolsText()}>
@@ -42,7 +44,9 @@ class AppNavBar extends React.Component {
             return (
                 <>
                     <Nav.Link href="/">
-                        Return to Website
+                        <div className="coolor-text-special-color-dark">
+                            Return to Website
+                        </div>
                     </Nav.Link>
                </>
             )
@@ -142,10 +146,10 @@ class AppNavBar extends React.Component {
         return(
             <Navbar variant="light" className={menuCoolor}>
                 <Navbar.Brand href="/App">IVHG 20 App</Navbar.Brand>
-                    <Nav className={`mr-auto custom-dropdown-bg-aliceblue navbar-left`}>
+                    <Nav className={`custom-dropdown-bg-aliceblue navbar-left`}>
                         {this.renderLeftMenu()}
                     </Nav>
-                    <Nav className={`mr-auto custom-dropdown-bg-aliceblue navbar-right`}>
+                    <Nav className={`custom-dropdown-bg-aliceblue navbar-right`}>
                         {this.renderRightMenu(this.props)}
                     </Nav>
             </Navbar>

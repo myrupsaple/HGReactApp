@@ -51,18 +51,20 @@ class LogIn extends React.Component {
 
     render(){
         return (
-            <div className="container">
+            <>
                 <NavBar />
-                
-                <div className="header">Log In</div>
-                <div className="description">for Gamemakers, Mentors, Tributes, and Helpers</div>
+                <div className="ui-container">
+                    
+                    <div className="header">Log In</div>
+                    <div className="description">for Gamemakers, Mentors, Tributes, and Helpers</div>
 
-                <img src={gif} alt="NO." />
+                    <img src={gif} alt="NO." />
 
-                <GoogleAuth />
+                    <GoogleAuth />
 
-                <div>{this.greetUser()}</div>
-            </div>
+                    <div>{this.greetUser()}</div>
+                </div>
+            </>
         );
     }
 };

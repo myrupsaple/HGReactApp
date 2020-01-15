@@ -5,7 +5,9 @@ const ManageItems = () => {
     return(
         <div>
             <AppNavBar />
-            Update Item Inventory
+            <div className="ui-container">
+                Update Item Inventory
+            </div>
         </div>
     );
 };
