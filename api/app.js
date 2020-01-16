@@ -6,12 +6,12 @@ const mysql = require('mysql');
 
 app.use(morgan('short'));
 
-const _currentOrigin = 'http://localhost:3000'
+const _currentOrigin = 'http://localhost:3000';
 
 const corsOptions = {
     origin: _currentOrigin,
     optionsSuccessStatus: 200
-}
+};
 
 const _CORS_ALLOW = (res) => {
     return res.setHeader('Access-Control-Allow-Origin', _currentOrigin);
@@ -22,7 +22,49 @@ const connection = mysql.createConnection({
     user: 'root',
     password: '#DankDenyk420@Chelsey',
     database: 'HGApp'
-})
+});
+
+// Setup work in the case that a database is missing
+// connection.connect((err) => {
+//     if(err) {
+//         return console.log('error: ' + err.message);
+//     }
+
+//     const createUsers = `CREATE TABLE IF NOT EXISTS users(
+//         id INT PRIMARY KEY AUTO_INCREMENT,
+//         first_name VARCHAR(20) NOT NULL,
+//         last_name VARCHAR(20) NOT NULL,
+//         email VARCHAR(40) NOT NULL,
+//         permissions VARCHAR(10) NOT NULL
+//     )`;
+
+//     connection.query(createUsers, (err, results, fields) => {
+//         if(err) {
+//             console.log(err.message);
+//         }
+//     });
+
+//     const createTributes = `CREATE TABLE IF NOT EXISTS tributes(
+//         id INT PRIMARY KEY AUTO_INCREMENT,
+//         first_name VARCHAR(20) NOT NULL,
+//         last_name VARCHAR(20) NOT NULL,
+//         email VARCHAR(40) NOT NULL,
+//         district TINYINT NOT NULL,
+//         districtPartner_email VARCHAR(40),
+//         area VARCHAR(15) NOT NULL,
+//         mentor_email VARCHAR(40),
+//         profilePhoto_link VARCHAR(200),
+//         profileBio VARCHAR(500),
+//         paid_registration BIT NOT NULL
+//     )`
+
+//     connection.query(createTributes, (err, results, fields) => {
+//         if(err) {
+//             console.log(err.message);
+//         }
+//     });
+
+// });
 
 app.options('*', cors(corsOptions), (req, res) => {
     return;
@@ -35,7 +77,7 @@ app.get('/', (req, res) => {
     _CORS_ALLOW(res);
 })
 
-//FETCH_USER
+// FETCH_USER
 app.get('/user/get/:email', (req, res) => {
     const email = req.params.email;
     const queryStringGetUser = `SELECT * FROM users WHERE email = '${email}'`;

@@ -1,9 +1,9 @@
-.custom-dropdown-bg-aliceblue > .dropdown > .dropdown-menu {
+.custom-dropdown-bg-app > .dropdown > .dropdown-menu {
     background-color: #E0F7FA;
 }
 
-.custom-dropdown-bg-bluergrey > .dropdown > .dropdown-menu {
-    background-color: #37474F;
+.custom-dropdown-bg-web > .dropdown > .dropdown-menu {
+    background-color: #80DEEA;
 }
 
 .navbar {

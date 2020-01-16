@@ -1,11 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import AppNavBar from '../../components/AppNavBar';
-import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components/AuthMessages';
-import Wait from '../../../components/Wait';
+import AppNavBar from '../components/AppNavBar';
+import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../components/AuthMessages';
+import Wait from '../../components/Wait';
+import DevUpdatesText from './DevUpdatesText';
 
-class ViewLocations extends React.Component {
+class DevUpdates extends React.Component {
     _isMounted = true;
     state = {
         auth: {
@@ -16,7 +17,7 @@ class ViewLocations extends React.Component {
 
     checkAuth = async () => {
         // SET ALLOWED ACCESS GROUPS HERE
-        const allowedGroups = ['owner', 'admin', 'gamemaker', 'helper'];
+        const allowedGroups = ['owner', 'admin', 'gamemaker', 'tribute', 'mentor', 'helper'];
         var timeoutCounter = 0;
         while(!this.props.authLoaded){
             await Wait(500);
@@ -78,9 +79,7 @@ class ViewLocations extends React.Component {
         }
         if(this.state.auth.payload === null){
             return(
-                <>
-                    View Locations
-                </>
+                <DevUpdatesText />
             );
         } else {
             return (<h3>{this.state.auth.payload}</h3>);
@@ -111,4 +110,4 @@ const mapStateToProps = state => {
     }
 }
 
-export default connect(mapStateToProps)(ViewLocations);
+export default connect(mapStateToProps)(DevUpdates);

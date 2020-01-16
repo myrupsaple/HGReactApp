@@ -24,7 +24,6 @@ export const signIn = (userEmail) => async (dispatch) => {
             console.log(err);
         });
 
-    var authorized = false;
     var id = null;
     var first_name = null;
     var last_name = null;
@@ -38,8 +37,7 @@ export const signIn = (userEmail) => async (dispatch) => {
         email = userEmail;
         const data = response.data[0];
         if(data){
-            console.log('Email validation: email authenticated');
-            authorized = true;
+            console.log('Email validation: Google OAuth response received');
             id = data.id;
             first_name = data.first_name;
             last_name = data.last_name;
@@ -50,7 +48,6 @@ export const signIn = (userEmail) => async (dispatch) => {
     dispatch ({
         type: SIGN_IN,
         payload: {
-            authorized,
             id,
             first_name,
             last_name,

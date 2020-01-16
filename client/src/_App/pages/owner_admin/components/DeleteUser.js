@@ -62,13 +62,13 @@ class DeleteUser extends React.Component {
                     Are you absolutely sure? This will delete all of the user's data.
                     This cannot be undone.
                     
-                    Well, we might be able to undo it, but it will be a pain.
+                    Well, we *might* be able to undo it, but it will be a pain.
                 </h4>
             );
             renderActions = (
                 <>
-                    <Button variant="secondary" onClick={this.handleClose}>Cancel</Button>
                     <Button variant="danger" onClick={this.handleFinalConfirm}>I Understand, Confirm Delete</Button>
+                    <Button variant="secondary" onClick={this.handleClose}>Cancel</Button>
                 </>
             );
         } else {
@@ -84,17 +84,31 @@ class DeleteUser extends React.Component {
                 </>
             );
         }
-        return (
-            <Modal show={this.state.show} onHide={this.handleClose}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Delete User</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>{modalBody}</Modal.Body>
-                <Modal.Footer>
-                    {renderActions}
-                </Modal.Footer>
-            </Modal>
-        );
+        if(!this.state.firstConfirm){
+            return (
+                <Modal show={this.state.show} onHide={this.handleClose}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Delete User</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>{modalBody}</Modal.Body>
+                    <Modal.Footer>
+                        {renderActions}
+                    </Modal.Footer>
+                </Modal>
+            );
+        } else {
+            return (
+                <Modal show={this.state.show} onHide={this.handleClose}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Delete User</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>{renderActions}</Modal.Body>
+                    <Modal.Footer>
+                        {modalBody}
+                    </Modal.Footer>
+                </Modal>
+            );
+        }
     }
     
     handleDeleteSubmit = (event) => {
@@ -107,7 +121,7 @@ class DeleteUser extends React.Component {
     }
     
     handleClose = async () => {
-        await this.setState({ show: false });
+        await this.setState({ firstConfirm: false, show: false });
         console.log(this.state.show);
         this.props.updateShow(this.state.show);
     }

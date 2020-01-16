@@ -5,7 +5,7 @@ const ModifyUsersAdmin = () => {
     return(
         <div>
             <AppNavBar />
-            Modify Users (Owner)
+            Modify Users (Admin)
         </div>
     );
 };

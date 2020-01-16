@@ -3,9 +3,9 @@ import NavBar from '../components/NavBar';
 
 const Updates = () => {
     return(
-        <div className="ui container">
-            <NavBar />
-
+        <>
+        <NavBar />
+        <div className="ui-container">
             <h3 id="header">Site Updates</h3>
             <h5>November 25</h5>
             <ol>
@@ -53,7 +53,14 @@ const Updates = () => {
                 <li>Finished implementing user edit/delete features</li>
                 <li>Also added some styling to make things look nicer</li>
             </ol>
+            <h5>January 14</h5>
+            <ol>
+                <li>Implemented CORS Access-Control-Allow-Origin Headers (No more plugins 🙌🏼)</li>
+                <li>Added user create feature to the modify users page</li>
+                <li>More touch-up styling... Navbars now extend the length of the page</li>
+            </ol>
         </div>
+        </>
     );
 };
 

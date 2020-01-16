@@ -4,13 +4,20 @@ import { Form, Col, Button } from 'react-bootstrap';
 
 import { fetchUsers, fetchAllUsers } from '../../../actions';
 import AppNavBar from '../../components/AppNavBar';
+import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components/AuthMessages';
+import Wait from '../../../components/Wait';
 import UserForm from './components/UserForm';
 import DeleteUser from './components/DeleteUser';
 
 class ModifyUsersOwner extends React.Component {
+    _isMounted = true;
     constructor(props){
         super(props);
-        this.state = { 
+        this.state = {
+            auth: {
+                loading: true,
+                payload: null
+            },
             queried: false,
             searchType: 'First Name',
             searchTerm: '',
@@ -27,6 +34,59 @@ class ModifyUsersOwner extends React.Component {
         this.handleSearchTerm = this.handleSearchTerm.bind(this);
         this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
         this.showModal = this.showModal.bind(this);
+    }
+
+    checkAuth = async () => {
+        // SET ALLOWED ACCESS GROUPS HERE
+        const allowedGroups = ['owner', 'admin'];
+        var timeoutCounter = 0;
+        while(!this.props.authLoaded){
+            await Wait(500);
+            timeoutCounter ++;
+            console.log('waiting on authLoaded')
+            if (timeoutCounter > 5){
+                return(OAuthFail);
+            }
+        }
+
+        timeoutCounter = 0;
+        while(!this.props.isSignedIn){
+            await Wait(500);
+            timeoutCounter ++;
+            console.log('waiting on isSignedIn');
+            if (timeoutCounter > 5){
+                return(NotSignedIn);
+            }
+        }
+
+        if(this._isMounted){
+            this.setState({
+                auth:{
+                    loading: false
+                }
+            })
+        }
+
+        const userPerms = this.props.userPerms;
+        for (let group of allowedGroups){
+            if(userPerms === group){
+                return null;
+            }
+        }
+
+        return(NotAuthorized);
+    }
+
+    componentDidMount = async () => {
+        // Check authorization
+        const authPayload = await this.checkAuth();
+        if(this._isMounted){
+            this.setState({
+                auth:{
+                    payload: authPayload
+                }
+            })
+        }
     }
 
     handleSearchType(event) {
@@ -212,6 +272,29 @@ class ModifyUsersOwner extends React.Component {
             this.setState({ showDelete: currentValueOfShow })
         }
     };
+
+    renderContent = () => {
+        if(this.state.auth.loading){
+            return(
+                <>
+                <h3>Authorizing user...</h3>
+                <p>{Loading}</p>
+                </>
+            );
+        }
+        if(this.state.auth.payload === null){
+            return(
+                <>
+                    {this.renderSearchForm()}
+                    {this.renderUsers()}
+                    {this.showModal()}
+                    {this.modalLogic}
+                </>
+            );
+        } else {
+            return (<h3>{this.state.auth.payload}</h3>);
+        }
+    }
     
     // TODO: Figure out how to make modal re-openable
     render() {
@@ -220,19 +303,23 @@ class ModifyUsersOwner extends React.Component {
             <>
                 <AppNavBar />
                 <div className="ui-container">
-                    {this.renderSearchForm()}
-                    {this.renderUsers()}
-                    {this.showModal()}
-                    {this.modalLogic}
+                    {this.renderContent()}
                 </div>
             </>
         );
+    }
+
+    componentWillUnmount() {
+        this._isMounted = false;
     }
 };
 
 const mapStateToProps = (state) => {
     return{
-        users: Object.values(state.users)
+        users: Object.values(state.users),
+        authLoaded: state.auth.loaded,
+        isSignedIn: state.auth.isSignedIn,
+        userPerms: state.auth.userPerms
     };
 };
 

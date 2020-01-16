@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Button } from 'react-bootstrap';
+import history from '../history';
 
 import { signIn, signOut } from '../actions';
 
@@ -21,7 +22,7 @@ class GoogleAuth extends React.Component {
         }
         async function checkForGapi () {
             while(!window.gapi){
-                console.log('GAPI LOAD FAILED: waited 200ms ' + counter + ' time(s)');
+                console.log('GAPI LOAD DELAYED: waited 200ms ' + counter + ' time(s)');
                 counter += 0;
                 await wait();
             }
@@ -60,6 +61,7 @@ class GoogleAuth extends React.Component {
 
     onSignOutClick = () => {
         this.auth.signOut();
+        history.push('/App/signout-successful');
     }
 
     renderAuthButton() {
@@ -75,7 +77,7 @@ class GoogleAuth extends React.Component {
                 //     Sign Out
                 // </button>
                 <Button className="coolor-bg-light-blue-darken-1" onClick={this.onSignOutClick}>
-                    Sign Out
+                    <h6>Sign out and return to the website home page</h6>
                 </Button>
             );
         } else {

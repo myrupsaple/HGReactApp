@@ -2,7 +2,6 @@ import { SIGN_IN, SIGN_OUT } from '../actions/types';
 
 const INITIAL_STATE = {
     loaded: false,
-    authorized: false,
     isSignedIn: false,
     userId: null,
     userFirstName: null,
@@ -18,7 +17,6 @@ export default (state = INITIAL_STATE, action) => {
             return {
                 ...state, 
                 loaded: true,
-                authorized: action.payload.authorized,
                 isSignedIn: true,
                 userId: action.payload.id,
                 userFirstName: action.payload.first_name,
@@ -31,7 +29,6 @@ export default (state = INITIAL_STATE, action) => {
             return {
                 ...state, 
                 loaded: true,
-                authorized: false,
                 isSignedIn: false, 
                 userId: null,
                 userFirstName: null,

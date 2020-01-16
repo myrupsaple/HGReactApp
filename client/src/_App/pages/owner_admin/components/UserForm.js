@@ -130,6 +130,11 @@ class UserForm extends React.Component {
     }
 
     handleFormSubmit() {
+        const validated = (this.state.first_name && this.state.last_name && this.state.email && this.state.permissions);
+        if(!validated){
+            alert('All fields must be filled in');
+            return;
+        }
         var formattedPerms = null;
         switch(this.state.permissions){
             case 'Tribute':
