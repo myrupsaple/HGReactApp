@@ -216,3 +216,14 @@ export const updateTribute = tribute => async dispatch => {
             console.log(err);
         });
 }
+
+export const deleteTribute = id => async dispatch => {
+    console.log(`Actions: DELETE tribute initiated with id ${id}`);
+    await users.delete(`/tribute/delete/${id}`)
+        .then(res => {
+            console.log('Successfully deleted tribute');
+        })
+        .catch(err => {
+            console.log(err);
+        })
+}

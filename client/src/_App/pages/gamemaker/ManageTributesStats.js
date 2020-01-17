@@ -85,7 +85,7 @@ class ManageTributeStats extends React.Component {
             variant="info"
             onClick={() => this.setState({ showCreate: true })}
             >
-                Create
+                Create Tribute Account
             </Button>
         )
     }
@@ -93,7 +93,7 @@ class ManageTributeStats extends React.Component {
     renderTributes(){
         if(Object.keys(this.props.tributes).length === 0){
             // Return different message before and after first search is sent
-            if(!this.state.queried) {
+            if(!this.state.apiQueriedTributesList) {
                 return(
                     <h5>
                         Retrieving list of tributes...
@@ -145,7 +145,7 @@ class ManageTributeStats extends React.Component {
     renderTableHeader(){
         return(
         <h5 className="row">
-            <div className="col">First Name</div>
+            <div className="col">Tribute Name</div>
             <div className="col">Email</div>
             <div className="col">District</div>
             <div className="col">Area</div>

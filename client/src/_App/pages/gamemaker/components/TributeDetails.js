@@ -4,6 +4,7 @@ import { Button, Modal } from 'react-bootstrap';
 
 import { fetchTribute, updateTribute, createTribute } from '../../../../actions';
 import TributeInfoForm from './TributeInfoForm';
+import DeleteTribute from './DeleteTribute';
 
 class TributeDetails extends React.Component {
     _isMounted = false;
@@ -29,6 +30,7 @@ class TributeDetails extends React.Component {
                 paidRegistration: this.props.tribute.paidRegistration,
                 showModal: true,
                 showEdit: false,
+                showDelete: false
             });
         }
     }
@@ -67,7 +69,10 @@ class TributeDetails extends React.Component {
 
     renderActions(){
         return(
+            <>
             <Button variant="info" onClick={this.displayEdit}>Edit Tribute Info</Button>
+            <Button variant="danger" onClick={this.displayDelete}>Delete Tribute</Button>
+            </>
         );
     }
 
@@ -77,6 +82,14 @@ class TributeDetails extends React.Component {
 
     displayEdit = async () => {
         await this.setState({ showEdit: true });
+    }
+
+    dismissDelete = () => {
+        this.handleClose();
+    };
+
+    displayDelete = async () => {
+        await this.setState({ showDelete: true });
     }
     
     handleClose = async () => {
@@ -105,6 +118,12 @@ class TributeDetails extends React.Component {
             return(
                 <>
                     <TributeInfoForm payload={this.payload()} mode="edit" onDismiss={this.dismissEdit}/>
+                </>
+            );
+        } else if(this.state.showDelete) {
+            return(
+                <>
+                    <DeleteTribute id={this.props.id} email={this.props.email} updateShow={this.dismissDelete}/>
                 </>
             );
         } else {

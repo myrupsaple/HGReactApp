@@ -181,7 +181,7 @@ class TributeInfoForm extends React.Component {
         console.log(this.state.first_name + this.state.last_name + this.state.email + 
             this.state.district + this.state.districtPartner + this.state.area + 
             this.state.mentor + this.state.paidRegistration)
-        if(!validated){
+        if(validated){
             alert('All fields must be filled in');
             return;
         }

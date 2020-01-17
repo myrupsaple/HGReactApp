@@ -2,9 +2,9 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Button, Modal } from 'react-bootstrap';
 
-import { fetchUser, deleteUser } from '../../../../actions';
+import { fetchTribute, deleteTribute } from '../../../../actions';
 
-class DeleteUser extends React.Component {
+class DeleteTribute extends React.Component {
     _isMounted = false;
 
     constructor(props){
@@ -14,17 +14,16 @@ class DeleteUser extends React.Component {
 
     async componentDidMount() {
         this._isMounted = true;
-        await this.props.fetchUser(this.props.email, this.props.id);
+        await this.props.fetchTribute(this.props.email, this.props.id);
 
         console.log(this.props.email);
-        console.log(this.props.user);
+        console.log(this.props.tribute);
 
         if(this._isMounted){
             this.setState({
-                first_name: this.props.user.first_name,
-                last_name: this.props.user.last_name,
-                email: this.props.user.email,
-                permissions: this.props.user.permissions,
+                first_name: this.props.tribute.first_name,
+                last_name: this.props.tribute.last_name,
+                email: this.props.tribute.email,
                 firstConfirm: false,
                 show: true
             });
@@ -34,10 +33,10 @@ class DeleteUser extends React.Component {
     renderModal = () => {
         var modalBody = null;
         var renderActions = null;
-        if(!this.props.user.first_name){
+        if(!this.props.tribute.first_name){
             modalBody = ( 
                 <h3>
-                    An error occurred while retrieving user data. Please try again.
+                    An error occurred while retrieving tribute data. Please try again.
                 </h3>
             );
             renderActions = (
@@ -46,7 +45,7 @@ class DeleteUser extends React.Component {
         } else if (!this.state.firstConfirm){
             modalBody = (
                 <h4>
-                    Are you sure you would like to delete the account {this.props.user.email} for {this.props.user.first_name} {this.props.user.last_name}?
+                    Are you sure you would like to delete the account {this.props.tribute.email} for {this.props.tribute.first_name} {this.props.tribute.last_name}?
                 </h4>
             );
             renderActions = (
@@ -58,8 +57,8 @@ class DeleteUser extends React.Component {
         } else {
             modalBody = (
                 <h4>
-                    Are you sure? This will delete the user's account information only.
-                    This action cannot be undone (but you can always re-create the user).
+                    Are you sure? This will delete the tribute's account information only.
+                    This action cannot be undone (but you can always re-create the tribute).
                 </h4>
             );
             renderActions = (
@@ -73,7 +72,7 @@ class DeleteUser extends React.Component {
             return (
                 <Modal show={this.state.show} onHide={this.handleClose}>
                     <Modal.Header>
-                        <Modal.Title>Delete User</Modal.Title>
+                        <Modal.Title>Delete Tribute</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>{modalBody}</Modal.Body>
                     <Modal.Footer>
@@ -85,7 +84,7 @@ class DeleteUser extends React.Component {
             return (
                 <Modal show={this.state.show} onHide={this.handleClose}>
                     <Modal.Header>
-                        <Modal.Title>Delete User</Modal.Title>
+                        <Modal.Title>Delete Tribute</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>{renderActions}</Modal.Body>
                     <Modal.Footer>
@@ -101,7 +100,7 @@ class DeleteUser extends React.Component {
     }
 
     handleFinalConfirm = () => {
-        this.props.deleteUser(this.props.user.id);
+        this.props.deleteTribute(this.props.tribute.id);
         this.handleClose();
     }
     
@@ -127,9 +126,9 @@ class DeleteUser extends React.Component {
 
 const mapStateToProps = state => {
     return { 
-        user: state.selectedUser,
+        tribute: state.selectedTribute,
 
     };
 };
 
-export default connect(mapStateToProps, { fetchUser, deleteUser })(DeleteUser);
+export default connect(mapStateToProps, { fetchTribute, deleteTribute })(DeleteTribute);

@@ -193,7 +193,7 @@ app.get('/tributes/get', (req, res) =>{
     console.log(queryStringGetTributes);
     connection.query(queryStringGetTributes, (err, rows, fields) => {
         if(err){
-            console.log('Failed to query for users: ' + err);
+            console.log('Failed to query for tributes: ' + err);
             res.sendStatus(500);
             res.end();
             return;
@@ -212,7 +212,7 @@ app.get('/tribute/get/:email', (req, res) =>{
     console.log(queryStringGetTributes);
     connection.query(queryStringGetTributes, (err, rows, fields) => {
         if(err){
-            console.log('Failed to query for users: ' + err);
+            console.log('Failed to query for tributes: ' + err);
             res.sendStatus(500);
             res.end();
             return;
@@ -227,12 +227,12 @@ app.get('/tribute/get/:email', (req, res) =>{
 // CREATE_TRIBUTE
 app.post('/tribute/post/:firstname/:lastname/:email/:district/:partneremail/:area/:mentoremail/:paidreg', (req, res) => {
     const { firstname, lastname, email, district, partneremail, area, mentoremail, paidreg } = req.params;
-    const queryStringUpdatetribute = `INSERT INTO tributes (first_name, last_name, email, district,
+    const queryStringCreateTribute = `INSERT INTO tributes (first_name, last_name, email, district,
         districtPartner_email, area, mentor_email, paid_registration) VALUES ("${firstname}", 
         "${lastname}", "${email}", "${district}", "${partneremail}", "${area}", 
         "${mentoremail}", "${paidreg}")`;
-    console.log(queryStringUpdateTribute);
-    connection.query(queryStringUpdatetribute, (err, rows, fields) => {
+    console.log(queryStringCreateTribute);
+    connection.query(queryStringCreateTribute, (err, rows, fields) => {
         if(err){
             console.log('Failed to query for tributes: ' + err);
             res.sendStatus(500);
@@ -249,12 +249,12 @@ app.post('/tribute/post/:firstname/:lastname/:email/:district/:partneremail/:are
 // UPDATE_TRIBUTE
 app.put('/tribute/put/:id/:firstname/:lastname/:email/:district/:partneremail/:area/:mentoremail/:paidreg', (req, res) => {
     const { id, firstname, lastname, email, district, partneremail, area, mentoremail, paidreg } = req.params;
-    const queryStringCreateTribute = `UPDATE tributes SET first_name = "${firstname}",
+    const queryStringUpdateTribute = `UPDATE tributes SET first_name = "${firstname}",
         last_name = "${lastname}", email = "${email}", district = "${district}",
         districtPartner_email = "${partneremail}", area = "${area}", mentor_email ="${mentoremail}", 
         paid_registration = "${paidreg}" WHERE id = ${id}`;
-    console.log(queryStringCreateTribute);
-    connection.query(queryStringCreateTribute, (err, rows, fields) => {
+    console.log(queryStringUpdateTribute);
+    connection.query(queryStringUpdateTribute, (err, rows, fields) => {
         if(err){
             console.log('Failed to query for tributes: ' + err);
             res.sendStatus(500);
@@ -268,7 +268,24 @@ app.put('/tribute/put/:id/:firstname/:lastname/:email/:district/:partneremail/:a
     });
 })
 
+// DELETE_USER
+app.delete('/tribute/delete/:id', (req, res) => {
+    const id = req.params.id;
+    const queryStringDeleteTribute = `DELETE FROM tributes WHERE id = ${id}`;
+    console.log(queryStringDeleteTribute);
+    connection.query(queryStringDeleteTribute, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for tributes: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
 
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
 
 
 
