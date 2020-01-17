@@ -58,6 +58,8 @@ class UserForm extends React.Component {
     }
 
     renderModalBody() {
+        // Use props for first_name to see if the user was successfully loaded
+        // (state may not update right away)
         if(this.props.mode === 'edit' && !this.props.user.first_name){
             return ( 
                 <h3>
@@ -177,11 +179,21 @@ class UserForm extends React.Component {
         this.handleClose();
     }
 
+    renderTitle(){
+        if(this.props.mode === 'edit'){
+            return 'Edit User';
+        } else if(this.props.mode ==='create'){
+            return 'Create User';
+        } else {
+            return 'Something unexpected happened.'
+        }
+    }
+
     render = () => {
         return(
             <Modal show={this.state.show} onHide={this.handleClose}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Form User</Modal.Title>
+                <Modal.Header>
+                    <Modal.Title>{this.renderTitle}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>{this.renderModalBody()}</Modal.Body>
                 <Modal.Footer>

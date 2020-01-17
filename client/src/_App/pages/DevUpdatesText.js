@@ -6,6 +6,11 @@ const DevUpdatesText = () =>{
         <h1>Development Updates and Things to Look Out For</h1>
         <h5>Remember, if you run into any errors, please notify me by sending a screenshot and a description of how you got to the error. Thanks!</h5>
 
+        <h4>January 16</h4>
+        <ol>
+            <li>Worked out some issues with the login service. Things seem to be stable for now</li>
+            <li>Began implementing the tribute account management system</li>
+        </ol>
         <h4>January 15</h4>
         <h5 className="coolor-text-red-darken-2">If you run into any authorization errors or are able to access pages when you shouldn't, please let me know!</h5>
         <ol>

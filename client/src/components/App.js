@@ -40,8 +40,7 @@ import ManageResources from '../_App/pages/gamemaker/ManageResources';
 import ManageItems from '../_App/pages/gamemaker/ManageItems';
 import ManageFunds from '../_App/pages/gamemaker/ManageFunds';
 // Owner and Admin Tools
-import ModifyUsersOwner from '../_App/pages/owner_admin/ModifyUsersOwner';
-// import ModifyUsersAdmin from '../_App/pages/owner_admin/ModifyUsersAdmin';
+import ModifyUsers from '../_App/pages/owner_admin/ModifyUsers';
 
 class App extends React.Component {
     componentDidMount(){
@@ -92,8 +91,8 @@ class App extends React.Component {
                     <Route path="/App/gamemaker/manage-items" exact component={ManageItems} />
                     <Route path="/App/gamemaker/manage-funds" exact component={ManageFunds} />
                     {/* Owner and Admin Tools */}
-                    <Route path="/App/owner/modify-users" exact component={ModifyUsersOwner} />
-                    <Route path="/App/admin/modify-users" exact component={ModifyUsersOwner} />
+                    <Route path="/App/owner/modify-users" exact component={ModifyUsers} />
+                    <Route path="/App/admin/modify-users" exact component={ModifyUsers} />
 
                 </Switch>
             </Router>

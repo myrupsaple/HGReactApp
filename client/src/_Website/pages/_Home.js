@@ -12,6 +12,10 @@ const Home = () => {
         <>
             <NavBar />
             <div className="ui-container">
+                <h1 className="coolor-text-red-darken-2">The login server is currently having some issues that cause it to crash after a few hours.</h1>
+                <h1 className="coolor-text-red-darken-2">If you're seeing an 'Error retrieving user info' message, then it's probably because of this.</h1>
+                <h1 className="coolor-text-red-darken-2">I'm looking into it and will update everyone when it's fixed.</h1>
+
                 <div className="background" id="bg1">
                     <h3 className="bg-text" id="bgt1">The Hunger Games.</h3>
                 </div>

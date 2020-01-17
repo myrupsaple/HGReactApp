@@ -6,7 +6,11 @@ import {
     FETCH_USER,
     FETCH_USERS,
     FETCH_ALL_USERS,
+    FETCH_TRIBUTE,
+    FETCH_ALL_TRIBUTES
 } from './types';
+
+//############################ (0) GOOGLE O-AUTH #############################//
 
 export const signIn = (userEmail) => async (dispatch) => {
     console.log('Actions: Sign in initiated');
@@ -65,6 +69,8 @@ export const signOut = () => (dispatch) => {
     });
 };
 
+//########################### (1) USER MANAGEMENT ############################//
+
 export const fetchUser = (email, id) => async (dispatch) => {
     console.log('Actions: Fetch user initiated');
     var response = null;
@@ -77,16 +83,16 @@ export const fetchUser = (email, id) => async (dispatch) => {
         });
 
     if(response && response.data){
-        console.log('Successfully searched for user');
+        console.log(`Successfully retrieved user ${email}`);
         dispatch ({ type: FETCH_USER, payload: { 
             response: response.data,
-            id: id
+            id
         }});
     }
 };
 
 export const fetchUsers = (type, query) => async (dispatch) => {
-    console.log('Actions: Fetch users initiated');
+    console.log(`Actions: Fetch users initiated: ${type} containing '${query}'`);
     var response = null;
     await users.get(`/users/get/${type}/${query}`)
         .then(res => {
@@ -123,7 +129,7 @@ export const updateUser = user => async dispatch => {
     console.log('Actions: Update user initiated');
     await users.put(`/user/put/${user.id}/${user.first_name}/${user.last_name}/${user.email}/${user.permissions}`)
         .then(res => {
-            console.log('Successfully updated user');
+            console.log(`Successfully updated user ${user.email}`);
         })
         .catch(err => {
             console.log(err);
@@ -134,7 +140,7 @@ export const createUser = user => async dispatch => {
     console.log('Actions: Create user initiated');
     await users.post(`/user/post/${user.first_name}/${user.last_name}/${user.email}/${user.permissions}`)
         .then(res => {
-            console.log('Successfully updated user');
+            console.log(`Successfully updated user ${user.email}`);
         })
         .catch(err => {
             console.log(err);
@@ -150,4 +156,63 @@ export const deleteUser = id => async dispatch => {
         .catch(err => {
             console.log(err);
         })
+}
+
+//######################### (2) TRIBUTE MANAGEMENT ###########################//
+
+export const fetchTribute = (email, id) => async dispatch => {
+    console.log(`Actions: Fetch tributes initiated`);
+    var response = null;
+    await users.get(`/tribute/get/${email}`)
+        .then(res => {
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        })
+    if(response && response.data){
+        console.log(`Successfully fetched tribute ${email}`);
+        dispatch({ type: FETCH_TRIBUTE, payload: {
+            response: response.data,
+            id
+        }});
+    }
+}
+
+export const fetchTributes = () => async dispatch => {
+    console.log(`Actions: Fetch all tributes initiated`);
+    var response = null;
+    await users.get(`/tributes/get`)
+        .then(res => {
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        })
+    if(response && response.data){
+        console.log('Successfully fetched tributes');
+        dispatch({ type: FETCH_ALL_TRIBUTES, payload: response.data });
+    }
+}
+
+export const createTribute = tribute => async dispatch => {
+    console.log('Actions: Create tribute initiated');
+    await users.post(`/tribute/post/${tribute.first_name}/${tribute.last_name}/${tribute.email}/${tribute.district}/${tribute.districtPartner}/${tribute.area}/${tribute.mentor}/${tribute.paidRegistration}`)
+        .then(res => {
+            console.log(`Successfully created tribute ${tribute.email}`);
+        })
+        .catch(err => {
+            console.log(err);
+        })
+}
+
+export const updateTribute = tribute => async dispatch => {
+    console.log('Actions: Update tribute initiated');
+    await users.put(`/tribute/put/${tribute.id}/${tribute.first_name}/${tribute.last_name}/${tribute.email}/${tribute.district}/${tribute.districtPartner}/${tribute.area}/${tribute.mentor}/${tribute.paidRegistration}`)
+        .then(res => {
+            console.log(`Successfully updated tribute ${tribute.email}`);
+        })
+        .catch(err => {
+            console.log(err);
+        });
 }

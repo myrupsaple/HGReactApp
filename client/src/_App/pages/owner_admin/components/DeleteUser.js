@@ -87,7 +87,7 @@ class DeleteUser extends React.Component {
         if(!this.state.firstConfirm){
             return (
                 <Modal show={this.state.show} onHide={this.handleClose}>
-                    <Modal.Header closeButton>
+                    <Modal.Header>
                         <Modal.Title>Delete User</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>{modalBody}</Modal.Body>
@@ -99,7 +99,7 @@ class DeleteUser extends React.Component {
         } else {
             return (
                 <Modal show={this.state.show} onHide={this.handleClose}>
-                    <Modal.Header closeButton>
+                    <Modal.Header>
                         <Modal.Title>Delete User</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>{renderActions}</Modal.Body>

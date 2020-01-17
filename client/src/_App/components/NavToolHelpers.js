@@ -23,7 +23,7 @@ const ManageGameState = (
 
 const ModifyTributeStats = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/manage-tribute-stats">
-        Modify Tribute Stats*
+        Modify Tribute Stats^
     </NavDropdown.Item>
 );
 

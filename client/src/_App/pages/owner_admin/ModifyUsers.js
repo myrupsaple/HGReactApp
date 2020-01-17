@@ -9,7 +9,7 @@ import Wait from '../../../components/Wait';
 import UserForm from './components/UserForm';
 import DeleteUser from './components/DeleteUser';
 
-class ModifyUsersOwner extends React.Component {
+class ModifyUsers extends React.Component {
     _isMounted = true;
     constructor(props){
         super(props);
@@ -264,7 +264,6 @@ class ModifyUsersOwner extends React.Component {
 
     updateShowFromChild = (currentValueOfShow) => {
         if(this.state.showCreate){
-            console.log('ess ' + currentValueOfShow);
             this.setState({ showCreate: currentValueOfShow })
         } else if(this.state.showEdit){
             this.setState({ showEdit: currentValueOfShow })
@@ -288,7 +287,6 @@ class ModifyUsersOwner extends React.Component {
                     {this.renderSearchForm()}
                     {this.renderUsers()}
                     {this.showModal()}
-                    {this.modalLogic}
                 </>
             );
         } else {
@@ -323,4 +321,4 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, { fetchUsers, fetchAllUsers })(ModifyUsersOwner);
+export default connect(mapStateToProps, { fetchUsers, fetchAllUsers })(ModifyUsers);
