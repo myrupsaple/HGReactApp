@@ -226,7 +226,7 @@ class ModifyUsers extends React.Component {
                 </Form.Row>
                 <Form.Row>
                     <Col>
-                        <Button className="coolor-bg-purple-lighten-2" 
+                        <Button variant="secondary" className="coolor-bg-purple-lighten-2" 
                         onClick={() => this.setState({ showCreate: true })}
                         >
                             Create User

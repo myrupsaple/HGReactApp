@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Form, Col, Button } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 
 import AppNavBar from '../../components/AppNavBar';
 import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components/AuthMessages';
@@ -9,7 +9,7 @@ import { fetchTributes } from '../../../actions';
 import TributeDetails from './components/TributeDetails';
 import TributeInfoForm from './components/TributeInfoForm';
 
-class ManageTributeStats extends React.Component {
+class TributeAccountInfo extends React.Component {
     _isMounted = true;
     state = {
         auth: {
@@ -81,12 +81,23 @@ class ManageTributeStats extends React.Component {
 
     renderTop(){
         return(
+            <div style={{ display: "flex" }}>
             <Button 
-            variant="info"
+            variant="secondary"
             onClick={() => this.setState({ showCreate: true })}
+            className="coolor-bg-purple-darken-2"
             >
                 Create Tribute Account
             </Button>
+                <div style={{ marginLeft: "auto" }}>
+                    <Button variant="secondary" 
+                    onClick={this.props.fetchTributes}
+                    className="coolor-bg-indigo-darken-2"
+                    >
+                        Refresh list
+                    </Button>
+                </div>
+            </div>
         )
     }
 
@@ -157,17 +168,18 @@ class ManageTributeStats extends React.Component {
     showModal() {
         if(this.state.showDetails){
             return(
-                <TributeDetails email={this.state.selectedEmail} id={this.state.selectedId} updateShow={this.updateShowFromChild} />
+                <TributeDetails email={this.state.selectedEmail} id={this.state.selectedId} onDismiss={this.onDismiss} />
             )
         } else if(this.state.showCreate){
             return(
-                <TributeInfoForm onDismiss={this.updateShowFromChild} mode="create" />
+                <TributeInfoForm onDismiss={this.onDismiss} mode="create" />
             )
         }
     }
 
-    updateShowFromChild = () => {
-        this.setState({ showDetails: false, showCreate: false })
+    onDismiss = () => {
+        this.setState({ showCreate: false, showDetails: false })
+        this.props.fetchTributes();
     };
 
     renderContent = () => {
@@ -217,4 +229,4 @@ const mapStateToProps = state => {
     }
 }
 
-export default connect(mapStateToProps, { fetchTributes })(ManageTributeStats);
+export default connect(mapStateToProps, { fetchTributes })(TributeAccountInfo);

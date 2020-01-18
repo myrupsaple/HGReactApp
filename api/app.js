@@ -24,47 +24,113 @@ const connection = mysql.createConnection({
     database: 'HGApp'
 });
 
-// Setup work in the case that a database is missing
-// connection.connect((err) => {
-//     if(err) {
-//         return console.log('error: ' + err.message);
-//     }
+//################################ (0) SETUP #################################//
 
-//     const createUsers = `CREATE TABLE IF NOT EXISTS users(
-//         id INT PRIMARY KEY AUTO_INCREMENT,
-//         first_name VARCHAR(20) NOT NULL,
-//         last_name VARCHAR(20) NOT NULL,
-//         email VARCHAR(40) NOT NULL,
-//         permissions VARCHAR(10) NOT NULL
-//     )`;
+connection.connect(async (err) => {
+    if(err) {
+        return console.log('error: ' + err.message);
+    }
 
-//     connection.query(createUsers, (err, results, fields) => {
-//         if(err) {
-//             console.log(err.message);
-//         }
-//     });
+    const findTables = `SHOW TABLES`;
+    var res = {};
 
-//     const createTributes = `CREATE TABLE IF NOT EXISTS tributes(
-//         id INT PRIMARY KEY AUTO_INCREMENT,
-//         first_name VARCHAR(20) NOT NULL,
-//         last_name VARCHAR(20) NOT NULL,
-//         email VARCHAR(40) NOT NULL,
-//         district TINYINT NOT NULL,
-//         districtPartner_email VARCHAR(40),
-//         area VARCHAR(15) NOT NULL,
-//         mentor_email VARCHAR(40),
-//         profilePhoto_link VARCHAR(200),
-//         profileBio VARCHAR(500),
-//         paid_registration BIT NOT NULL
-//     )`
+    connection.query(findTables, (err, results, fields) => {
+        if(err) {
+            console.log(err.message);
+        }
+        res = results.map(table => {
+            return table.Tables_in_hgapp;
+        });
+    
 
-//     connection.query(createTributes, (err, results, fields) => {
-//         if(err) {
-//             console.log(err.message);
-//         }
-//     });
+        const tableList = {
+            users: false,
+            tributes: false,
+            tribute_stats:false,
+            gameStatus: false
+        }
+        
+        for(let table of res){
+            switch(table){
+                case 'users':
+                    tableList.users = true;
+                    break;
+                case 'tributes':
+                    tableList.tributes = true;
+                    break;
+                case 'tribute_stats':
+                    tableList.tribute_stats = true;
+                    break;
+                case 'gameStatus':
+                    tableList.gameStatus = true;
+                    break;
+                default:
+                    break;
+            }
+        }
 
-// });
+        const createUsers = `CREATE TABLE users(
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            first_name VARCHAR(20) NOT NULL,
+            last_name VARCHAR(20) NOT NULL,
+            email VARCHAR(40) NOT NULL,
+            permissions VARCHAR(10) NOT NULL
+        )`;
+
+        const createTributes = `CREATE TABLE tributes(
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            first_name VARCHAR(20) NOT NULL,
+            last_name VARCHAR(20) NOT NULL,
+            email VARCHAR(40) NOT NULL,
+            district TINYINT NOT NULL,
+            districtPartner_email VARCHAR(40),
+            area VARCHAR(15) NOT NULL,
+            mentor_email VARCHAR(40),
+            paid_registration TINYINT(1)
+        )`;
+
+        const createTributeStats = `CREATE TABLE tribute_stats(
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            first_name VARCHAR(20) NOT NULL,
+            last_name VARCHAR(20) NOT NULL,
+            email VARCHAR(40) NOT NULL,
+            funds_remaining INT NOT NULL,
+            lives_remaining TINYINT NOT NULL,
+            food_resources TINYINT NOT NULL,
+            water_resources TINYINT NOT NULL,
+            medicine_resources TINYINT NOT NULL,
+            roulette_resources TINYINT NOT NULL,
+            life_resources TINYINT NOT NULL,
+            lives_starting TINYINT NOT NULL,
+            lives_purchased TINYINT NOT NULL,
+            lives_lost TINYINT NOT NULL,
+            kill_count TINYINT NOT NULL
+        )`;
+        
+        if(!tableList.users){
+            connection.query(createUsers, (err, results, fields) => {
+                if(err) {
+                    console.log(err.message);
+                }
+            });
+        }
+        if(!tableList.tributes){
+            connection.query(createTributes, (err, results, fields) => {
+                if(err) {
+                    console.log(err.message);
+                }
+            });
+        }
+        if(!tableList.tribute_stats){
+            connection.query(createTributeStats, (err, results, fields) => {
+                if(err) {
+                    console.log(err.message);
+                }
+            });
+        }
+    })
+
+});
 
 app.options('*', cors(corsOptions), (req, res) => {
     return;

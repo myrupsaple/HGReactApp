@@ -35,7 +35,8 @@ const AppHome = () => {
                     Items with a ^ next to them are in progress. 
                 </p>
                 <p>
-                    Items with a + are just about complete
+                    Items with a + are just about complete, functionally. I will make things
+                    look nicer once the basics have been set up.
                 </p>
             </div>
         </>

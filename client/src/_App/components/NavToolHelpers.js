@@ -21,9 +21,9 @@ const ManageGameState = (
     </NavDropdown.Item>
 );
 
-const ModifyTributeStats = (
-    <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/manage-tribute-stats">
-        Manage Tribute Account Info^
+const TributeAccountInfo = (
+    <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/tribute-account-info">
+        Tribute Account Info+
     </NavDropdown.Item>
 );
 
@@ -85,7 +85,7 @@ export const OwnerTools = (
             {ModifyUsersOwner}
             {Messaging}
             {ManageGameState}
-            {ModifyTributeStats}
+            {TributeAccountInfo}
             {ManageResources}
             {ManageItems}
             {UpdateFunds}
@@ -98,7 +98,7 @@ export const AdminTools = (
             {ModifyUsers}
             {Messaging}
             {ManageGameState}
-            {ModifyTributeStats}
+            {TributeAccountInfo}
             {ManageResources}
             {ManageItems}
             {UpdateFunds}
@@ -110,7 +110,7 @@ export const GMTools = (
         <>
             {Messaging}
             {ManageGameState}
-            {ModifyTributeStats}
+            {TributeAccountInfo}
             {ManageResources}
             {ManageItems}
             {UpdateFunds}

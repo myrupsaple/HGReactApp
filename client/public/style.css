@@ -1,3 +1,11 @@
+.ui-container {
+    margin: 0 5vw;
+}
+
+.ui-container-wide {
+    margin: 0 2vw;
+}
+
 .custom-dropdown-bg-app > .dropdown > .dropdown-menu {
     background-color: #E0F7FA;
 }
@@ -8,10 +16,6 @@
 
 .navbar {
     margin: 0px;
-}
-
-.ui-container {
-    margin: 0 5vw;
 }
 
 .navbar {

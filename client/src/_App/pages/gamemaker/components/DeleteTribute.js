@@ -16,16 +16,14 @@ class DeleteTribute extends React.Component {
         this._isMounted = true;
         await this.props.fetchTribute(this.props.email, this.props.id);
 
-        console.log(this.props.email);
-        console.log(this.props.tribute);
-
         if(this._isMounted){
             this.setState({
                 first_name: this.props.tribute.first_name,
                 last_name: this.props.tribute.last_name,
                 email: this.props.tribute.email,
                 firstConfirm: false,
-                show: true
+                show: true,
+                submitted: false
             });
         }
     }
@@ -33,11 +31,14 @@ class DeleteTribute extends React.Component {
     renderModal = () => {
         var modalBody = null;
         var renderActions = null;
-        if(!this.props.tribute.first_name){
+        if(this.state.submitted){
+            modalBody = ( <h4>User Deleted Successfully!</h4> );
+            renderActions = null;
+        } else if(!this.props.tribute.first_name){
             modalBody = ( 
-                <h3>
+                <h4>
                     An error occurred while retrieving tribute data. Please try again.
-                </h3>
+                </h4>
             );
             renderActions = (
                 <Button variant="secondary" onClick={this.handleClose}>Cancel</Button>
@@ -68,7 +69,7 @@ class DeleteTribute extends React.Component {
                 </>
             );
         }
-        if(!this.state.firstConfirm){
+        if(!this.state.firstConfirm || this.state.submitted){
             return (
                 <Modal show={this.state.show} onHide={this.handleClose}>
                     <Modal.Header>
@@ -95,19 +96,21 @@ class DeleteTribute extends React.Component {
         }
     }
     
-    handleDeleteSubmit = (event) => {
+    handleDeleteSubmit = () => {
         this.setState({ firstConfirm: true });
     }
 
     handleFinalConfirm = () => {
+        this.setState({ submitted: true });
         this.props.deleteTribute(this.props.tribute.id);
-        this.handleClose();
+        setTimeout(() => this.handleClose(), 1000);
     }
     
-    handleClose = async () => {
-        await this.setState({ firstConfirm: false, show: false });
-        console.log(this.state.show);
-        this.props.updateShow(this.state.show);
+    handleClose = () => {
+        if(this._isMounted){
+            this.setState({ firstConfirm: false, show: false });
+        }
+        this.props.onDismiss(this.state.show);
     }
 
     render(){

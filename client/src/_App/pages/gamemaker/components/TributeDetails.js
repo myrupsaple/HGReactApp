@@ -56,13 +56,13 @@ class TributeDetails extends React.Component {
         const paidReg = this.state.paidRegistration === 1 ? 'yes' : 'no';
         return(
             <>
-                <p className="font-weight-bold">Name:</p><p>{this.state.first_name} {this.state.last_name}</p>
-                <p className="font-weight-bold">Email:</p><p>{this.state.email}</p>
-                <p className="font-weight-bold">District:</p><p>{this.state.district}</p>
-                <p className="font-weight-bold">District Partner:</p><p>{this.state.districtPartner}</p>
-                <p className="font-weight-bold">Area:</p><p>{this.state.area}</p>
-                <p className="font-weight-bold">Mentor:</p><p>{this.state.mentor}</p>
-                <p className="font-weight-bold">Paid Registration:</p><p>{paidReg}</p>
+                <div className="ui-container-wide row"><p className="font-weight-bold">Name: </p><p>{this.state.first_name} {this.state.last_name}</p></div>
+                <div className="ui-container-wide row"><p className="font-weight-bold">Email: </p><p>{this.state.email}</p></div>
+                <div className="ui-container-wide row"><p className="font-weight-bold">District: </p><p>{this.state.district}</p></div>
+                <div className="ui-container-wide row"><p className="font-weight-bold">District Partner: </p><p>{this.state.districtPartner}</p></div>
+                <div className="ui-container-wide row"><p className="font-weight-bold">Area: </p><p>{this.state.area}</p></div>
+                <div className="ui-container-wide row"><p className="font-weight-bold">Mentor: </p><p>{this.state.mentor}</p></div>
+                <div className="ui-container-wide row"><p className="font-weight-bold">Paid Registration: </p><p>{paidReg}</p></div>
             </>
         );
     }
@@ -76,25 +76,23 @@ class TributeDetails extends React.Component {
         );
     }
 
-    dismissEdit = () => {
+    onDismiss = () => {
         this.handleClose();
     };
 
-    displayEdit = async () => {
-        await this.setState({ showEdit: true });
+    displayEdit = () => {
+        this.setState({ showEdit: true });
     }
 
-    dismissDelete = () => {
-        this.handleClose();
-    };
-
-    displayDelete = async () => {
-        await this.setState({ showDelete: true });
+    displayDelete = () => {
+        this.setState({ showDelete: true });
     }
     
-    handleClose = async () => {
-        await this.setState({ showModal: false });
-        this.props.updateShow(this.state.show);
+    handleClose = () => {
+        if(this._isMounted){
+            this.setState({ showModal: false });
+        }
+        this.props.onDismiss();
     }
 
     payload(){
@@ -117,13 +115,13 @@ class TributeDetails extends React.Component {
         if(this.state.showEdit){
             return(
                 <>
-                    <TributeInfoForm payload={this.payload()} mode="edit" onDismiss={this.dismissEdit}/>
+                    <TributeInfoForm payload={this.payload()} mode="edit" onDismiss={this.onDismiss}/>
                 </>
             );
         } else if(this.state.showDelete) {
             return(
                 <>
-                    <DeleteTribute id={this.props.id} email={this.props.email} updateShow={this.dismissDelete}/>
+                    <DeleteTribute id={this.props.id} email={this.props.email} onDismiss={this.onDismiss}/>
                 </>
             );
         } else {

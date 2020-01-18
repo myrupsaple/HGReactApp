@@ -23,7 +23,7 @@ import SignOutSuccessful from './SignOutSuccessful';
 // App imports
 import DevUpdates from '../_App/pages/DevUpdates';
 // General Tabs
-import AppHome from '../_App/pages/AppHome';
+import AppHome from '../_App/pages/_AppHome';
 import GameStatus from '../_App/pages/GameStatus';
 import MapRules from '../_App/pages/MapRules';
 import Messaging from '../_App/pages/Messaging';
@@ -35,7 +35,7 @@ import ViewLocations from '../_App/pages/helper/ViewLocations';
 import RequestItems from '../_App/pages/mentor/RequestItems';
 // Gamemaker Tools
 import ManageGame from '../_App/pages/gamemaker/ManageGame';
-import ManageTributeStats from '../_App/pages/gamemaker/ManageTributesStats';
+import TributeAccountInfo from '../_App/pages/gamemaker/TributeAccountInfo';
 import ManageResources from '../_App/pages/gamemaker/ManageResources';
 import ManageItems from '../_App/pages/gamemaker/ManageItems';
 import ManageFunds from '../_App/pages/gamemaker/ManageFunds';
@@ -52,7 +52,8 @@ class App extends React.Component {
             <>
             <Router history={history}>
                 <Switch>
-                    {/* WEBSITE LINKS */}
+
+                    {/* STATIC WEBSITE LINKS */}
                     <Route path="/" exact component={Home} />
                     <Route path="/about/hg" exact component={AboutHG} />
                     <Route path="/about/iv" exact component={AboutIV} />
@@ -70,6 +71,7 @@ class App extends React.Component {
                     <Route path="/App/unauthorized" exact component={Unauthorized} />
                     <Route path="/App/signout-successful" exact component={SignOutSuccessful} />
 
+
                     {/* INTERACTIVE APP LINKS */}
                     {/* General Tabs */}
                     <Route path="/App/dev-updates" exact component={DevUpdates} />
@@ -86,7 +88,7 @@ class App extends React.Component {
                     <Route path="/App/mentor/request" exact component={RequestItems} />
                     {/* Gamemaker Tools */}
                     <Route path="/App/gamemaker/manage-game" exact component={ManageGame} />
-                    <Route path="/App/gamemaker/manage-tribute-stats" exact component={ManageTributeStats} />
+                    <Route path="/App/gamemaker/tribute-account-info" exact component={TributeAccountInfo} />
                     <Route path="/App/gamemaker/manage-resources" exact component={ManageResources} />
                     <Route path="/App/gamemaker/manage-items" exact component={ManageItems} />
                     <Route path="/App/gamemaker/manage-funds" exact component={ManageFunds} />
