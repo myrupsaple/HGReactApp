@@ -22,8 +22,8 @@ const ManageGameState = (
 );
 
 const TributeAccountInfo = (
-    <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/tribute-account-info">
-        Tribute Account Info+
+    <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/tribute-info">
+        Tribute Info+
     </NavDropdown.Item>
 );
 

@@ -251,10 +251,10 @@ app.delete('/user/delete/:id', (req, res) => {
     });
 })
 
-//########################## (2) TRIBUTE MANAGEMENT ###########################//
+//####################### (2) TRIBUTE INFO MANAGEMENT #######################//
 
 // GET_TRIBUTES
-app.get('/tributes/get', (req, res) =>{
+app.get('/tributes/info/get', (req, res) =>{
     const queryStringGetTributes = `SELECT * FROM tributes`;
     console.log(queryStringGetTributes);
     connection.query(queryStringGetTributes, (err, rows, fields) => {
@@ -272,7 +272,7 @@ app.get('/tributes/get', (req, res) =>{
 })
 
 // GET_TRIBUTE
-app.get('/tribute/get/:email', (req, res) =>{
+app.get('/tribute/info/get/:email', (req, res) =>{
     const email = req.params.email;
     const queryStringGetTributes = `SELECT * FROM tributes WHERE email = '${email}'`;
     console.log(queryStringGetTributes);
@@ -291,7 +291,7 @@ app.get('/tribute/get/:email', (req, res) =>{
 })
 
 // CREATE_TRIBUTE
-app.post('/tribute/post/:firstname/:lastname/:email/:district/:partneremail/:area/:mentoremail/:paidreg', (req, res) => {
+app.post('/tribute/info/post/:firstname/:lastname/:email/:district/:partneremail/:area/:mentoremail/:paidreg', (req, res) => {
     const { firstname, lastname, email, district, partneremail, area, mentoremail, paidreg } = req.params;
     const queryStringCreateTribute = `INSERT INTO tributes (first_name, last_name, email, district,
         districtPartner_email, area, mentor_email, paid_registration) VALUES ("${firstname}", 
@@ -313,7 +313,7 @@ app.post('/tribute/post/:firstname/:lastname/:email/:district/:partneremail/:are
 })
 
 // UPDATE_TRIBUTE
-app.put('/tribute/put/:id/:firstname/:lastname/:email/:district/:partneremail/:area/:mentoremail/:paidreg', (req, res) => {
+app.put('/tribute/info/put/:id/:firstname/:lastname/:email/:district/:partneremail/:area/:mentoremail/:paidreg', (req, res) => {
     const { id, firstname, lastname, email, district, partneremail, area, mentoremail, paidreg } = req.params;
     const queryStringUpdateTribute = `UPDATE tributes SET first_name = "${firstname}",
         last_name = "${lastname}", email = "${email}", district = "${district}",
@@ -335,7 +335,7 @@ app.put('/tribute/put/:id/:firstname/:lastname/:email/:district/:partneremail/:a
 })
 
 // DELETE_USER
-app.delete('/tribute/delete/:id', (req, res) => {
+app.delete('/tribute/info/delete/:id', (req, res) => {
     const id = req.params.id;
     const queryStringDeleteTribute = `DELETE FROM tributes WHERE id = ${id}`;
     console.log(queryStringDeleteTribute);

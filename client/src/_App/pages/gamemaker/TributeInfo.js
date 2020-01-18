@@ -168,16 +168,16 @@ class TributeAccountInfo extends React.Component {
     showModal() {
         if(this.state.showDetails){
             return(
-                <TributeDetails email={this.state.selectedEmail} id={this.state.selectedId} onDismiss={this.onDismiss} />
+                <TributeDetails email={this.state.selectedEmail} id={this.state.selectedId} onSubmitCallback={this.onSubmitCallback} />
             )
         } else if(this.state.showCreate){
             return(
-                <TributeInfoForm onDismiss={this.onDismiss} mode="create" />
+                <TributeInfoForm onSubmitCallback={this.onSubmitCallback} mode="create" />
             )
         }
     }
 
-    onDismiss = () => {
+    onSubmitCallback = () => {
         this.setState({ showCreate: false, showDetails: false })
         this.props.fetchTributes();
     };

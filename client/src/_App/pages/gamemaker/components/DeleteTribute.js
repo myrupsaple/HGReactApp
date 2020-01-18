@@ -32,7 +32,7 @@ class DeleteTribute extends React.Component {
         var modalBody = null;
         var renderActions = null;
         if(this.state.submitted){
-            modalBody = ( <h4>User Deleted Successfully!</h4> );
+            modalBody = <h4>User Deleted Successfully!</h4>;
             renderActions = null;
         } else if(!this.props.tribute.first_name){
             modalBody = ( 
@@ -109,8 +109,8 @@ class DeleteTribute extends React.Component {
     handleClose = () => {
         if(this._isMounted){
             this.setState({ firstConfirm: false, show: false });
+            this.props.onSubmitCallback(this.state.show);
         }
-        this.props.onDismiss(this.state.show);
     }
 
     render(){

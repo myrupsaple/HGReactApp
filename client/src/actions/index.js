@@ -163,7 +163,7 @@ export const deleteUser = id => async dispatch => {
 export const fetchTribute = (email, id) => async dispatch => {
     console.log(`Actions: Fetch tributes initiated`);
     var response = null;
-    await users.get(`/tribute/get/${email}`)
+    await users.get(`/tribute/info/get/${email}`)
         .then(res => {
             response = res;
         })
@@ -182,7 +182,7 @@ export const fetchTribute = (email, id) => async dispatch => {
 export const fetchTributes = () => async dispatch => {
     console.log(`Actions: Fetch all tributes initiated`);
     var response = null;
-    await users.get(`/tributes/get`)
+    await users.get(`/tributes/info/get`)
         .then(res => {
             response = res;
         })
@@ -197,7 +197,7 @@ export const fetchTributes = () => async dispatch => {
 
 export const createTribute = tribute => async dispatch => {
     console.log('Actions: Create tribute initiated');
-    await users.post(`/tribute/post/${tribute.first_name}/${tribute.last_name}/${tribute.email}/${tribute.district}/${tribute.districtPartner}/${tribute.area}/${tribute.mentor}/${tribute.paidRegistration}`)
+    await users.post(`/tribute/info/post/${tribute.first_name}/${tribute.last_name}/${tribute.email}/${tribute.district}/${tribute.districtPartner}/${tribute.area}/${tribute.mentor}/${tribute.paidRegistration}`)
         .then(res => {
             console.log(`Successfully created tribute ${tribute.email}`);
         })
@@ -208,7 +208,7 @@ export const createTribute = tribute => async dispatch => {
 
 export const updateTribute = tribute => async dispatch => {
     console.log('Actions: Update tribute initiated');
-    await users.put(`/tribute/put/${tribute.id}/${tribute.first_name}/${tribute.last_name}/${tribute.email}/${tribute.district}/${tribute.districtPartner}/${tribute.area}/${tribute.mentor}/${tribute.paidRegistration}`)
+    await users.put(`/tribute/info/put/${tribute.id}/${tribute.first_name}/${tribute.last_name}/${tribute.email}/${tribute.district}/${tribute.districtPartner}/${tribute.area}/${tribute.mentor}/${tribute.paidRegistration}`)
         .then(res => {
             console.log(`Successfully updated tribute ${tribute.email}`);
         })
@@ -219,7 +219,7 @@ export const updateTribute = tribute => async dispatch => {
 
 export const deleteTribute = id => async dispatch => {
     console.log(`Actions: DELETE tribute initiated with id ${id}`);
-    await users.delete(`/tribute/delete/${id}`)
+    await users.delete(`/tribute/info/delete/${id}`)
         .then(res => {
             console.log('Successfully deleted tribute');
         })

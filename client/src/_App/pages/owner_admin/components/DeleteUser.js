@@ -16,9 +16,6 @@ class DeleteUser extends React.Component {
         this._isMounted = true;
         await this.props.fetchUser(this.props.email, this.props.id);
 
-        console.log(this.props.email);
-        console.log(this.props.user);
-
         if(this._isMounted){
             this.setState({
                 first_name: this.props.user.first_name,
@@ -26,7 +23,8 @@ class DeleteUser extends React.Component {
                 email: this.props.user.email,
                 permissions: this.props.user.permissions,
                 firstConfirm: false,
-                show: true
+                show: true,
+                submitted: false
             });
         }
     }
@@ -34,11 +32,14 @@ class DeleteUser extends React.Component {
     renderModal = () => {
         var modalBody = null;
         var renderActions = null;
-        if(!this.props.user.first_name){
+        if(this.state.submitted){
+            modalBody = <h4>User Deleted Successfully!</h4>;
+            renderActions = null;
+        } else if(!this.props.user.first_name){
             modalBody = ( 
-                <h3>
+                <h4>
                     An error occurred while retrieving user data. Please try again.
-                </h3>
+                </h4>
             );
             renderActions = (
                 <Button variant="secondary" onClick={this.handleClose}>Cancel</Button>
@@ -69,7 +70,7 @@ class DeleteUser extends React.Component {
                 </>
             );
         }
-        if(!this.state.firstConfirm){
+        if(!this.state.firstConfirm || this.state.submitted){
             return (
                 <Modal show={this.state.show} onHide={this.handleClose}>
                     <Modal.Header>
@@ -102,13 +103,15 @@ class DeleteUser extends React.Component {
 
     handleFinalConfirm = () => {
         this.props.deleteUser(this.props.user.id);
-        this.handleClose();
+        this.setState({ submitted: true });
+        setTimeout(() => this.handleClose(), 1000);
     }
     
     handleClose = async () => {
-        await this.setState({ firstConfirm: false, show: false });
-        console.log(this.state.show);
-        this.props.updateShow(this.state.show);
+        if(this._isMounted){
+            await this.setState({ firstConfirm: false, show: false });
+            this.props.onSubmitCallback();
+        }
     }
 
     render(){
@@ -120,7 +123,6 @@ class DeleteUser extends React.Component {
     }
 
     componentWillUnmount(){
-        console.log('unmounted');
         this._isMounted = false;
     }
 }

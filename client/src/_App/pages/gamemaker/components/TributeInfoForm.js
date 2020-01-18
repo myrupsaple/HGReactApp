@@ -8,6 +8,8 @@ class TributeInfoForm extends React.Component {
     _isMounted = false;
     constructor(props){
         super(props);
+        this.state = { showModal: true, submitted: false }
+
         if(this.props.mode === 'edit'){
             this.state = {
                 id: this.props.payload.id,
@@ -80,110 +82,109 @@ class TributeInfoForm extends React.Component {
     }
 
     renderForm = () => {
-        if(!this.state.submitted){
-            return (
-                <Form>
-                    <Form.Row>
-                        <div className="col-6"><Form.Group controlId="first-name">
-                            <Form.Label>First Name</Form.Label>
-                            <Form.Control defaultValue={this.state.first_name}
-                                onChange={this.handleFirstName}
-                            />
-                        </Form.Group></div>
-                        <div className="col-6"><Form.Group controlId="last-name">
-                            <Form.Label>Last Name</Form.Label>
-                            <Form.Control defaultValue={this.state.last_name}
-                                onChange={this.handleLastName}
-                            />
-                        </Form.Group></div>
-                    </Form.Row>
-                    <Form.Row>
-                        <div className="col-12"><Form.Group controlId="email">
-                            <Form.Label>Email</Form.Label>
-                            <Form.Control value={this.state.email}
-                                onChange={this.handleEmail}
-                                type="email"
-                            />
-                        </Form.Group></div>
-                    </Form.Row>
-                    <Form.Row>
-                        <div className="col-12"><Form.Group controlId="partner-email">
-                            <Form.Label>District Partner Email</Form.Label>
-                            <Form.Control value={this.state.districtPartner}
-                                onChange={this.handleDistrictPartner}
-                                type="email"
-                            />
-                        </Form.Group></div>
-                    </Form.Row>
-                    <Form.Row>
-                        <div className="col-12"><Form.Group controlId="mentor-email">
-                            <Form.Label>Mentor Email</Form.Label>
-                            <Form.Control value={this.state.mentor}
-                                onChange={this.handleMentor}
-                                type="email"
-                            />
-                        </Form.Group></div>
-                    </Form.Row>
-                    <Form.Row>
-                        <div className="col-4"><Form.Group control-group="perms">
-                            <Form.Label>District</Form.Label>
-                            <Form.Control defaultValue={this.state.district}
-                                onChange={this.handleDistrict}
-                                as="select"
-                            >
-                                {/* TODO: Make this dynamic */}
-                                <option>1</option>
-                                <option>2</option>
-                                <option>3</option>
-                                <option>4</option>
-                            </Form.Control>
-                        </Form.Group></div>
-                        <div className="col-4"><Form.Group control-group="area">
-                            <Form.Label>Area</Form.Label>
-                            <Form.Control defaultValue={this.state.area}
-                                onChange={this.handleArea}
-                                as="select"
-                            >
-                                {/* TODO: Make this dynamic */}
-                                <option>Dank Denykstra</option>
-                                <option>SunSprout</option>
-                                <option>Hedrick</option>
-                                <option>Rieber</option>
-                                <option>Off Campus</option>
-                            </Form.Control>
-                        </Form.Group></div>  
-                        <div className="col-4"><Form.Group control-group="paid-registration">
-                            <Form.Label>Paid Registration?</Form.Label>
-                            <Form.Control defaultValue={this.state.paidRegistration === 1 ? "Yes" : "No"}
-                                onChange={this.handlePaidRegistration}
-                                as="select"
-                            >
-                                {/* TODO: Make this dynamic */}
-                                <option>Yes</option>
-                                <option>No</option>
-                            </Form.Control>
-                        </Form.Group></div>  
-                    </Form.Row>
-                </Form>
-            );
-        } else {
-            const text = this.props.mode === 'edit' ? 'Edited' : 'Created';
+        if(this.state.submitted) {
+            const message = this.props.mode === 'edit' ? 'Updated' : 'Created';
             return(
-                <h5>Tribute {text} Successfully!</h5>
+                <h5>Tribute {message} Successfully!</h5>
             );
         }
+        return (
+            <Form>
+                <Form.Row>
+                    <div className="col-6"><Form.Group controlId="first-name">
+                        <Form.Label>First Name</Form.Label>
+                        <Form.Control defaultValue={this.state.first_name}
+                            onChange={this.handleFirstName}
+                        />
+                    </Form.Group></div>
+                    <div className="col-6"><Form.Group controlId="last-name">
+                        <Form.Label>Last Name</Form.Label>
+                        <Form.Control defaultValue={this.state.last_name}
+                            onChange={this.handleLastName}
+                        />
+                    </Form.Group></div>
+                </Form.Row>
+                <Form.Row>
+                    <div className="col-12"><Form.Group controlId="email">
+                        <Form.Label>Email</Form.Label>
+                        <Form.Control value={this.state.email}
+                            onChange={this.handleEmail}
+                            type="email"
+                        />
+                    </Form.Group></div>
+                </Form.Row>
+                <Form.Row>
+                    <div className="col-12"><Form.Group controlId="partner-email">
+                        <Form.Label>District Partner Email</Form.Label>
+                        <Form.Control value={this.state.districtPartner}
+                            onChange={this.handleDistrictPartner}
+                            type="email"
+                        />
+                    </Form.Group></div>
+                </Form.Row>
+                <Form.Row>
+                    <div className="col-12"><Form.Group controlId="mentor-email">
+                        <Form.Label>Mentor Email</Form.Label>
+                        <Form.Control value={this.state.mentor}
+                            onChange={this.handleMentor}
+                            type="email"
+                        />
+                    </Form.Group></div>
+                </Form.Row>
+                <Form.Row>
+                    <div className="col-4"><Form.Group control-group="perms">
+                        <Form.Label>District</Form.Label>
+                        <Form.Control defaultValue={this.state.district}
+                            onChange={this.handleDistrict}
+                            as="select"
+                        >
+                            {/* TODO: Make this dynamic */}
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                            <option>4</option>
+                        </Form.Control>
+                    </Form.Group></div>
+                    <div className="col-4"><Form.Group control-group="area">
+                        <Form.Label>Area</Form.Label>
+                        <Form.Control defaultValue={this.state.area}
+                            onChange={this.handleArea}
+                            as="select"
+                        >
+                            {/* TODO: Make this dynamic */}
+                            <option>Dank Denykstra</option>
+                            <option>SunSprout</option>
+                            <option>Hedrick</option>
+                            <option>Rieber</option>
+                            <option>Off Campus</option>
+                        </Form.Control>
+                    </Form.Group></div>  
+                    <div className="col-4"><Form.Group control-group="paid-registration">
+                        <Form.Label>Paid Registration?</Form.Label>
+                        <Form.Control defaultValue={this.state.paidRegistration === 1 ? "Yes" : "No"}
+                            onChange={this.handlePaidRegistration}
+                            as="select"
+                        >
+                            {/* TODO: Make this dynamic */}
+                            <option>Yes</option>
+                            <option>No</option>
+                        </Form.Control>
+                    </Form.Group></div>  
+                </Form.Row>
+            </Form>
+        );
     }
 
     renderActions = () => {
-        if(!this.state.submitted){
+        if(this.state.submitted){
+            return null;
+        } else {
             return(
                 <Form.Row>
                     <Button variant="danger" onClick={this.handleClose}>Cancel</Button>
                     <Button variant="info" onClick={this.handleFormSubmit}>Confirm</Button>
                 </Form.Row>
             );
-        } else {
-            return null;
         }
     }
 
@@ -195,7 +196,9 @@ class TributeInfoForm extends React.Component {
             alert('All fields must be filled in');
             return;
         }
-        this.setState({ submitted: true });
+        if(this._isMounted){
+            this.setState({ submitted: true });
+        }
         const paidReg = this.state.paidRegistration === 'Yes' ? 1 : 0; 
         var sendUser = {};
         if(this.props.mode === 'edit'){
@@ -230,15 +233,15 @@ class TributeInfoForm extends React.Component {
     handleClose = () => {
         if(this._isMounted){
             this.setState({ showModal: false });
+            this.props.onSubmitCallback();
         }
-        this.props.onDismiss();
     }
 
-    renderModalType(){
+    renderModalHeader(){
         if(this.props.mode === 'edit'){
-            return 'Edit';
+            return 'Edit Tribute';
         } else if(this.props.mode === 'create'){
-            return 'Create';
+            return 'Create New Tribute';
         } else {
             return 'Something unexpected happened.';
         }
@@ -249,7 +252,7 @@ class TributeInfoForm extends React.Component {
             <>
                 <Modal show={this.state.showModal} onHide={this.handleClose}>
                     <Modal.Header>
-                        <Modal.Title>{this.renderModalType()}</Modal.Title>
+                        <Modal.Title>{this.renderModalHeader()}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>{this.renderForm()}</Modal.Body>
                     <Modal.Footer>

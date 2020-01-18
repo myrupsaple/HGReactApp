@@ -24,7 +24,6 @@ class ModifyUsers extends React.Component {
             showCreate: false,
             showEdit: false,
             showDelete: false,
-            isShowing: false,
             // Both needed to access individual user data
             selectedId: null,
             selectedEmail: null
@@ -96,27 +95,30 @@ class ModifyUsers extends React.Component {
         this.setState({ searchTerm: event.target.value })
     }
 
+    formatSearchType(type) {
+        switch(type){
+            case 'First Name':
+                return 'first_name';
+            case 'Last Name':
+                return 'last_name';
+            case 'Email':
+                return 'email';
+            case 'Group':
+                return 'permissions';
+            default:
+                return null;
+        }
+    }
+
+    formatPerms(permission) {
+        return permission.slice(0, 1).toUpperCase() + permission.slice(1, permission.length);
+    }
+
     handleSearchSubmit(event) {
         event.preventDefault();
 
-        var searchType = '';
+        var searchType = this.formatSearchType(this.state.searchType)
         var searchTerm = this.state.searchTerm;
-        switch(this.state.searchType){
-            case 'First Name':
-                searchType = 'first_name';
-                break;
-            case 'Last Name':
-                searchType = 'last_name';
-                break;
-            case 'Email':
-                searchType = 'email';
-                break;
-            case 'Group':
-                searchType = 'permissions';
-                break;
-            default:
-                return;
-        }
         this.setState({ queried: true });
         this.props.fetchUsers(searchType, searchTerm);
     }
@@ -149,7 +151,7 @@ class ModifyUsers extends React.Component {
                                 <div className="col">{user.first_name}</div>
                                 <div className="col">{user.last_name}</div>
                                 <div className="col">{user.email}</div>
-                                <div className="col">{user.permissions}</div>
+                                <div className="col">{this.formatPerms(user.permissions)}</div>
                                 <div className="col">{this.renderAdmin(user)}</div>
                             </div>
                         </li>
@@ -166,13 +168,16 @@ class ModifyUsers extends React.Component {
             <div className="col">First Name</div>
             <div className="col">Last Name</div>
             <div className="col">Email</div>
-            <div className="col">Permissions</div>
+            <div className="col">Group</div>
             <div className="col">Modify User</div>
         </h5>
         )
     }
 
-    renderAdmin(user) {
+    renderAdmin = (user) => {
+        if(user.permissions === 'owner' || (user.permissions === 'admin' && this.props.authPerms === 'admin')){
+            return null;
+        }
         return(
             <div className="row">
                 <Button 
@@ -226,14 +231,16 @@ class ModifyUsers extends React.Component {
                 </Form.Row>
                 <Form.Row>
                     <Col>
-                        <Button variant="secondary" className="coolor-bg-purple-lighten-2" 
+                        <Button 
+                        variant="secondary" 
+                        className="coolor-bg-purple-lighten-2" 
                         onClick={() => this.setState({ showCreate: true })}
                         >
                             Create User
                         </Button>
                     </Col>
                     <Col>
-                        <Button className="coolor-bg-blue-darken-2" onClick={this.props.fetchAllUsers}>Show All Users</Button>
+                        <Button className="coolor-bg-blue-darken-2" onClick={this.fetchAllUsers}>Show All Users</Button>
                     </Col>
                     <Col>
                         <Button className="coolor-bg-blue-lighten-2" type="submit">Search</Button>
@@ -244,31 +251,41 @@ class ModifyUsers extends React.Component {
         )
     }
 
+    fetchAllUsers = () => {
+        this.setState({ searchTerm: '' });
+        this.props.fetchAllUsers()
+    }
+
     showModal(){
         if(this.state.showCreate){
             return(
-                <UserForm updateShow={this.updateShowFromChild} mode='create'/>
+                <UserForm onSubmitCallback={this.onSubmitCallback} mode='create'/>
             );
         } else if(this.state.showEdit){
             return(
-                <UserForm email={this.state.selectedEmail} id={this.state.selectedId} updateShow={this.updateShowFromChild} mode='edit'/>
+                <UserForm email={this.state.selectedEmail} id={this.state.selectedId} onSubmitCallback={this.onSubmitCallback} mode='edit'/>
             );
         } else if(this.state.showDelete){
             return(
-                <DeleteUser email={this.state.selectedEmail} id={this.state.selectedId} updateShow={this.updateShowFromChild} />
+                <DeleteUser email={this.state.selectedEmail} id={this.state.selectedId} onSubmitCallback={this.onSubmitCallback} />
             );
         } else {
             return null;
         }
     }
 
-    updateShowFromChild = (currentValueOfShow) => {
+    onSubmitCallback = () => {
         if(this.state.showCreate){
-            this.setState({ showCreate: currentValueOfShow })
+            this.setState({ showCreate: false })
         } else if(this.state.showEdit){
-            this.setState({ showEdit: currentValueOfShow })
+            this.setState({ showEdit: false })
         } else if(this.state.showDelete){
-            this.setState({ showDelete: currentValueOfShow })
+            this.setState({ showDelete: false })
+        }
+        if(this.state.searchTerm === ''){
+            this.props.fetchAllUsers();
+        } else {
+            this.props.fetchUsers(this.formatSearchType(this.state.searchType), this.state.searchTerm);
         }
     };
 
@@ -294,9 +311,7 @@ class ModifyUsers extends React.Component {
         }
     }
     
-    // TODO: Figure out how to make modal re-openable
     render() {
-        console.log('SHOW: ' + this.state.showEdit + ' ' + this.state.showDelete + ' ')
         return(
             <>
                 <AppNavBar />
@@ -316,6 +331,7 @@ const mapStateToProps = (state) => {
     return{
         users: Object.values(state.users),
         authLoaded: state.auth.loaded,
+        authPerms: state.auth.userPerms,
         isSignedIn: state.auth.isSignedIn,
         userPerms: state.auth.userPerms
     };

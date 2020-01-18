@@ -35,7 +35,7 @@ import ViewLocations from '../_App/pages/helper/ViewLocations';
 import RequestItems from '../_App/pages/mentor/RequestItems';
 // Gamemaker Tools
 import ManageGame from '../_App/pages/gamemaker/ManageGame';
-import TributeAccountInfo from '../_App/pages/gamemaker/TributeAccountInfo';
+import TributeInfo from '../_App/pages/gamemaker/TributeInfo';
 import ManageResources from '../_App/pages/gamemaker/ManageResources';
 import ManageItems from '../_App/pages/gamemaker/ManageItems';
 import ManageFunds from '../_App/pages/gamemaker/ManageFunds';
@@ -43,10 +43,6 @@ import ManageFunds from '../_App/pages/gamemaker/ManageFunds';
 import ModifyUsers from '../_App/pages/owner_admin/ModifyUsers';
 
 class App extends React.Component {
-    componentDidMount(){
-        console.log('App Mounted');
-    }
-
     render(){
         return(
             <>
@@ -88,7 +84,7 @@ class App extends React.Component {
                     <Route path="/App/mentor/request" exact component={RequestItems} />
                     {/* Gamemaker Tools */}
                     <Route path="/App/gamemaker/manage-game" exact component={ManageGame} />
-                    <Route path="/App/gamemaker/tribute-account-info" exact component={TributeAccountInfo} />
+                    <Route path="/App/gamemaker/tribute-info" exact component={TributeInfo} />
                     <Route path="/App/gamemaker/manage-resources" exact component={ManageResources} />
                     <Route path="/App/gamemaker/manage-items" exact component={ManageItems} />
                     <Route path="/App/gamemaker/manage-funds" exact component={ManageFunds} />

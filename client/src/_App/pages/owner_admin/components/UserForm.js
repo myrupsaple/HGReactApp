@@ -9,7 +9,14 @@ class UserForm extends React.Component {
 
     constructor(props){
         super(props);
-        this.state = {};
+        this.state = { 
+            first_name: '',
+            last_name: '',
+            email: '',
+            permissions: 'Tribute',
+            showModal: true, 
+            submitted: false
+        };
 
         this.handleFirstName = this.handleFirstName.bind(this);
         this.handleLastName = this.handleLastName.bind(this);
@@ -19,8 +26,8 @@ class UserForm extends React.Component {
     }
 
     async componentDidMount() {
+        this._isMounted = true;
         if(this.props.mode === 'edit'){
-            this._isMounted = true;
             await this.props.fetchUser(this.props.email, this.props.id);
     
             if(this._isMounted){
@@ -28,24 +35,14 @@ class UserForm extends React.Component {
                     first_name: this.props.user.first_name,
                     last_name: this.props.user.last_name,
                     email: this.props.email,
-                    permissions: this.props.user.permissions,
-                    show: true
+                    permissions: this.props.user.permissions
                 });
             }
-        } else if(this.props.mode === 'create'){
-            this.setState({
-                first_name: '',
-                last_name: '',
-                email: '',
-                permissions: 'Tribute',
-                show: true
-            });
         }
     }
 
     handleFirstName(event) {
         this.setState({ first_name: event.target.value });
-        console.log(this.state.first_name);
     }
     handleLastName(event) {
         this.setState({ last_name: event.target.value });
@@ -57,24 +54,56 @@ class UserForm extends React.Component {
         this.setState({ permissions: event.target.value });
     }
 
+    renderModalHeader(){
+        if(this.props.mode === 'edit'){
+            return 'Edit User';
+        } else if(this.props.mode === 'create'){
+            return 'Create New User';
+        } else {
+            return 'Something unexpected happened.';
+        }
+    }
+
     renderModalBody() {
         // Use props for first_name to see if the user was successfully loaded
         // (state may not update right away)
-        if(this.props.mode === 'edit' && !this.props.user.first_name){
+        if(this.state.submitted){
+            const message = this.props.mode === 'edit' ? 'Updated' : 'Created';
+            return(
+                <h4>User {message} Successfully!</h4>
+            )
+        } else if(this.props.mode === 'edit' && !this.props.user.first_name){
             return ( 
                 <h3>
                     An error occurred while retrieving user data. Please try again.
                 </h3>
             );
+        } else {
+            return (
+                <>
+                    {this.renderForm()}
+                </>
+            );
         }
-        return (
-            <>
-                {this.renderForm()}
-            </>
-        );
     }
 
     renderForm() {
+        const allowAdminIfOwner = () => {
+            if(this.props.authPerms === 'owner'){
+                return <option>Admin</option>;
+            } else {
+                return null;
+            }
+        }
+        var authChoices = (
+            <>
+                <option>Tribute</option>
+                <option>Helper</option>
+                <option>Mentor</option>
+                <option>Gamemaker</option>
+                {allowAdminIfOwner()}
+            </>
+        );
         return (
             <Form>
                 <Form.Row>
@@ -96,10 +125,7 @@ class UserForm extends React.Component {
                             onChange={this.handlePermissions}
                             as="select"
                         >
-                            <option>Tribute</option>
-                            <option>Helper</option>
-                            <option>Mentor</option>
-                            <option>Gamemaker</option>
+                            {authChoices}
                         </Form.Control>
                     </Form.Group></div>
                 </Form.Row>
@@ -117,6 +143,9 @@ class UserForm extends React.Component {
     }
 
     renderActions(){
+        if(this.state.submitted){
+            return null
+        }
         return(
             <Form.Row>
                 <Button variant="danger" onClick={this.handleClose}>Cancel</Button>
@@ -124,19 +153,17 @@ class UserForm extends React.Component {
             </Form.Row>
         );
     }
-    
-    // GOOD EXAMPLE OF PASSING DATA FROM CHILD TO PARENT
-    handleClose = async () => {
-        await this.setState({ show: false });
-        this.props.updateShow(this.state.show);
-    }
 
-    handleFormSubmit() {
+    handleFormSubmit = () => {
         const validated = (this.state.first_name && this.state.last_name && this.state.email && this.state.permissions);
         if(!validated){
             alert('All fields must be filled in');
             return;
         }
+        if(this._isMounted){
+            this.setState({ submitted: true })
+        }
+        
         var formattedPerms = null;
         switch(this.state.permissions){
             case 'Tribute':
@@ -150,6 +177,9 @@ class UserForm extends React.Component {
                 break;
             case 'Gamemaker':
                 formattedPerms = 'gamemaker';
+                break;
+            case 'Admin':
+                formattedPerms = 'admin';
                 break;
             default:
                 break;
@@ -176,24 +206,22 @@ class UserForm extends React.Component {
         } else if(this.props.mode === 'create'){
             this.props.createUser(sendUser);
         }
-        this.handleClose();
+        setTimeout(() => this.handleClose(), 1000);
     }
 
-    renderTitle(){
-        if(this.props.mode === 'edit'){
-            return 'Edit User';
-        } else if(this.props.mode ==='create'){
-            return 'Create User';
-        } else {
-            return 'Something unexpected happened.'
+    // GOOD EXAMPLE OF PASSING DATA FROM CHILD TO PARENT
+    handleClose = () => {
+        if(this._isMounted){
+            this.setState({ showModal: false });
+            this.props.onSubmitCallback();
         }
     }
 
     render = () => {
         return(
-            <Modal show={this.state.show} onHide={this.handleClose}>
+            <Modal show={this.state.showModal} onHide={this.handleClose}>
                 <Modal.Header>
-                    <Modal.Title>{this.renderTitle}</Modal.Title>
+                    <Modal.Title>{this.renderModalHeader()}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>{this.renderModalBody()}</Modal.Body>
                 <Modal.Footer>
@@ -210,7 +238,8 @@ class UserForm extends React.Component {
 
 const mapStateToProps = state => {
     return { 
-        user: state.selectedUser
+        user: state.selectedUser,
+        authPerms: state.auth.userPerms
     };
 };
 

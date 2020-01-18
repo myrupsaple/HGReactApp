@@ -76,7 +76,7 @@ class TributeDetails extends React.Component {
         );
     }
 
-    onDismiss = () => {
+    onSubmitCallback = () => {
         this.handleClose();
     };
 
@@ -92,7 +92,7 @@ class TributeDetails extends React.Component {
         if(this._isMounted){
             this.setState({ showModal: false });
         }
-        this.props.onDismiss();
+        this.props.onSubmitCallback();
     }
 
     payload(){
@@ -115,13 +115,13 @@ class TributeDetails extends React.Component {
         if(this.state.showEdit){
             return(
                 <>
-                    <TributeInfoForm payload={this.payload()} mode="edit" onDismiss={this.onDismiss}/>
+                    <TributeInfoForm payload={this.payload()} mode="edit" onSubmitCallback={this.onSubmitCallback}/>
                 </>
             );
         } else if(this.state.showDelete) {
             return(
                 <>
-                    <DeleteTribute id={this.props.id} email={this.props.email} onDismiss={this.onDismiss}/>
+                    <DeleteTribute id={this.props.id} email={this.props.email} onSubmitCallback={this.onSubmitCallback}/>
                 </>
             );
         } else {
