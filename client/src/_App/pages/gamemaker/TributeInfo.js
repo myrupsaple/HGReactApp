@@ -6,8 +6,8 @@ import AppNavBar from '../../components/AppNavBar';
 import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components/AuthMessages';
 import Wait from '../../../components/Wait';
 import { fetchTributes } from '../../../actions';
-import TributeDetails from './components/TributeDetails';
-import TributeInfoForm from './components/TributeInfoForm';
+import TributeDetails from './info_components/TributeDetails';
+import TributeInfoForm from './info_components/TributeInfoForm';
 
 class TributeAccountInfo extends React.Component {
     _isMounted = true;

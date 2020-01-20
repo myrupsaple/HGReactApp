@@ -4,7 +4,7 @@ import NavBar from '../../components/NavBar';
 import District1 from './District1';
 import District2 from './District2';
 import District3 from './District3';
-import NotFound from '../fillers/NotFound';
+import NotFound from '../../../components/NotFound';
 
 class DistrictRouter extends React.Component {
     state = { page: <div>Hello</div> };

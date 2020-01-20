@@ -79,7 +79,7 @@ class ManageResources extends React.Component {
         if(this.state.auth.payload === null){
             return(
                 <>
-                    Manage Resources
+                    Resource Tracking
                 </>
             );
         } else {

@@ -27,7 +27,7 @@ class AppNavBar extends React.Component {
                     </Nav.Link>
 
                     <Nav.Link href="/App/game-status">
-                        Game Status^
+                        Game Status*
                     </Nav.Link>
 
                     <Nav.Link href="/App/map-rules">

@@ -2,8 +2,6 @@ import React from 'react';
 
 import NavBar from '../components/NavBar';
 
-import gif from '../_graphics/gifs/Under-Construction.gif';
-
 const Home = () => {
     const dark = 'coolor-text-green-darken-2'
     const light = 'coolor-text-green-accent-3';
@@ -12,8 +10,6 @@ const Home = () => {
         <>
             <NavBar />
             <div className="ui-container">
-                <h1 className="coolor-text-red-darken-2">The login issues should be fixed now.</h1>
-
                 <div className="background" id="bg1">
                     <h3 className="bg-text" id="bgt1">The Hunger Games.</h3>
                 </div>
@@ -22,7 +18,7 @@ const Home = () => {
                 <div className="content" id="content1">
                     <h2 id="header">Under Construction</h2>
 
-                    <img src={gif} alt="Dunder Mifflin Logo"/>
+                    <img src="https://i.imgur.com/nxd7AO1.gif" alt="Dunder Mifflin Logo"/>
                 </div>
 
 

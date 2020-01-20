@@ -5,9 +5,6 @@ import history from '../history';
 
 import { signIn, signOut } from '../actions';
 
-import GoogleIcon from '../_App/_graphics/GoogleIcon.png';
-
-
 class GoogleAuth extends React.Component {
     async componentDidMount() {
         // window.gapi is sometimes not initialized before calling .load, causing
@@ -83,7 +80,7 @@ class GoogleAuth extends React.Component {
         } else {
             return (
                 <Button className="coolor-bg-light-blue-darken-1" onClick={this.onSignInClick}>
-                    <img src={GoogleIcon} alt="GoogleIcon" height="21" width="21"/>
+                    <img src="https://i.imgur.com/vb6mwwc.png" alt="GoogleIcon" height="21" width="21"/>
                     Participant Sign In
                 </Button>
             );

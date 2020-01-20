@@ -27,21 +27,27 @@ const TributeAccountInfo = (
     </NavDropdown.Item>
 );
 
-const ManageResources = (
-    <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/manage-resources">
-        Manage Resources*
+const FundsTracking = (
+    <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/funds-tracking">
+        Funds Tracking^
+    </NavDropdown.Item>
+);
+
+const LifeTracking = (
+    <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/life-tracking">
+        Life Tracking*
+    </NavDropdown.Item>
+);
+
+const ResourceTracking = (
+    <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/resource-tracking">
+        Resource Tracking*
     </NavDropdown.Item>
 );
 
 const ManageItems = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/manage-items">
         Update Item Inventory*
-    </NavDropdown.Item>
-);
-
-const UpdateFunds = (
-    <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/manage-funds">
-        Update Funds*
     </NavDropdown.Item>
 );
 
@@ -86,9 +92,10 @@ export const OwnerTools = (
             {Messaging}
             {ManageGameState}
             {TributeAccountInfo}
-            {ManageResources}
+            {FundsTracking}
+            {LifeTracking}
+            {ResourceTracking}
             {ManageItems}
-            {UpdateFunds}
             {ViewLocations}
         </>
 )
@@ -99,9 +106,10 @@ export const AdminTools = (
             {Messaging}
             {ManageGameState}
             {TributeAccountInfo}
-            {ManageResources}
+            {FundsTracking}
+            {LifeTracking}
+            {ResourceTracking}
             {ManageItems}
-            {UpdateFunds}
             {ViewLocations}
         </>
 );
@@ -111,9 +119,10 @@ export const GMTools = (
             {Messaging}
             {ManageGameState}
             {TributeAccountInfo}
-            {ManageResources}
+            {FundsTracking}
+            {LifeTracking}
+            {ResourceTracking}
             {ManageItems}
-            {UpdateFunds}
             {ViewLocations}
         </>
 );

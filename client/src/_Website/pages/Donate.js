@@ -2,8 +2,6 @@ import React from 'react';
 
 import NavBar from '../components/NavBar';
 
-import gif from '../_graphics/gifs/Donate.gif';
-
 const Donate = () => {
     return(
         <>
@@ -17,7 +15,7 @@ const Donate = () => {
                         donating.
                 </p>
 
-                <img src={gif} alt="Bankruptcy." />
+                <img src="https://i.imgur.com/6YkESOc.gif" alt="Bankruptcy." />
 
                 <p>
                     Thank you for your interest in supporting the IV Hunger Games! To sponsor

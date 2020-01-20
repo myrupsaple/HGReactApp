@@ -1,4 +1,4 @@
-import users from '../api/users';
+import app from '../api/app';
 
 import {
     SIGN_IN,
@@ -7,7 +7,10 @@ import {
     FETCH_USERS,
     FETCH_ALL_USERS,
     FETCH_TRIBUTE,
-    FETCH_ALL_TRIBUTES
+    FETCH_ALL_TRIBUTES,
+    FETCH_DONATION,
+    FETCH_DONATIONS,
+    FETCH_ALL_DONATIONS
 } from './types';
 
 //############################ (0) GOOGLE O-AUTH #############################//
@@ -19,7 +22,7 @@ export const signIn = (userEmail) => async (dispatch) => {
     var response = null;
 
     // Helper function prevents immediate return of signIn function upon error
-    await users.get(`/user/get/${userEmail}`)
+    await app.get(`/user/get/${userEmail}`)
         .then(res => {
             response = res;
             console.log('Email validation: response received');
@@ -74,7 +77,7 @@ export const signOut = () => (dispatch) => {
 export const fetchUser = (email, id) => async (dispatch) => {
     console.log('Actions: Fetch user initiated');
     var response = null;
-    await users.get(`/user/get/${email}`)
+    await app.get(`/user/get/${email}`)
         .then(res => {
             response = res;
         })
@@ -94,7 +97,7 @@ export const fetchUser = (email, id) => async (dispatch) => {
 export const fetchUsers = (type, query) => async (dispatch) => {
     console.log(`Actions: Fetch users initiated: ${type} containing '${query}'`);
     var response = null;
-    await users.get(`/users/get/${type}/${query}`)
+    await app.get(`/users/get/${type}/${query}`)
         .then(res => {
             response = res;
         })
@@ -111,7 +114,7 @@ export const fetchUsers = (type, query) => async (dispatch) => {
 export const fetchAllUsers = () => async (dispatch) => {
     console.log('Actions: Fetch all users initiated');
     var response = null;
-    await users.get(`/users/get`)
+    await app.get(`/users/get`)
         .then(res => {
         response = res;
     })
@@ -127,7 +130,7 @@ export const fetchAllUsers = () => async (dispatch) => {
 
 export const updateUser = user => async dispatch => {
     console.log('Actions: Update user initiated');
-    await users.put(`/user/put/${user.id}/${user.first_name}/${user.last_name}/${user.email}/${user.permissions}`)
+    await app.put(`/user/put/${user.id}/${user.first_name}/${user.last_name}/${user.email}/${user.permissions}`)
         .then(res => {
             console.log(`Successfully updated user ${user.email}`);
         })
@@ -138,9 +141,9 @@ export const updateUser = user => async dispatch => {
 
 export const createUser = user => async dispatch => {
     console.log('Actions: Create user initiated');
-    await users.post(`/user/post/${user.first_name}/${user.last_name}/${user.email}/${user.permissions}`)
+    await app.post(`/user/post/${user.first_name}/${user.last_name}/${user.email}/${user.permissions}`)
         .then(res => {
-            console.log(`Successfully updated user ${user.email}`);
+            console.log(`Successfully created user ${user.email}`);
         })
         .catch(err => {
             console.log(err);
@@ -149,7 +152,7 @@ export const createUser = user => async dispatch => {
 
 export const deleteUser = id => async dispatch => {
     console.log(`Actions: DELETE user initiated with id ${id}`);
-    await users.delete(`/user/delete/${id}`)
+    await app.delete(`/user/delete/${id}`)
         .then(res => {
             console.log('Successfully deleted user');
         })
@@ -163,7 +166,7 @@ export const deleteUser = id => async dispatch => {
 export const fetchTribute = (email, id) => async dispatch => {
     console.log(`Actions: Fetch tributes initiated`);
     var response = null;
-    await users.get(`/tribute/info/get/${email}`)
+    await app.get(`/tribute/info/get/${email}`)
         .then(res => {
             response = res;
         })
@@ -182,7 +185,7 @@ export const fetchTribute = (email, id) => async dispatch => {
 export const fetchTributes = () => async dispatch => {
     console.log(`Actions: Fetch all tributes initiated`);
     var response = null;
-    await users.get(`/tributes/info/get`)
+    await app.get(`/tributes/info/get`)
         .then(res => {
             response = res;
         })
@@ -197,7 +200,7 @@ export const fetchTributes = () => async dispatch => {
 
 export const createTribute = tribute => async dispatch => {
     console.log('Actions: Create tribute initiated');
-    await users.post(`/tribute/info/post/${tribute.first_name}/${tribute.last_name}/${tribute.email}/${tribute.district}/${tribute.districtPartner}/${tribute.area}/${tribute.mentor}/${tribute.paidRegistration}`)
+    await app.post(`/tribute/info/post/${tribute.first_name}/${tribute.last_name}/${tribute.email}/${tribute.district}/${tribute.districtPartner}/${tribute.area}/${tribute.mentor}/${tribute.paidRegistration}`)
         .then(res => {
             console.log(`Successfully created tribute ${tribute.email}`);
         })
@@ -208,7 +211,7 @@ export const createTribute = tribute => async dispatch => {
 
 export const updateTribute = tribute => async dispatch => {
     console.log('Actions: Update tribute initiated');
-    await users.put(`/tribute/info/put/${tribute.id}/${tribute.first_name}/${tribute.last_name}/${tribute.email}/${tribute.district}/${tribute.districtPartner}/${tribute.area}/${tribute.mentor}/${tribute.paidRegistration}`)
+    await app.put(`/tribute/info/put/${tribute.id}/${tribute.first_name}/${tribute.last_name}/${tribute.email}/${tribute.district}/${tribute.districtPartner}/${tribute.area}/${tribute.mentor}/${tribute.paidRegistration}`)
         .then(res => {
             console.log(`Successfully updated tribute ${tribute.email}`);
         })
@@ -219,9 +222,115 @@ export const updateTribute = tribute => async dispatch => {
 
 export const deleteTribute = id => async dispatch => {
     console.log(`Actions: DELETE tribute initiated with id ${id}`);
-    await users.delete(`/tribute/info/delete/${id}`)
+    await app.delete(`/tribute/info/delete/${id}`)
         .then(res => {
             console.log('Successfully deleted tribute');
+        })
+        .catch(err => {
+            console.log(err);
+        })
+}
+
+//######################### (3) DONATION MANAGEMENT ##########################//
+
+export const fetchDonation = id => async (dispatch) => {
+    console.log('Actions: Fetch donation initiated');
+    var response = null;
+    await app.get(`/donation/get/${id}`)
+        .then(res => {
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+
+    if(response && response.data){
+        console.log(`Successfully retrieved donation ${id}`);
+        dispatch ({ type: FETCH_DONATION, payload: { 
+            response: response.data,
+            id
+        }});
+    }
+};
+
+export const fetchDonations = (type, query) => async (dispatch) => {
+    console.log(`Actions: Fetch donations initiated: ${type} containing '${query}'`);
+    var response = null;
+    await app.get(`/donations/get/${type}/${query}`)
+        .then(res => {
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+
+    if(response && response.data){
+        console.log('Successfully searched for donations');
+        dispatch ({ type: FETCH_DONATIONS, payload: response.data });
+    }
+};
+
+export const fetchDonationsRange = (type, query1, query2) => async (dispatch) => {
+    console.log(`Actions: Fetch donations range initiated: ${type} between ${query1} and ${query2}`);
+    var response = null;
+    await app.get(`/donations/get/range/${type}/${query1}/${query2}`)
+        .then(res => {
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+
+    if(response && response.data){
+        console.log('Successfully searched for donations range');
+        dispatch ({ type: FETCH_DONATIONS, payload: response.data });
+    }
+};
+
+export const fetchAllDonations = () => async (dispatch) => {
+    console.log('Actions: Fetch all donations initiated');
+    var response = null;
+    await app.get(`/donations/get/all`)
+        .then(res => {
+        response = res;
+    })
+    .catch(err => {
+        console.log(err);
+    });
+    
+    if(response && response.data){
+        console.log('Successfully retrieved donations list');
+        dispatch ({ type: FETCH_ALL_DONATIONS, payload: response.data });
+    }
+};
+
+export const createDonation = donation => async dispatch => {
+    console.log('Actions: Create donation initiated');
+    await app.post(`/donations/post/${donation.email}/${donation.donor}/${donation.method}/${donation.date}/${donation.amount}`)
+        .then(res => {
+            console.log(`Successfully created donation ${donation.id}`);
+        })
+        .catch(err => {
+            console.log(err);
+        })
+}
+
+export const updateDonation = donation => async dispatch => {
+    console.log('Actions: Update donation initiated');
+    await app.put(`/donations/put/${donation.id}/${donation.email}/${donation.donor}/${donation.method}/${donation.date}/${donation.amount}`)
+        .then(res => {
+            console.log(`Successfully updated donation ${donation.id}`);
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const deleteDonation = id => async dispatch => {
+    console.log(`Actions: DELETE donation initiated with id ${id}`);
+    await app.delete(`/donations/delete/${id}`)
+        .then(res => {
+            console.log('Successfully deleted donation');
         })
         .catch(err => {
             console.log(err);

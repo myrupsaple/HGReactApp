@@ -1,12 +1,6 @@
 import React from 'react';
 import NavBar from '../../components/NavBar';
 
-import gif from '../../_graphics/gifs/Rules.gif';
-import doc from '../../_graphics/assets/doc.png';
-import ellipses from '../../_graphics/assets/ellipses.png';
-import mapPin from '../../_graphics/assets/map-pin.png';
-import pdf from '../../_graphics/assets/pdf.png';
-
 const Rules = () => {
     const divLimiter = {
         display: 'inline-block'
@@ -18,7 +12,7 @@ const Rules = () => {
             <NavBar />
             <h1 id="header">Rules</h1>
 
-            <img id="filler" src={gif} alt="Dwight" />
+            <img id="filler" src="https://i.imgur.com/XSIUxRU.gif" alt="Dwight" />
             <div className="clear"></div>
 
             <h3>Basic Rules</h3>
@@ -44,7 +38,7 @@ const Rules = () => {
             <div style={divLimiter}>
                 <a href="/links/arena-map.jpg">
                     <div>
-                        <img src={mapPin} height="50" width="50" alt="map pin" />
+                        <img src="https://i.imgur.com/YIIq3li.jpg" height="50" width="50" alt="map pin" />
                         Arena Map
                     </div>
                 </a>
@@ -53,7 +47,7 @@ const Rules = () => {
             <div style={divLimiter}>
                 <a href="/links/map-notes.pdf">
                     <div>
-                        <img src={pdf} height="50" width="40" alt="pdf icon" />
+                        <img src="https://i.imgur.com/QZQ6I2O.png" height="50" width="40" alt="pdf icon" />
                         Map Notes
                     </div>
                 </a>
@@ -67,7 +61,7 @@ const Rules = () => {
             <div style={divLimiter}>
                 <a href="/links/rules-list.extern">
                     <div>
-                        <img src={doc} height="50" width="50" alt="doc" />
+                        <img src="https://i.imgur.com/E6QLUrW.png" height="50" width="50" alt="doc" />
                         Detailed Rules
                     </div>
                 </a>
@@ -76,7 +70,7 @@ const Rules = () => {
             <div style={divLimiter}>
                 <a href="/links/additional-info.extern">
                     <div>
-                        <img src={ellipses} height="50" width="60" alt="..." />
+                        <img src="https://i.imgur.com/DLIOJe4.png" height="50" width="60" alt="..." />
                         Additional Info
                     </div>
                 </a>

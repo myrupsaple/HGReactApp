@@ -2,8 +2,6 @@ import React from 'react';
 
 import NavBar from '../components/NavBar';
 
-import gif from '../_graphics/gifs/Watch.gif';
-
 const Watch = () => {
     return(
         <>
@@ -11,7 +9,7 @@ const Watch = () => {
             <div className="ui-container">
                 <h1 id="header">Watch the Games</h1>
 
-                <img src={gif} alt="Michael Youtube" />
+                <img src="https://i.imgur.com/P73Gxs9.gif" alt="Michael Youtube" />
 
                 <h3>Want to Watch?</h3>
                 <p>

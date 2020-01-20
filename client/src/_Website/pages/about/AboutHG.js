@@ -1,15 +1,14 @@
 import React from 'react';
 import NavBar from '../../components/NavBar';
 
-import gif from '../../_graphics/gifs/AboutHG.gif';
-
 const AboutHG = () => {
     return(
         <div className="ui container">
             <NavBar />
             <h1 id="header">About the Hunger Games</h1>
 
-            <img alt="Kevin" src={gif} />
+            <img alt="Kevin" src='https://i.imgur.com/23M4DRT.gif' />
+
 
             <h3>What Is the Hunger Games?</h3>
             <p>

@@ -5,7 +5,7 @@ class SignOutSuccessful extends React.Component {
     componentDidMount(){
         setTimeout(() => {
             history.push('/')
-        }, 2000)
+        }, 1250)
     }
     render(){
         return(

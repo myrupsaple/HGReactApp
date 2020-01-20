@@ -32,7 +32,6 @@ class ModifyUsers extends React.Component {
         this.handleSearchType = this.handleSearchType.bind(this);
         this.handleSearchTerm = this.handleSearchTerm.bind(this);
         this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
-        this.showModal = this.showModal.bind(this);
     }
 
     checkAuth = async () => {
@@ -256,7 +255,7 @@ class ModifyUsers extends React.Component {
         this.props.fetchAllUsers()
     }
 
-    showModal(){
+    showModal = () => {
         if(this.state.showCreate){
             return(
                 <UserForm onSubmitCallback={this.onSubmitCallback} mode='create'/>
@@ -329,11 +328,11 @@ class ModifyUsers extends React.Component {
 
 const mapStateToProps = (state) => {
     return{
-        users: Object.values(state.users),
         authLoaded: state.auth.loaded,
         authPerms: state.auth.userPerms,
         isSignedIn: state.auth.isSignedIn,
-        userPerms: state.auth.userPerms
+        userPerms: state.auth.userPerms,
+        users: Object.values(state.users)
     };
 };
 

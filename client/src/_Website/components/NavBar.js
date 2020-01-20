@@ -52,29 +52,16 @@ class NavBar extends React.Component {
                     Donate
                 </Nav.Link>
 
-                <NavDropdown title="Misc.">
-                    <NavDropdown.Item as={Nav.Link} href="/updates" >
-                        Site Updates
-                    </NavDropdown.Item>
-                    <NavDropdown.Item as={Nav.Link} 
-                        href="https://graceskalin10.wixsite.com/mysite" 
-                        rel="noopener noreferrer" 
-                        target="_blank" 
-                    >
-                        2019 HG Site
-                    </NavDropdown.Item>
-                </NavDropdown>
+                <Nav.Link 
+                    href="https://graceskalin10.wixsite.com/mysite" 
+                    rel="noopener noreferrer" 
+                    target="_blank" 
+                >
+                    2019 HG Site
+                </Nav.Link>
             </>
         );
     }
-
-    GAuthMenuItem(){
-        return (
-            <>
-                <GoogleAuth />
-            </>
-        );
-    };
 
     renderRightMenu({ name, email, authorized, perms, signedIn }) {
         console.log('Authentication: ' + authorized);
@@ -107,7 +94,7 @@ class NavBar extends React.Component {
                         {email} is not authorized.
                     </NavItem>
                     <NavItem>
-                        {this.GAuthMenuItem()}
+                        <GoogleAuth />
                     </NavItem>
                 </>
             );
@@ -118,7 +105,7 @@ class NavBar extends React.Component {
                         Error retrieving user info.
                     </NavItem>
                     <NavItem>
-                        {this.GAuthMenuItem()}
+                        <GoogleAuth />
                     </NavItem>
                 </>
             );
@@ -126,7 +113,7 @@ class NavBar extends React.Component {
             return(
                 <>
                     <NavItem>
-                        {this.GAuthMenuItem()}
+                        <GoogleAuth />
                     </NavItem>
                 </>
             );

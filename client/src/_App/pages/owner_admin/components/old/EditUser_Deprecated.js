@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Form, Button, Modal } from 'react-bootstrap';
 
-import { fetchUser, updateUser } from '../../../../actions';
+import { fetchUser, updateUser } from '../../../../../actions';
 
 class EditUser extends React.Component {
     _isMounted = false;

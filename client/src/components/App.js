@@ -15,7 +15,6 @@ import Districts from '../_Website/pages/districts/Districts';
 import DistrictRouter from '../_Website/pages/districts/DistrictRouter';
 import Watch from '../_Website/pages/Watch';
 import Donate from '../_Website/pages/Donate';
-import Updates from '../_Website/pages/Updates';
 
 import Unauthorized from '../_App/components/Unauthorized';
 import SignOutSuccessful from './SignOutSuccessful';
@@ -36,11 +35,14 @@ import RequestItems from '../_App/pages/mentor/RequestItems';
 // Gamemaker Tools
 import ManageGame from '../_App/pages/gamemaker/ManageGame';
 import TributeInfo from '../_App/pages/gamemaker/TributeInfo';
-import ManageResources from '../_App/pages/gamemaker/ManageResources';
+import FundsTracking from '../_App/pages/gamemaker/FundsTracking';
+import LifeTracking from '../_App/pages/gamemaker/LifeTracking';
+import ResourceTracking from '../_App/pages/gamemaker/ResourceTracking';
 import ManageItems from '../_App/pages/gamemaker/ManageItems';
-import ManageFunds from '../_App/pages/gamemaker/ManageFunds';
 // Owner and Admin Tools
 import ModifyUsers from '../_App/pages/owner_admin/ModifyUsers';
+
+import NotFound from '../components/NotFound';
 
 class App extends React.Component {
     render(){
@@ -62,7 +64,6 @@ class App extends React.Component {
                     <Route path="/districts/:id" exact component={DistrictRouter} />
                     <Route path="/watch" exact component={Watch} />
                     <Route path="/donate" exact component={Donate} />
-                    <Route path="/updates" exact component={Updates} />
                     
                     <Route path="/App/unauthorized" exact component={Unauthorized} />
                     <Route path="/App/signout-successful" exact component={SignOutSuccessful} />
@@ -85,12 +86,15 @@ class App extends React.Component {
                     {/* Gamemaker Tools */}
                     <Route path="/App/gamemaker/manage-game" exact component={ManageGame} />
                     <Route path="/App/gamemaker/tribute-info" exact component={TributeInfo} />
-                    <Route path="/App/gamemaker/manage-resources" exact component={ManageResources} />
+                    <Route path="/App/gamemaker/funds-tracking" exact component={FundsTracking} />
+                    <Route path="/App/gamemaker/life-tracking" exact component={LifeTracking} />
+                    <Route path="/App/gamemaker/resource-tracking" exact component={ResourceTracking} />
                     <Route path="/App/gamemaker/manage-items" exact component={ManageItems} />
-                    <Route path="/App/gamemaker/manage-funds" exact component={ManageFunds} />
                     {/* Owner and Admin Tools */}
                     <Route path="/App/owner/modify-users" exact component={ModifyUsers} />
                     <Route path="/App/admin/modify-users" exact component={ModifyUsers} />
+
+                    <Route path="/" component={NotFound} />
 
                 </Switch>
             </Router>

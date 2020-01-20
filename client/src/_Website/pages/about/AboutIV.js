@@ -1,15 +1,13 @@
 import React from 'react';
 import NavBar from '../../components/NavBar';
 
-import gif from '../../_graphics/gifs/AboutIV.gif';
-
 const AboutIV = () => {
     return(
         <div className="ui container">
             <NavBar />
             <h1 id="header">About InterVarsity</h1>
 
-            <img src={gif} alt="Michael and Dwight" />
+            <img src="https://i.imgur.com/TI2GX9e.gif" alt="Michael and Dwight" />
 
             <div id="wwa">
                 <h3>Who We Are</h3>

@@ -1,7 +1,6 @@
 import React from 'react';
 
 import NavBar from '../../components/NavBar';
-import gif from '../../_graphics/gifs/Districts.gif';
 
 const Districts = () => {
     return (
@@ -9,7 +8,7 @@ const Districts = () => {
             <NavBar />
             <div className="ui-container">
                 <h1 id="header">Districts and Tributes</h1>
-                <img src={gif} alt="Michael Nike" />
+                <img src="https://i.imgur.com/g8bwmIp.gif" alt="Michael Nike" />
             </div>
         </>
     );

@@ -142,9 +142,9 @@ class UserForm extends React.Component {
         );
     }
 
-    renderActions(){
+    renderModalFooter(){
         if(this.state.submitted){
-            return null
+            return null;
         }
         return(
             <Form.Row>
@@ -184,27 +184,23 @@ class UserForm extends React.Component {
             default:
                 break;
         }
-        var sendUser = {};
         if(this.props.mode === 'edit'){
-            sendUser = {
+            const userObject = {
                 id: this.props.user.id,
                 first_name: this.state.first_name,
                 last_name: this.state.last_name,
                 email: this.state.email,
                 permissions: formattedPerms
-            }
+            };
+            this.props.updateUser(userObject);
         } else if(this.props.mode === 'create') {
-            sendUser = {
+            const userObject = {
                 first_name: this.state.first_name,
                 last_name: this.state.last_name,
                 email: this.state.email,
                 permissions: formattedPerms
-            }
-        }
-        if(this.props.mode === 'edit'){
-            this.props.updateUser(sendUser);
-        } else if(this.props.mode === 'create'){
-            this.props.createUser(sendUser);
+            };
+            this.props.createUser(userObject);
         }
         setTimeout(() => this.handleClose(), 1000);
     }
@@ -223,9 +219,11 @@ class UserForm extends React.Component {
                 <Modal.Header>
                     <Modal.Title>{this.renderModalHeader()}</Modal.Title>
                 </Modal.Header>
-                <Modal.Body>{this.renderModalBody()}</Modal.Body>
+                <Modal.Body>
+                    {this.renderModalBody()}
+                </Modal.Body>
                 <Modal.Footer>
-                    {this.renderActions()}
+                    {this.renderModalFooter()}
                 </Modal.Footer>
             </Modal>
         )

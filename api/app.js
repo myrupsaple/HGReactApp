@@ -1,3 +1,4 @@
+"use strict";
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -47,6 +48,7 @@ connection.connect(async (err) => {
             users: false,
             tributes: false,
             tribute_stats:false,
+            donations: false,
             gameStatus: false
         }
         
@@ -60,6 +62,9 @@ connection.connect(async (err) => {
                     break;
                 case 'tribute_stats':
                     tableList.tribute_stats = true;
+                    break;
+                case 'donations':
+                    tableList.donations = true;
                     break;
                 case 'gameStatus':
                     tableList.gameStatus = true;
@@ -106,6 +111,15 @@ connection.connect(async (err) => {
             lives_lost TINYINT NOT NULL,
             kill_count TINYINT NOT NULL
         )`;
+
+        const createDonations = `CREATE TABLE donations(
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            tribute_email VARCHAR(40),
+            donor_name VARCHAR(40),
+            method VARCHAR(20),
+            date DATE,
+            amount INT
+        )`;
         
         if(!tableList.users){
             connection.query(createUsers, (err, results, fields) => {
@@ -128,8 +142,15 @@ connection.connect(async (err) => {
                 }
             });
         }
-    })
+        if(!tableList.donations){
+            connection.query(createDonations, (err, results, fields) => {
+                if(err){
+                    console.log(err.message);
+                }
+            });
+        }
 
+    })
 });
 
 app.options('*', cors(corsOptions), (req, res) => {
@@ -253,7 +274,7 @@ app.delete('/user/delete/:id', (req, res) => {
 
 //####################### (2) TRIBUTE INFO MANAGEMENT #######################//
 
-// GET_TRIBUTES
+// FETCH_TRIBUTES (ALL)
 app.get('/tributes/info/get', (req, res) =>{
     const queryStringGetTributes = `SELECT * FROM tributes`;
     console.log(queryStringGetTributes);
@@ -271,7 +292,7 @@ app.get('/tributes/info/get', (req, res) =>{
     })
 })
 
-// GET_TRIBUTE
+// FETCH_TRIBUTE
 app.get('/tribute/info/get/:email', (req, res) =>{
     const email = req.params.email;
     const queryStringGetTributes = `SELECT * FROM tributes WHERE email = '${email}'`;
@@ -334,7 +355,7 @@ app.put('/tribute/info/put/:id/:firstname/:lastname/:email/:district/:partnerema
     });
 })
 
-// DELETE_USER
+// DELETE_TRIBUTE
 app.delete('/tribute/info/delete/:id', (req, res) => {
     const id = req.params.id;
     const queryStringDeleteTribute = `DELETE FROM tributes WHERE id = ${id}`;
@@ -353,9 +374,151 @@ app.delete('/tribute/info/delete/:id', (req, res) => {
     });
 })
 
+//########################### (3) FUNDS MANAGEMENT ###########################//
+
+// FETCH_DONATION
+app.get(`/donation/get/:id`, (req, res) => {
+    const id = req.params.id;
+    const queryStringGetDonation = `SELECT id, tribute_email, donor_name, method, 
+    DATE_FORMAT(date, '%m-%d-%Y') date, amount FROM donations WHERE id = ${id}`;
+    console.log(queryStringGetDonation);
+    connection.query(queryStringGetDonation, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for donations: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// FETCH_DONATIONS
+app.get(`/donations/get/:type/:query`, (req, res) => {
+    const { type, query } = req.params;
+    const queryStringGetDonations = `SELECT id, tribute_email, donor_name, method, 
+    DATE_FORMAT(date, '%m-%d-%Y') date, amount FROM donations WHERE ${type} LIKE '%${query}%'`;
+    console.log(queryStringGetDonations);
+    connection.query(queryStringGetDonations, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for donations: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// FETCH_DONATIONS_RANGE
+app.get(`/donations/get/range/:type/:query1/:query2`, (req, res) => {
+    const { type, query1, query2 } = req.params;
+    const queryStringGetDonationsRange = `SELECT id, tribute_email, donor_name, method, 
+    DATE_FORMAT(date, '%m-%d-%Y') date, amount FROM donations WHERE
+    ${type} >= '${query1}' AND ${type} <= '${query2}'`;
+    console.log(queryStringGetDonationsRange);
+    connection.query(queryStringGetDonationsRange, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for donations: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+        
+        res.json(rows);
+    })
+})
+
+// FETCH_ALL_DONATIONS
+app.get(`/donations/get/all`, (req, res) => {
+    const queryStringGetAllDonations = `SELECT id, tribute_email, donor_name, method, 
+    DATE_FORMAT(date, '%m-%d-%Y') date, amount FROM donations`;
+    console.log(queryStringGetAllDonations);
+    connection.query(queryStringGetAllDonations, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for donations: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// CREATE_DONATION
+app.post('/donations/post/:email/:donor/:method/:date/:amount', (req, res) => {
+    const { email, donor, method, date, amount } = req.params;
+    const queryStringCreateDonation = `INSERT INTO donations (tribute_email, donor_name,
+        method, date, amount) VALUES ('${email}', '${donor}', '${method}', '${date}', '${amount}')`
+    console.log(queryStringCreateDonation);
+    connection.query(queryStringCreateDonation, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for donations: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// UPDATE_DONATION
+app.put(`/donations/put/:id/:email/:donor/:method/:date/:amount`, (req, res) => {
+    const { id, email, donor, method, date, amount } = req.params;
+    const queryStringUpdateDonation = `UPDATE donations SET tribute_email = '${email}', 
+    donor_name = '${donor}', method = '${method}', date = '${date}', 
+    amount = '${amount}' WHERE id = ${id}`;
+    console.log(queryStringUpdateDonation);
+    connection.query(queryStringUpdateDonation, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for donations: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// DELETE_DONATION
+app.delete(`/donations/delete/:id`, (req, res) => {
+    const id = req.params.id;
+    const queryStringUpdateDonation = `DELETE FROM donations WHERE id = ${id}`
+    console.log(queryStringUpdateDonation);
+    connection.query(queryStringUpdateDonation, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for donations: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
 
 
 
+//########################### RUNS THE API SERVER ############################//
 app.listen(3001, () => {
     console.log('Server is up and listening on port 3001...');
 })

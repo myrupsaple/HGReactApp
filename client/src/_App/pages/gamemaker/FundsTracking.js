@@ -1,0 +1,460 @@
+import React from 'react';
+import { connect } from 'react-redux';
+import { Form, Col, Button } from 'react-bootstrap';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
+
+import AppNavBar from '../../components/AppNavBar';
+import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components/AuthMessages';
+import Wait from '../../../components/Wait';
+import { 
+    fetchDonations, 
+    fetchAllDonations,
+    fetchDonationsRange,
+    deleteDonation,
+    fetchTributes
+} from '../../../actions';
+import DonationForm from './donations_components/DonationForm';
+import DeleteModal from './shared_components/DeleteModal';
+
+class ManageFunds extends React.Component {
+    _isMounted = true;
+    constructor(props){
+        super(props);
+        this.state = {
+            auth: {
+                loading: true,
+                payload: null
+            },
+            queried: false,
+            searchType: 'Tribute Name',
+            searchTerm: '',
+            searchTermSecondary: '',
+            us_date1: '',
+            us_date2: '',
+            showCreate: false,
+            showEdit: false,
+            showDelete: false,
+            // Neded to access individual user data
+            selectedId: null
+        };
+
+        this.handleSearchType = this.handleSearchType.bind(this);
+        this.handleSearchTerm = this.handleSearchTerm.bind(this);
+        this.handleSearchTermSecondary = this.handleSearchTermSecondary.bind(this);
+        this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
+    }
+
+    checkAuth = async () => {
+        // SET ALLOWED ACCESS GROUPS HERE
+        const allowedGroups = ['owner', 'admin', 'gamemaker'];
+        var timeoutCounter = 0;
+        while(!this.props.authLoaded){
+            await Wait(500);
+            timeoutCounter ++;
+            console.log('waiting on authLoaded')
+            if (timeoutCounter > 5){
+                return(OAuthFail);
+            }
+        }
+
+        timeoutCounter = 0;
+        while(!this.props.isSignedIn){
+            await Wait(500);
+            timeoutCounter ++;
+            console.log('waiting on isSignedIn');
+            if (timeoutCounter > 5){
+                return(NotSignedIn);
+            }
+        }
+
+        if(this._isMounted){
+            this.setState({
+                auth:{
+                    loading: false
+                }
+            })
+        }
+
+        const userPerms = this.props.userPerms;
+        for (let group of allowedGroups){
+            if(userPerms === group){
+                return null;
+            }
+        }
+
+        return(NotAuthorized);
+    }
+
+    componentDidMount = async () => {
+        // Check authorization
+        const authPayload = await this.checkAuth();
+        if(this._isMounted){
+            this.setState({
+                auth:{
+                    payload: authPayload
+                }
+            })
+        }
+        this.props.fetchTributes();
+    }
+
+    handleSearchType(event) {
+        this.setState({ 
+            searchType: event.target.value,
+            searchTerm: '',
+            searchTermSecondary: ''
+        });
+    }
+
+    handleSearchTerm(event) {
+        if(this.state.searchType === 'Date'){
+            const day = event.getDate().toLocaleString(undefined, {minimumIntegerDigits: 2});
+            const month = (event.getMonth() + 1).toLocaleString(undefined, {minimumIntegerDigits: 2});
+            const year = event.getFullYear();
+            this.setState({ 
+                searchTerm: `${year}-${month}-${day}`,
+                us_date1: `${month}-${day}-${year}`
+        });
+        } else {
+            this.setState({ searchTerm: event.target.value });
+        }
+    }
+    handleSearchTermSecondary(event) {
+        if(this.state.searchType === 'Date'){
+            const day = event.getDate().toLocaleString(undefined, {minimumIntegerDigits: 2});
+            const month = (event.getMonth() + 1).toLocaleString(undefined, {minimumIntegerDigits: 2});
+            const year = event.getFullYear();
+            this.setState({ 
+                searchTermSecondary: `${year}-${month}-${day}`,
+                us_date2: `${month}-${day}-${year}`,
+            });
+        } else {
+            this.setState({ searchTermSecondary: event.target.value });
+        }
+    }
+
+    handleSearchSubmit(event) {
+        event.preventDefault();
+        const searchType = this.formatSearchType(this.state.searchType);
+        if(this.state.searchTermSecondary === ''){
+            if(searchType === 'amount'){
+                console.log('Found');
+                this.props.fetchDonationsRange(searchType,
+                this.state.searchTerm, this.state.searchTerm);
+                return;
+            }
+            this.props.fetchDonations(searchType, this.state.searchTerm);
+        } else {
+            this.props.fetchDonationsRange(searchType,
+            this.state.searchTerm, this.state.searchTermSecondary);
+        }
+    }
+
+    formatSearchType(type) {
+        switch(type){
+            case 'Tribute Name':
+                return 'tribute_email';
+            case 'Donor Name':
+                return 'donor_name';
+            case 'Donation Method':
+                return 'method';
+            case 'Date':
+                return 'date';
+            case 'Amount':
+                return 'amount';
+            default:
+                return null;
+        }
+    }
+
+    renderWarnings = () => {
+        // TODO: Render specific formatting instructions for each search input type
+        return null;
+    }
+
+    renderSearchField = () => {
+        if(Object.keys(this.props.tributes).length == 0){
+            return 'Loading...';
+        }
+        if(this.state.searchType === 'Tribute Name'){
+            return(
+                <Form.Group controlId="query">
+                    <Form.Control required as="select" 
+                    value={this.state.searchTerm}
+                    onChange={this.handleSearchTerm}
+                    >
+                    {this.props.tributes.map(tribute => {
+                        return(
+                            <option key={tribute.id}>
+                                {tribute.first_name} {tribute.last_name} || {tribute.email}
+                            </option>
+                        );
+                    })};
+                    </Form.Control>
+                </Form.Group>
+            );
+        } else if(this.state.searchType === 'Donor Name' || this.state.searchType === 'Donation Method') {
+            return(
+                <Form.Group controlId="query">
+                    <Form.Control required value={this.state.searchTerm}
+                    placeholder="Enter search terms..."
+                    onChange={this.handleSearchTerm}
+                    />
+                </Form.Group>
+            )
+        } else if(this.state.searchType === 'Date') {
+            return(
+                <>
+                <Form.Group controlId="query">
+                    <div><Form.Label>From (Start Date)</Form.Label></div>
+                    <DatePicker dateFormat="MM-dd-yyyy" 
+                        value={this.state.us_date1}
+                        onSelect={this.handleSearchTerm}
+                    />
+                </Form.Group>
+                <Form.Group controlId="query-secondary">
+                    <div><Form.Label>To (End Date)</Form.Label></div>
+                    
+                    <DatePicker dateFormat="MM-dd-yyyy" 
+                        value={this.state.us_date2}
+                        onSelect={this.handleSearchTermSecondary}
+                    />
+                    <div><Form.Label>
+                        Leaving the second parameter blank will search for a perfect match on the first date.
+                    </Form.Label></div>
+                </Form.Group>
+                </>
+            );
+
+        } else if(this.state.searchType === 'Amount') {
+            return(
+                <>
+                <Form.Group controlId="query">
+                    <Form.Control required 
+                        value={this.state.searchTerm}
+                        onChange={this.handleSearchTerm}
+                        placeholder="Enter minimum value"
+                    />
+                </Form.Group>
+                <Form.Group controlId="query-secondary">
+                <Form.Control
+                    value={this.state.searchTermSecondary}
+                    onChange={this.handleSearchTermSecondary}
+                    placeholder="Enter maximum value (If blank, the first value will be matched)."
+                />
+                </Form.Group>
+                </>
+            );
+        }
+    }
+
+    fetchAllDonations = () => {
+        this.props.fetchAllDonations();
+    }
+
+    renderSearchForm() {
+        return(
+            <>
+            <Form onSubmit={this.handleSearchSubmit}>
+                <Form.Label>Search For Donations: </Form.Label>
+                <Form.Row>
+                    <Col>
+                        <Form.Group controlId="searchBy">
+                            <Form.Control as="select"
+                                value={this.state.searchType}
+                                onChange={this.handleSearchType}
+                            >
+                                <option>Tribute Name</option>
+                                <option>Donor Name</option>
+                                <option>Donation Method</option>
+                                <option>Date</option>
+                                <option>Amount</option>
+                            </Form.Control>
+                        </Form.Group>
+                    </Col>
+                    <Col>
+                        {this.renderSearchField()}
+                    </Col>
+                </Form.Row>
+                <Form.Row>
+                    <Col>
+                        <Button 
+                        variant="secondary" 
+                        className="coolor-bg-purple-lighten-2" 
+                        onClick={() => this.setState({ showCreate: true })}
+                        >
+                            Add New Donation
+                        </Button>
+                    </Col>
+                    <Col>
+                        <Button className="coolor-bg-blue-darken-2" onClick={this.fetchAllDonations}>Show All Donations</Button>
+                    </Col>
+                    <Col>
+                        <Button className="coolor-bg-blue-lighten-2" type="submit">Search</Button>
+                    </Col>
+                </Form.Row>
+            </Form>
+            </>
+        )
+    }
+
+    renderTableHeader(){
+        return(
+            <h5 className="row">
+                <div className="col">Tribute Email</div>
+                <div className="col">Donor Name</div>
+                <div className="col">Method</div>
+                <div className="col">Date</div>
+                <div className="col">Amount</div>
+                <div className="col">Modify</div>
+            </h5>
+        )
+    }
+
+    renderAdmin = (donation) => {
+        return(
+            <div className="row">
+                <Button 
+                variant="info"
+                onClick={() => this.setState({ showEdit: true, selectedId: donation.id })}
+                >
+                    Edit
+                </Button>
+                <Button
+                variant="danger"
+                onClick={() => this.setState({ showDelete: true, selectedId: donation.id })}
+                >
+                    Delete
+                </Button>
+            </div>
+        );
+    }
+
+    renderDonations = () => {
+        if(Object.keys(this.props.donations).length === 0){
+            // Return different message before and after first search is sent
+            if(!this.state.queried) {
+                return(
+                    <h5>
+                        Search the database of donations
+                    </h5>
+                );
+            }
+            return(
+                <>
+                    <h5>No donations were found :(</h5>
+                </>
+            );
+        }
+        return(
+            <>
+            <h3>Donations found:</h3>
+            <ul className="list-group">
+                {this.renderTableHeader()}
+                {this.props.donations.map(donation => {
+                    return(
+                        <li className="list-group-item" key={donation.id}>
+                            <div className="row">
+                                <div className="col">{donation.tribute_email}</div>
+                                <div className="col">{donation.donor_name}</div>
+                                <div className="col">{donation.method}</div>
+                                <div className="col">{donation.date}</div>
+                                <div className="col">{donation.amount}</div>
+                                <div className="col">{this.renderAdmin(donation)}</div>
+                            </div>
+                        </li>
+                    );
+                })}
+            </ul>
+            </>
+        );
+    }
+
+    onSubmitCallback = () => {
+        if(this.state.showCreate){
+            this.setState({ showCreate: false })
+        } else if(this.state.showEdit){
+            this.setState({ showEdit: false })
+        } else if(this.state.showDelete){
+            this.setState({ showDelete: false })
+        }
+        if(this.state.searchTerm === ''){
+            this.props.fetchAllDonations();
+        } else {
+            this.props.fetchDonations(this.formatSearchType(this.state.searchType), this.state.searchTerm);
+        }
+    }
+
+    renderModal = () => {
+        if(this.state.showCreate) {
+            return <DonationForm id={this.state.selectedId} mode="create" onSubmitCallback={this.onSubmitCallback}/>;
+        } else if(this.state.showEdit) {
+            return <DonationForm id={this.state.selectedId} mode="edit" onSubmitCallback={this.onSubmitCallback}/>;
+        } else if(this.state.showDelete){
+            return <DeleteModal id={this.state.selectedId} description="yes" actionType="Donation" 
+            onConfirm={this.props.deleteDonation}
+            onSubmitCallback={this.onSubmitCallback} />
+        }
+    }
+
+    renderContent = () => {
+        if(this.state.auth.loading){
+            return(
+                <>
+                <h3>Authorizing user...</h3>
+                <p>{Loading}</p>
+                </>
+            );
+        }
+        if(this.state.auth.payload === null){
+            return(
+                <>
+                    {this.renderSearchForm()}
+                    {this.renderDonations()}
+                    {this.renderModal()}
+                </>
+            );
+        } else {
+            return (<h3>{this.state.auth.payload}</h3>);
+        }
+    }
+
+    render = () =>{
+        return(
+            <>
+                <AppNavBar />
+                <div className="ui-container">
+                    <h3 className="coolor-bg-red-darken-2">
+                        Search by tribute name does not work yet.
+                    </h3>
+                    {this.renderContent()}
+                </div>
+            </>
+        )
+    }
+
+    componentWillUnmount() {
+        this._isMounted = false;
+    }
+};
+
+const mapStateToProps = state => {
+    return{
+        authLoaded: state.auth.loaded,
+        isSignedIn: state.auth.isSignedIn,
+        userPerms: state.auth.userPerms,
+        donation: state.selectedDonation,
+        donations: Object.values(state.donations),
+        tributes: Object.values(state.tributes)
+    }
+}
+
+export default connect(mapStateToProps, 
+    { 
+        fetchDonations, 
+        fetchAllDonations,
+        fetchDonationsRange,
+        deleteDonation,
+        fetchTributes
+    })(ManageFunds);

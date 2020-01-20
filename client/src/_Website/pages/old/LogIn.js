@@ -2,8 +2,8 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import NavBar from '../components/NavBar';
-import GoogleAuth from '../../components/GoogleAuth';
+import NavBar from '../../components/NavBar';
+import GoogleAuth from '../../../components/GoogleAuth';
 
 import gif from '../_graphics/gifs/Login.gif';
 

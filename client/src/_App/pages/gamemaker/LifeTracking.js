@@ -79,7 +79,7 @@ class ManageFunds extends React.Component {
         if(this.state.auth.payload === null){
             return(
                 <>
-                    Manage Funds
+                    Life Tracking
                 </>
             );
         } else {
