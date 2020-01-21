@@ -5,6 +5,11 @@ const DevUpdatesText = () =>{
         <>
         <h1>Development Updates and Things to Look Out For</h1>
         <h5>Remember, if you run into any errors, please notify me by sending a screenshot and a description of how you got to the error. Thanks!</h5>
+        <h4>January 20</h4>
+        <h5 className="coolor-text-red-darken-2">Please take a look at the Funds Management section and try adding some entries! Add tributes too, if necessary</h5>
+        <ol>
+            <li>Finished up the Funds Tracking page and added a 'tags' section. This could be used to label different items (eg. 'Boba fundraiser')</li>
+        </ol>
         <h4>January 19</h4>
         <ol>
             <li>Almost completed implementation of the Funds Tracking page. Search by Tribute Name does not work yet.</li>

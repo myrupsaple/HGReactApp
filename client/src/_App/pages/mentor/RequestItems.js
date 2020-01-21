@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import AppNavBar from '../../components/AppNavBar';
+import { setNavBar } from '../../../actions';
 import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components/AuthMessages';
 import Wait from '../../../components/Wait';
 
@@ -56,6 +56,7 @@ class RequestItems extends React.Component {
     }
 
     componentDidMount = async () => {
+        this.props.setNavBar('app');
         // Check authorization
         const authPayload = await this.checkAuth();
         if(this._isMounted){
@@ -90,10 +91,7 @@ class RequestItems extends React.Component {
     render = () =>{
         return(
             <>
-                <AppNavBar />
-                <div className="ui-container">
-                    {this.renderContent()}
-                </div>
+                {this.renderContent()}
             </>
         )
     }
@@ -111,4 +109,4 @@ const mapStateToProps = state => {
     }
 }
 
-export default connect(mapStateToProps)(RequestItems);
+export default connect(mapStateToProps, { setNavBar })(RequestItems);

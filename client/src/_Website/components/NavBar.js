@@ -124,7 +124,7 @@ class NavBar extends React.Component {
         const menuCoolor = "coolor-bg-light-blue-darken-1";
         return(
             <Navbar variant="light" expand="sm" className={menuCoolor}>
-                <Navbar.Brand>IVHG 20</Navbar.Brand>
+                <Navbar.Brand href="/">IVHG 20</Navbar.Brand>
                     <Nav className="mr-auto custom-dropdown-bg-web">
                         {this.renderLeftMenu()}
                     </Nav>

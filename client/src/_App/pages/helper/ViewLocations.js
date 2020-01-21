@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import AppNavBar from '../../components/AppNavBar';
+import { setNavBar } from '../../../actions';
 import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components/AuthMessages';
 import Wait from '../../../components/Wait';
 
@@ -15,6 +15,7 @@ class ViewLocations extends React.Component {
     };
 
     checkAuth = async () => {
+        this.props.setNavBar('app')
         // SET ALLOWED ACCESS GROUPS HERE
         const allowedGroups = ['owner', 'admin', 'gamemaker', 'helper'];
         var timeoutCounter = 0;
@@ -90,10 +91,7 @@ class ViewLocations extends React.Component {
     render = () =>{
         return(
             <>
-                <AppNavBar />
-                <div className="ui-container">
-                    {this.renderContent()}
-                </div>
+                {this.renderContent()}
             </>
         )
     }
@@ -111,4 +109,4 @@ const mapStateToProps = state => {
     }
 }
 
-export default connect(mapStateToProps)(ViewLocations);
+export default connect(mapStateToProps, { setNavBar })(ViewLocations);

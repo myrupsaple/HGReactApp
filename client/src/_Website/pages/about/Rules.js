@@ -1,15 +1,13 @@
 import React from 'react';
-import NavBar from '../../components/NavBar';
 
-const Rules = () => {
+const Rules = (props) => {
     const divLimiter = {
         display: 'inline-block'
     };
 
 
     return (
-        <div className="container">
-            <NavBar />
+        <>
             <h1 id="header">Rules</h1>
 
             <img id="filler" src="https://i.imgur.com/XSIUxRU.gif" alt="Dwight" />
@@ -76,7 +74,7 @@ const Rules = () => {
                 </a>
             </div>
 
-        </div>
+        </>
     );
 };
 

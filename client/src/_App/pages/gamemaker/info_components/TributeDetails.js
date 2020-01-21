@@ -56,13 +56,15 @@ class TributeDetails extends React.Component {
         const paidReg = this.state.paidRegistration === 1 ? 'yes' : 'no';
         return(
             <>
-                <div className="ui-container-wide row"><p className="font-weight-bold">Name: </p><p>{this.state.first_name} {this.state.last_name}</p></div>
-                <div className="ui-container-wide row"><p className="font-weight-bold">Email: </p><p>{this.state.email}</p></div>
-                <div className="ui-container-wide row"><p className="font-weight-bold">District: </p><p>{this.state.district}</p></div>
-                <div className="ui-container-wide row"><p className="font-weight-bold">District Partner: </p><p>{this.state.districtPartner}</p></div>
-                <div className="ui-container-wide row"><p className="font-weight-bold">Area: </p><p>{this.state.area}</p></div>
-                <div className="ui-container-wide row"><p className="font-weight-bold">Mentor: </p><p>{this.state.mentor}</p></div>
-                <div className="ui-container-wide row"><p className="font-weight-bold">Paid Registration: </p><p>{paidReg}</p></div>
+            <div style={{ marginLeft: "20px" }}>
+                <div className="row"><p className="font-weight-bold">Name: </p><p>{this.state.first_name} {this.state.last_name}</p></div>
+                <div className="row"><p className="font-weight-bold">Email: </p><p>{this.state.email}</p></div>
+                <div className="row"><p className="font-weight-bold">District: </p><p>{this.state.district}</p></div>
+                <div className="row"><p className="font-weight-bold">District Partner: </p><p>{this.state.districtPartner}</p></div>
+                <div className="row"><p className="font-weight-bold">Area: </p><p>{this.state.area}</p></div>
+                <div className="row"><p className="font-weight-bold">Mentor: </p><p>{this.state.mentor}</p></div>
+                <div className="row"><p className="font-weight-bold">Paid Registration: </p><p>{paidReg}</p></div>
+            </div>
             </>
         );
     }

@@ -15,7 +15,8 @@ export default (state = {}, action) => {
                 donor_name: donation.donor_name,
                 method: donation.method,
                 date: donation.date,
-                amount: donation.amount
+                amount: donation.amount,
+                tags: donation.tags
             };
         default:
             return state;

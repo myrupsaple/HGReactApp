@@ -1,10 +1,8 @@
 import React from 'react';
-import NavBar from '../../components/NavBar';
 
-const AboutIV = () => {
+const AboutIV = (props) => {
     return(
-        <div className="ui container">
-            <NavBar />
+        <>
             <h1 id="header">About InterVarsity</h1>
 
             <img src="https://i.imgur.com/TI2GX9e.gif" alt="Michael and Dwight" />
@@ -99,7 +97,7 @@ const AboutIV = () => {
                     <a href="https://intervarsity.org/">InterVarsity USA</a>
                 </p>
             </div>
-        </div>
+        </>
     );
 };
 

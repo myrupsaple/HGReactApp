@@ -1,10 +1,8 @@
 import React from 'react';
-import NavBar from '../../components/NavBar';
 
-const AboutHG = () => {
+const AboutHG = (props) => {
     return(
-        <div className="ui container">
-            <NavBar />
+        <>
             <h1 id="header">About the Hunger Games</h1>
 
             <img alt="Kevin" src='https://i.imgur.com/23M4DRT.gif' />
@@ -38,7 +36,7 @@ const AboutHG = () => {
                 will go towards Summer Con scholarships. More information can be found on
                 the <a href="../donate">donations</a> page.
             </p>
-        </div>
+        </>
     );
 };
 

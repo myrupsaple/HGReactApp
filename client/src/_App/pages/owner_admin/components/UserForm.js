@@ -88,7 +88,7 @@ class UserForm extends React.Component {
     }
 
     renderForm() {
-        const allowAdminIfOwner = () => {
+        const allowAdminAssignmentIfOwner = () => {
             if(this.props.authPerms === 'owner'){
                 return <option>Admin</option>;
             } else {
@@ -101,7 +101,7 @@ class UserForm extends React.Component {
                 <option>Helper</option>
                 <option>Mentor</option>
                 <option>Gamemaker</option>
-                {allowAdminIfOwner()}
+                {allowAdminAssignmentIfOwner()}
             </>
         );
         return (
@@ -111,12 +111,14 @@ class UserForm extends React.Component {
                         <Form.Label>First Name</Form.Label>
                         <Form.Control defaultValue={this.state.first_name}
                             onChange={this.handleFirstName}
+                            autoComplete="off"
                         />
                     </Form.Group></div>
                     <div className="col-4"><Form.Group controlId="last-name">
                         <Form.Label>Last Name</Form.Label>
                         <Form.Control defaultValue={this.state.last_name}
                             onChange={this.handleLastName}
+                            autoComplete="off"
                         />
                     </Form.Group></div>
                     <div className="col-4"><Form.Group control-group="perms">
@@ -124,6 +126,7 @@ class UserForm extends React.Component {
                         <Form.Control defaultValue={this.state.permissions}
                             onChange={this.handlePermissions}
                             as="select"
+                            autoComplete="off"
                         >
                             {authChoices}
                         </Form.Control>
@@ -135,6 +138,7 @@ class UserForm extends React.Component {
                         <Form.Control value={this.state.email}
                             onChange={this.handleEmail}
                             type="email"
+                            autoComplete="off"
                         />
                     </Form.Group></div>
                 </Form.Row>

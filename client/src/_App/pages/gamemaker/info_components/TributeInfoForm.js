@@ -95,12 +95,14 @@ class TributeInfoForm extends React.Component {
                         <Form.Label>First Name</Form.Label>
                         <Form.Control defaultValue={this.state.first_name}
                             onChange={this.handleFirstName}
+                            autoComplete="off"
                         />
                     </Form.Group></div>
                     <div className="col-6"><Form.Group controlId="last-name">
                         <Form.Label>Last Name</Form.Label>
                         <Form.Control defaultValue={this.state.last_name}
                             onChange={this.handleLastName}
+                            autoComplete="off"
                         />
                     </Form.Group></div>
                 </Form.Row>
@@ -109,6 +111,7 @@ class TributeInfoForm extends React.Component {
                         <Form.Label>Email</Form.Label>
                         <Form.Control value={this.state.email}
                             onChange={this.handleEmail}
+                            autoComplete="off"
                             type="email"
                         />
                     </Form.Group></div>
@@ -118,6 +121,7 @@ class TributeInfoForm extends React.Component {
                         <Form.Label>District Partner Email</Form.Label>
                         <Form.Control value={this.state.districtPartner}
                             onChange={this.handleDistrictPartner}
+                            autoComplete="off"
                             type="email"
                         />
                     </Form.Group></div>
@@ -127,6 +131,7 @@ class TributeInfoForm extends React.Component {
                         <Form.Label>Mentor Email</Form.Label>
                         <Form.Control value={this.state.mentor}
                             onChange={this.handleMentor}
+                            autoComplete="off"
                             type="email"
                         />
                     </Form.Group></div>
@@ -134,7 +139,8 @@ class TributeInfoForm extends React.Component {
                 <Form.Row>
                     <div className="col-4"><Form.Group control-group="perms">
                         <Form.Label>District</Form.Label>
-                        <Form.Control defaultValue={this.state.district}
+                        <Form.Control 
+                            defaultValue={this.state.district}
                             onChange={this.handleDistrict}
                             as="select"
                         >
@@ -147,7 +153,8 @@ class TributeInfoForm extends React.Component {
                     </Form.Group></div>
                     <div className="col-4"><Form.Group control-group="area">
                         <Form.Label>Area</Form.Label>
-                        <Form.Control defaultValue={this.state.area}
+                        <Form.Control
+                            defaultValue={this.state.area}
                             onChange={this.handleArea}
                             as="select"
                         >
@@ -161,7 +168,8 @@ class TributeInfoForm extends React.Component {
                     </Form.Group></div>  
                     <div className="col-4"><Form.Group control-group="paid-registration">
                         <Form.Label>Paid Registration?</Form.Label>
-                        <Form.Control defaultValue={this.state.paidRegistration === 1 ? "Yes" : "No"}
+                        <Form.Control
+                            defaultValue={this.state.paidRegistration === 1 ? "Yes" : "No"}
                             onChange={this.handlePaidRegistration}
                             as="select"
                         >

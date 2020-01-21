@@ -1,3 +1,5 @@
+// Misc. Settings
+export const SET_NAVBAR = 'SET_NAVBAR';
 // (0) Google OAuth Management
 export const SIGN_IN = 'SIGN_IN';
 export const SIGN_OUT = 'SIGN_OUT';
@@ -12,3 +14,8 @@ export const FETCH_ALL_TRIBUTES = 'FETCH_ALL_TRIBUTES';
 export const FETCH_DONATION = 'FETCH_DONATION';
 export const FETCH_DONATIONS = 'FETCH_DONATIONS';
 export const FETCH_ALL_DONATIONS = 'FETCH_ALL_DONATIONS';
+export const CLEAR_DONATIONS_QUEUE = 'CLEAR_DONATIONS_QUEUE';
+// (4) Resource Management
+
+// (5) Game State Management
+export const FETCH_GAMESTATE = 'FETCH_GAMESTATE';

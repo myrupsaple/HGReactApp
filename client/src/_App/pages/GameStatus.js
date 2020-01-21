@@ -1,17 +1,17 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import AppNavBar from '../components/AppNavBar';
+import { setNavBar, getGameState } from '../../actions';
 import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../components/AuthMessages';
 import Wait from '../../components/Wait';
 
 class GameStatus extends React.Component {
-    _isMounted = true;
+    _isMounted = false;
     state = {
         gameStart: {
             // TODO: Store these values in state
             // LATER: Allow GM modification via 'Manage Game State'
-            hours: 12,
+            hours: 0,
             minutes: 0,
             seconds: 0
         },
@@ -61,6 +61,8 @@ class GameStatus extends React.Component {
     }
 
     componentDidMount = async () => {
+        this._isMounted = true;
+        this.props.setNavBar('app');
         // Check authorization
         const authPayload = await this.checkAuth();
         if(this._isMounted){
@@ -70,13 +72,27 @@ class GameStatus extends React.Component {
                 }
             })
         }
-        console.log(this.state.auth.payload);
+
+        await this.props.getGameState();
+        const startTime = new Date(Date.parse(this.props.gameState.start_time));
+        if(this._isMounted){
+            this.setState({
+                gameStart: {
+                    hours: startTime.getHours(),
+                    minutes: startTime.getMinutes().toLocaleString(undefined, { minimumIntegerDigits: 2 }),
+                    seconds: startTime.getSeconds().toLocaleString(undefined, { minimumIntegerDigits: 2 }),
+                }
+            });
+        }
+        console.log(this.state.gameStart);
 
         // Clock components
         const today = new Date();
-        var currentTime = today.getHours() * 3600 + today.getMinutes() * 60 + today.getSeconds();
+        var currentTime = today.getHours() * 3600 + today.getMinutes() * 60 + today.getSeconds() * 1;
+        // Multiply by 1 because othrwise this.state.gameStart.seconds is treated as a string
+        // Eg. 12:00:00 becomes 12 * 3600 + 0 * 60 + '00' = 43200 + 0 + '00' = 43200 + '00' = 4320000
         const gameStart = this.state.gameStart.hours * 3600 +
-            this.state.gameStart.minutes * 60 + this.state.gameStart.seconds;
+            this.state.gameStart.minutes * 60 + this.state.gameStart.seconds * 1;
         setInterval(() => {
             currentTime = currentTime + 1;
             const hours = Math.floor(currentTime/3600);
@@ -178,10 +194,7 @@ class GameStatus extends React.Component {
     render = () =>{
         return(
             <>
-                <AppNavBar />
-                <div className="ui-container">
-                    {this.renderContent()}
-                </div>
+                {this.renderContent()}
             </>
         )
     }
@@ -195,8 +208,13 @@ const mapStateToProps = state => {
     return{
         authLoaded: state.auth.loaded,
         isSignedIn: state.auth.isSignedIn,
-        userPerms: state.auth.userPerms
+        userPerms: state.auth.userPerms,
+        gameState: state.gameState
     }
 }
 
-export default connect(mapStateToProps)(GameStatus);
+export default connect(mapStateToProps, 
+    { 
+        setNavBar,
+        getGameState
+    })(GameStatus);

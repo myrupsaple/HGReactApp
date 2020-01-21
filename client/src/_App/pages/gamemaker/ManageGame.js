@@ -1,9 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
-import AppNavBar from '../../components/AppNavBar';
+import { setNavBar, getGameState } from '../../../actions';
 import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components/AuthMessages';
 import Wait from '../../../components/Wait';
+import AdjustStart from './game_components/AdjustStart';
 
 class ManageGame extends React.Component {
     _isMounted = true;
@@ -11,7 +12,9 @@ class ManageGame extends React.Component {
         auth: {
             loading: true,
             payload: null
-        }
+        },
+        gameStateLoaded: false,
+        startTimeAsDate: ''
     };
 
     checkAuth = async () => {
@@ -56,6 +59,7 @@ class ManageGame extends React.Component {
     }
 
     componentDidMount = async () => {
+        this.props.setNavBar('app');
         // Check authorization
         const authPayload = await this.checkAuth();
         if(this._isMounted){
@@ -65,10 +69,46 @@ class ManageGame extends React.Component {
                 }
             })
         }
+
+        await this.props.getGameState();
+        this.convertTimeToDate();
+    }
+
+    convertTimeToDate = () => {
+        const startTime = new Date(Date.parse(this.props.gameState.start_time));
+        if(this._isMounted){
+            this.setState({
+                startTimeAsDate: startTime,
+                gameStateLoaded: true
+            })
+        }
+    }
+
+    renderStartTimeString = () => {
+        if(this.state.gameStateLoaded){
+            const hours = this.state.startTimeAsDate.getHours();
+            const minutes = this.state.startTimeAsDate.getMinutes().toLocaleString(undefined, { minimumIntegerDigits: 2 });
+            const seconds = this.state.startTimeAsDate.getSeconds().toLocaleString(undefined, { minimumIntegerDigits: 2 });
+            return (
+                <>
+                    {hours}:{minutes}:{seconds}
+                </>
+            );
+        }
+        return(
+            <>
+                Loading...
+            </>
+        );
+    }
+
+    onSubmitCallback = async () => {
+        await this.props.getGameState();
+        this.convertTimeToDate();
     }
 
     renderContent = () => {
-        if(this.state.auth.loading){
+        if(this.state.auth.loading || !this.state.gameStateLoaded){
             return(
                 <>
                 <h3>Authorizing user...</h3>
@@ -79,7 +119,12 @@ class ManageGame extends React.Component {
         if(this.state.auth.payload === null){
             return( 
                 <>
-                    Manage Game
+                    <h3>
+                        Current Game Start Time: {this.renderStartTimeString()} 
+                        <AdjustStart startTime={this.state.startTimeAsDate} onSubmitCallback={this.onSubmitCallback}/>
+                    </h3>
+                    <h3>Create New Event</h3>
+                    <h3>Create New Resource Requirement</h3>
                 </>
             );
         } else {
@@ -90,10 +135,7 @@ class ManageGame extends React.Component {
     render = () =>{
         return(
             <>
-                <AppNavBar />
-                <div className="ui-container">
-                    {this.renderContent()}
-                </div>
+                {this.renderContent()}
             </>
         )
     }
@@ -107,8 +149,9 @@ const mapStateToProps = state => {
     return{
         authLoaded: state.auth.loaded,
         isSignedIn: state.auth.isSignedIn,
-        userPerms: state.auth.userPerms
+        userPerms: state.auth.userPerms,
+        gameState: state.gameState
     }
 }
 
-export default connect(mapStateToProps)(ManageGame);
+export default connect(mapStateToProps, { setNavBar, getGameState })(ManageGame);

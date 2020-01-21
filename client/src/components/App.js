@@ -2,6 +2,8 @@ import React from 'react';
 import { Router, Route, Switch } from 'react-router-dom';
 import history from '../history';
 
+import RenderNav from './RenderNav';
+
 // Website Imports
 import Home from '../_Website/pages/_Home';
 import AboutHG from '../_Website/pages/about/AboutHG';
@@ -23,6 +25,7 @@ import SignOutSuccessful from './SignOutSuccessful';
 import DevUpdates from '../_App/pages/DevUpdates';
 // General Tabs
 import AppHome from '../_App/pages/_AppHome';
+import Settings from '../_App/pages/Settings';
 import GameStatus from '../_App/pages/GameStatus';
 import MapRules from '../_App/pages/MapRules';
 import Messaging from '../_App/pages/Messaging';
@@ -48,6 +51,8 @@ class App extends React.Component {
     render(){
         return(
             <>
+            <RenderNav />
+            <div className="ui-container">
             <Router history={history}>
                 <Switch>
 
@@ -74,6 +79,7 @@ class App extends React.Component {
                     <Route path="/App/dev-updates" exact component={DevUpdates} />
 
                     <Route path="/App/" exact component={AppHome} />
+                    <Route path="/App/user-settings" exact component={Settings} />
                     <Route path="/App/game-status" exact component={GameStatus} />
                     <Route path="/App/map-rules" exact component={MapRules} />
                     <Route path="/App/messaging" exact component={Messaging} />
@@ -98,6 +104,7 @@ class App extends React.Component {
 
                 </Switch>
             </Router>
+            </div>
             </>
         );
     }

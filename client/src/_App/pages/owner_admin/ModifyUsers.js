@@ -2,8 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Form, Col, Button } from 'react-bootstrap';
 
-import { fetchUsers, fetchAllUsers } from '../../../actions';
-import AppNavBar from '../../components/AppNavBar';
+import { setNavBar, fetchUsers, fetchAllUsers } from '../../../actions';
 import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components/AuthMessages';
 import Wait from '../../../components/Wait';
 import UserForm from './components/UserForm';
@@ -76,6 +75,7 @@ class ModifyUsers extends React.Component {
     }
 
     componentDidMount = async () => {
+        this.props.setNavBar('app');
         // Check authorization
         const authPayload = await this.checkAuth();
         if(this._isMounted){
@@ -251,7 +251,7 @@ class ModifyUsers extends React.Component {
     }
 
     fetchAllUsers = () => {
-        this.setState({ searchTerm: '' });
+        this.setState({ searchTerm: '' , queried: true });
         this.props.fetchAllUsers()
     }
 
@@ -280,6 +280,9 @@ class ModifyUsers extends React.Component {
             this.setState({ showEdit: false })
         } else if(this.state.showDelete){
             this.setState({ showDelete: false })
+        }
+        if(!this.state.queried){
+            return;
         }
         if(this.state.searchTerm === ''){
             this.props.fetchAllUsers();
@@ -313,10 +316,7 @@ class ModifyUsers extends React.Component {
     render() {
         return(
             <>
-                <AppNavBar />
-                <div className="ui-container">
-                    {this.renderContent()}
-                </div>
+                {this.renderContent()}
             </>
         );
     }
@@ -336,4 +336,9 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, { fetchUsers, fetchAllUsers })(ModifyUsers);
+export default connect(mapStateToProps, 
+    { 
+        setNavBar,
+        fetchUsers, 
+        fetchAllUsers
+    })(ModifyUsers);

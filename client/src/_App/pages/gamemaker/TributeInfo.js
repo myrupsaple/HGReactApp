@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Button } from 'react-bootstrap';
 
-import AppNavBar from '../../components/AppNavBar';
+import { setNavBar } from '../../../actions';
 import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components/AuthMessages';
 import Wait from '../../../components/Wait';
 import { fetchTributes } from '../../../actions';
@@ -63,6 +63,7 @@ class TributeAccountInfo extends React.Component {
     }
 
     componentDidMount = async () => {
+        this.props.setNavBar('app');
         // Check authorization
         const authPayload = await this.checkAuth();
         if(this._isMounted){
@@ -207,10 +208,7 @@ class TributeAccountInfo extends React.Component {
     render = () =>{
         return(
             <>
-                <AppNavBar />
-                <div className="ui-container">
-                    {this.renderContent()}
-                </div>
+                {this.renderContent()}
             </>
         )
     }
@@ -229,4 +227,7 @@ const mapStateToProps = state => {
     }
 }
 
-export default connect(mapStateToProps, { fetchTributes })(TributeAccountInfo);
+export default connect(mapStateToProps, { 
+    fetchTributes,
+    setNavBar
+    })(TributeAccountInfo);

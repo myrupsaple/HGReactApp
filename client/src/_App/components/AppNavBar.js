@@ -101,6 +101,9 @@ class AppNavBar extends React.Component {
 
             return(
                 <NavDropdown title={welcomeAuthenticated}>
+                    <NavDropdown.Item as={Nav.Link} href="/App/user-settings">
+                        Preferences
+                    </NavDropdown.Item>
                     <NavDropdown.Item>
                        <GoogleAuth />
                     </NavDropdown.Item>

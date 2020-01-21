@@ -17,7 +17,7 @@ const ModifyUsers = (
 
 const ManageGameState = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/manage-game">
-        Manage Game State*
+        Manage Game State^
     </NavDropdown.Item>
 );
 
@@ -29,7 +29,7 @@ const TributeAccountInfo = (
 
 const FundsTracking = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/funds-tracking">
-        Funds Tracking^
+        Funds Tracking+
     </NavDropdown.Item>
 );
 

@@ -4,7 +4,7 @@ import { Form, Col, Button } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 
-import AppNavBar from '../../components/AppNavBar';
+import { setNavBar } from '../../../actions';
 import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components/AuthMessages';
 import Wait from '../../../components/Wait';
 import { 
@@ -12,13 +12,14 @@ import {
     fetchAllDonations,
     fetchDonationsRange,
     deleteDonation,
-    fetchTributes
+    fetchTributes,
+    clearDonationsList
 } from '../../../actions';
 import DonationForm from './donations_components/DonationForm';
 import DeleteModal from './shared_components/DeleteModal';
 
 class ManageFunds extends React.Component {
-    _isMounted = true;
+    _isMounted = false;
     constructor(props){
         super(props);
         this.state = {
@@ -87,7 +88,9 @@ class ManageFunds extends React.Component {
     }
 
     componentDidMount = async () => {
+        this.props.setNavBar('app');
         // Check authorization
+        this._isMounted = true;
         const authPayload = await this.checkAuth();
         if(this._isMounted){
             this.setState({
@@ -96,7 +99,8 @@ class ManageFunds extends React.Component {
                 }
             })
         }
-        this.props.fetchTributes();
+        await this.props.fetchTributes();
+
     }
 
     handleSearchType(event) {
@@ -134,12 +138,36 @@ class ManageFunds extends React.Component {
         }
     }
 
-    handleSearchSubmit(event) {
+    async handleSearchSubmit(event) {
+        if(this._isMounted){
+            this.setState({ queried: true });
+        }
         event.preventDefault();
+        // In the tribute_email case, we have to do a separate donations fetch for each
+        // email that was matched. Thus, the reducer adds to the state after
+        // each donations search rather than replacing state with the new results.
+        // The clearDonationsList action clears this list upon each user search
+        // call so that there is no overlap in the results displayed
+        await this.props.clearDonationsList();
         const searchType = this.formatSearchType(this.state.searchType);
+
+        if(searchType === 'tribute_email'){
+            const matches = [];
+            const name = this.state.searchTerm.toLowerCase();
+            this.props.tributes.map(tribute => {
+                if(tribute.first_name.toLowerCase().includes(name)){
+                    matches.push(tribute.email);
+                }
+                return null;
+            });
+            matches.map(match => {
+                this.props.fetchDonations('tribute_email', match);
+                return null;
+            })
+            return;
+        }
         if(this.state.searchTermSecondary === ''){
             if(searchType === 'amount'){
-                console.log('Found');
                 this.props.fetchDonationsRange(searchType,
                 this.state.searchTerm, this.state.searchTerm);
                 return;
@@ -163,6 +191,8 @@ class ManageFunds extends React.Component {
                 return 'date';
             case 'Amount':
                 return 'amount';
+            case 'Tags':
+                return 'tags';
             default:
                 return null;
         }
@@ -174,32 +204,20 @@ class ManageFunds extends React.Component {
     }
 
     renderSearchField = () => {
-        if(Object.keys(this.props.tributes).length == 0){
+        if(Object.keys(this.props.tributes).length === 0){
             return 'Loading...';
         }
-        if(this.state.searchType === 'Tribute Name'){
+        if(this.state.searchType === 'Donor Name' || 
+        this.state.searchType === 'Donation Method' ||
+        this.state.searchType === 'Tribute Name' ||
+        this.state.searchType === 'Tags') {
             return(
                 <Form.Group controlId="query">
-                    <Form.Control required as="select" 
-                    value={this.state.searchTerm}
-                    onChange={this.handleSearchTerm}
-                    >
-                    {this.props.tributes.map(tribute => {
-                        return(
-                            <option key={tribute.id}>
-                                {tribute.first_name} {tribute.last_name} || {tribute.email}
-                            </option>
-                        );
-                    })};
-                    </Form.Control>
-                </Form.Group>
-            );
-        } else if(this.state.searchType === 'Donor Name' || this.state.searchType === 'Donation Method') {
-            return(
-                <Form.Group controlId="query">
-                    <Form.Control required value={this.state.searchTerm}
-                    placeholder="Enter search terms..."
-                    onChange={this.handleSearchTerm}
+                    <Form.Control required 
+                        value={this.state.searchTerm}
+                        autoComplete="off"
+                        placeholder="Enter search terms..."
+                        onChange={this.handleSearchTerm}
                     />
                 </Form.Group>
             )
@@ -250,6 +268,7 @@ class ManageFunds extends React.Component {
     }
 
     fetchAllDonations = () => {
+        this.setState({ searchTerm: '', searchTermSecondary: '', queried: true });
         this.props.fetchAllDonations();
     }
 
@@ -270,6 +289,7 @@ class ManageFunds extends React.Component {
                                 <option>Donation Method</option>
                                 <option>Date</option>
                                 <option>Amount</option>
+                                <option>Tags</option>
                             </Form.Control>
                         </Form.Group>
                     </Col>
@@ -307,6 +327,7 @@ class ManageFunds extends React.Component {
                 <div className="col">Method</div>
                 <div className="col">Date</div>
                 <div className="col">Amount</div>
+                <div className="col">Tags</div>
                 <div className="col">Modify</div>
             </h5>
         )
@@ -331,6 +352,17 @@ class ManageFunds extends React.Component {
         );
     }
 
+    sumUnassigned(){
+        var total = 0;
+        this.props.donations.map(donation => {
+            if(donation.tribute_email === 'No Assignment'){
+                total += donation.amount;
+            }
+            return null;
+        })
+        return total;
+    }
+
     renderDonations = () => {
         if(Object.keys(this.props.donations).length === 0){
             // Return different message before and after first search is sent
@@ -349,6 +381,7 @@ class ManageFunds extends React.Component {
         }
         return(
             <>
+            <h5>Unassigned Funds: ${this.sumUnassigned()}</h5>
             <h3>Donations found:</h3>
             <ul className="list-group">
                 {this.renderTableHeader()}
@@ -361,6 +394,7 @@ class ManageFunds extends React.Component {
                                 <div className="col">{donation.method}</div>
                                 <div className="col">{donation.date}</div>
                                 <div className="col">{donation.amount}</div>
+                                <div className="col">{donation.tags}</div>
                                 <div className="col">{this.renderAdmin(donation)}</div>
                             </div>
                         </li>
@@ -379,6 +413,9 @@ class ManageFunds extends React.Component {
         } else if(this.state.showDelete){
             this.setState({ showDelete: false })
         }
+        if(!this.state.queried){
+            return;
+        }
         if(this.state.searchTerm === ''){
             this.props.fetchAllDonations();
         } else {
@@ -388,9 +425,9 @@ class ManageFunds extends React.Component {
 
     renderModal = () => {
         if(this.state.showCreate) {
-            return <DonationForm id={this.state.selectedId} mode="create" onSubmitCallback={this.onSubmitCallback}/>;
+            return <DonationForm tributes={this.props.tributes} id={this.state.selectedId} mode="create" onSubmitCallback={this.onSubmitCallback}/>;
         } else if(this.state.showEdit) {
-            return <DonationForm id={this.state.selectedId} mode="edit" onSubmitCallback={this.onSubmitCallback}/>;
+            return <DonationForm tributes={this.props.tributes} id={this.state.selectedId} mode="edit" onSubmitCallback={this.onSubmitCallback}/>;
         } else if(this.state.showDelete){
             return <DeleteModal id={this.state.selectedId} description="yes" actionType="Donation" 
             onConfirm={this.props.deleteDonation}
@@ -423,13 +460,7 @@ class ManageFunds extends React.Component {
     render = () =>{
         return(
             <>
-                <AppNavBar />
-                <div className="ui-container">
-                    <h3 className="coolor-bg-red-darken-2">
-                        Search by tribute name does not work yet.
-                    </h3>
-                    {this.renderContent()}
-                </div>
+                {this.renderContent()}
             </>
         )
     }
@@ -446,15 +477,18 @@ const mapStateToProps = state => {
         userPerms: state.auth.userPerms,
         donation: state.selectedDonation,
         donations: Object.values(state.donations),
-        tributes: Object.values(state.tributes)
+        tributes: Object.values(state.tributes),
+        users: Object.values(state.users)
     }
 }
 
 export default connect(mapStateToProps, 
     { 
+        setNavBar,
         fetchDonations, 
         fetchAllDonations,
         fetchDonationsRange,
         deleteDonation,
-        fetchTributes
+        fetchTributes,
+        clearDonationsList
     })(ManageFunds);

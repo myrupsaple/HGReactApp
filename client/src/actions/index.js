@@ -1,6 +1,7 @@
 import app from '../api/app';
 
 import {
+    SET_NAVBAR,
     SIGN_IN,
     SIGN_OUT,
     FETCH_USER,
@@ -10,8 +11,23 @@ import {
     FETCH_ALL_TRIBUTES,
     FETCH_DONATION,
     FETCH_DONATIONS,
-    FETCH_ALL_DONATIONS
+    FETCH_ALL_DONATIONS,
+    CLEAR_DONATIONS_QUEUE,
+    FETCH_GAMESTATE
 } from './types';
+
+//############################# (Misc. Settings) #############################//
+
+export const setNavBar = (type) => async (dispatch) => {
+    console.log(`Navbar set to: ${type}`)
+    dispatch({
+        type: SET_NAVBAR,
+        payload:{
+            id: 'navType',
+            value: type
+        }
+    })
+};
 
 //############################ (0) GOOGLE O-AUTH #############################//
 
@@ -306,18 +322,18 @@ export const fetchAllDonations = () => async (dispatch) => {
 
 export const createDonation = donation => async dispatch => {
     console.log('Actions: Create donation initiated');
-    await app.post(`/donations/post/${donation.email}/${donation.donor}/${donation.method}/${donation.date}/${donation.amount}`)
+    await app.post(`/donations/post/${donation.email}/${donation.donor}/${donation.method}/${donation.date}/${donation.amount}/${donation.tags}`)
         .then(res => {
-            console.log(`Successfully created donation ${donation.id}`);
+            console.log(`Successfully created donation of ${donation.amount}`);
         })
         .catch(err => {
             console.log(err);
-        })
+        });
 }
 
 export const updateDonation = donation => async dispatch => {
     console.log('Actions: Update donation initiated');
-    await app.put(`/donations/put/${donation.id}/${donation.email}/${donation.donor}/${donation.method}/${donation.date}/${donation.amount}`)
+    await app.put(`/donations/put/${donation.id}/${donation.email}/${donation.donor}/${donation.method}/${donation.date}/${donation.amount}/${donation.tags}`)
         .then(res => {
             console.log(`Successfully updated donation ${donation.id}`);
         })
@@ -334,5 +350,42 @@ export const deleteDonation = id => async dispatch => {
         })
         .catch(err => {
             console.log(err);
+        });
+}
+
+export const clearDonationsList = () => async dispatch => {
+    dispatch({ type: CLEAR_DONATIONS_QUEUE });
+}
+
+//######################### (4) Resource Management ##########################//
+
+//######################## (5) Game State Management #########################//
+
+export const getGameState = () => async dispatch => {
+    console.log(`Actions: Get Game State initiated`);
+    var response = null;
+    await app.get(`/game-state/get`)
+        .then(res => {
+            response = res;
+            console.log('Successfully Fetched Game State');
         })
+        .catch(err => {
+            console.log(err);
+        });
+    
+    if(response && response.data){
+        console.log('Successfully searched for donations range');
+        dispatch ({ type: FETCH_GAMESTATE, payload: response.data });
+    }
+}
+
+export const setGameStartTime = time => async dispatch => {
+    console.log(`Actions: Set Game Time initiated with value ${time}`);
+    await app.put(`/game-state/put/game-time/${time}`)
+        .then(res => {
+            console.log(`Successfully game start time`);
+        })
+        .catch(err => {
+            console.log(err);
+        });
 }

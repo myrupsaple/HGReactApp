@@ -17,12 +17,13 @@ class EditDonation extends React.Component {
         const day = now.getDate().toLocaleString(undefined, {minimumIntegerDigits: 2});
 
         this.state = {
-            tribute_email: '',
+            tribute_email: 'No Assignment',
             donor_name: '',
             method: '',
             date: `${year}-${month}-${day}`,
             us_date: `${month}-${day}-${year}`,
             amount: '',
+            tags: '',
             showModal: true,
             submitted: false
         };
@@ -32,27 +33,35 @@ class EditDonation extends React.Component {
         this.handleMethod = this.handleMethod.bind(this);
         this.handleDate = this.handleDate.bind(this);
         this.handleAmount = this.handleAmount.bind(this);
+        this.handleTags = this.handleTags.bind(this);
     }
 
     async componentDidMount(){
         this._isMounted = true;
         if(this.props.mode === 'edit'){
             await this.props.fetchDonation(this.props.id);
-    
+            
+            const dmy = this.props.donation.date.split('-');
             if(this._isMounted){
                 this.setState({
                     tribute_email: this.props.donation.tribute_email,
                     donor_name: this.props.donation.donor_name,
+                    date: `${dmy[2]}-${dmy[0]}-${dmy[1]}`,
+                    us_date: `${dmy[0]}-${dmy[1]}-${dmy[2]}`,
                     method: this.props.donation.method,
-                    date: this.props.donation.date,
-                    amount: this.props.donation.amount
+                    amount: this.props.donation.amount,
+                    tags: this.props.donation.tags
                 })
             }
         }
     }
 
     handleTribute(event){
-        this.setState({ tribute_email: event.target.value });
+        if(event.target.value === 'No Assignment'){
+            this.setState({ tribute_email: event.target.value });
+        } else {
+            this.setState({ tribute_email: event.target.value.split('|| ')[1] })
+        }
     }
     handleDonor(event){
         this.setState({ donor_name: event.target.value });
@@ -69,9 +78,11 @@ class EditDonation extends React.Component {
             us_date: `${month}-${day}-${year}`
         });
     }
-
     handleAmount(event){
         this.setState({ amount: event.target.value });
+    }
+    handleTags(event){
+        this.setState({ tags: event.target.value });
     }
 
     renderModalHeader(){
@@ -97,40 +108,81 @@ class EditDonation extends React.Component {
         }
     }
 
+    renderNameChoices(){
+        return (
+        <>
+            <option>No Assignment</option>
+            {this.props.tributes.map(tribute => {
+                return (
+                <option key={tribute.id}>
+                    {tribute.first_name} {tribute.last_name} || {tribute.email}
+                </option>
+                );
+            })}
+        </>
+        );
+    }
+
     renderForm(){
         return(
             <Form>
                 <Form.Row>
                     <div className="col-4"><Form.Group controlId="date">
                         <Form.Label>Donation Date</Form.Label>
-                        <DatePicker dateFormat="MM-dd-yyyy" value={this.state.us_date}
-                            onSelect={this.handleDate}/>
+                        <DatePicker dateFormat="MM-dd-yyyy" 
+                            value={this.state.us_date}
+                            onSelect={this.handleDate}
+                        />
                     </Form.Group></div>
                 </Form.Row>
                 <Form.Row>
                     <div className="col-12"><Form.Group controlId="tribute">
                         <Form.Label>Tribute Name</Form.Label>    
-                        <Form.Control defaultValue={this.state.tribute_email}
-                            onChange={this.handleTribute} />
+                        <Form.Control 
+                            defaultValue={this.state.tribute_email} 
+                            onChange={this.handleTribute} 
+                            as="select" autoComplete="off"
+                        >
+                            {this.renderNameChoices()}
+                        </Form.Control>
                     </Form.Group></div>
                 </Form.Row>
                 <Form.Row>
                     <div className="col-12"><Form.Group controlId="donor">
                         <Form.Label>Donor Name</Form.Label>    
-                        <Form.Control defaultValue={this.state.donor_name}
-                            onChange={this.handleDonor} />
+                        <Form.Control 
+                            defaultValue={this.state.donor_name}
+                            autoComplete="off"
+                            onChange={this.handleDonor}
+                        />
                     </Form.Group></div>
                 </Form.Row>
                 <Form.Row>
                     <div className="col-6"><Form.Group controlId="method">
                         <Form.Label>Donation Method</Form.Label>    
-                        <Form.Control defaultValue={this.state.method}
-                            onChange={this.handleMethod} />
+                        <Form.Control 
+                            defaultValue={this.state.method}
+                            onChange={this.handleMethod}
+                            autoComplete="off"
+                        />
                     </Form.Group></div>
                     <div className="col-6"><Form.Group controlId="amount">
                         <Form.Label>Amount</Form.Label>    
-                        <Form.Control defaultValue={this.state.amount}
-                            onChange={this.handleAmount} />
+                        <Form.Control 
+                            defaultValue={this.state.amount}
+                            onChange={this.handleAmount}
+                            autoComplete="off"
+                        />
+                    </Form.Group></div>
+                </Form.Row>
+                <Form.Row>
+                    <div className="col-12"><Form.Group controlId="tags">
+                        <Form.Label>Tags</Form.Label>    
+                        <Form.Control 
+                            defaultValue={this.state.tags}
+                            autoComplete="off"
+                            onChange={this.handleTags}
+                        />
                     </Form.Group></div>
                 </Form.Row>
             </Form>
@@ -150,6 +202,12 @@ class EditDonation extends React.Component {
     }
 
     handleFormSubmit = () => {
+        if(!this.state.date || !this.state.tribute_email || !this.state.donor_name ||
+            !this.state.method || !this.state.amount){
+                alert('Please fill in the required fields');
+                return;
+            }
+
         if(this._isMounted){
             this.setState({ submitted: true })
         }
@@ -161,7 +219,8 @@ class EditDonation extends React.Component {
                 donor: this.state.donor_name,
                 method: this.state.method,
                 date: this.state.date,
-                amount: this.state.amount
+                amount: this.state.amount,
+                tags: this.state.tags
             };
             this.props.updateDonation(donationObject);
         } else if(this.props.mode === 'create'){
@@ -170,7 +229,8 @@ class EditDonation extends React.Component {
                 donor: this.state.donor_name,
                 method: this.state.method,
                 date: this.state.date,
-                amount: this.state.amount
+                amount: this.state.amount,
+                tags: this.state.tags
             };
             this.props.createDonation(donationObject);
         }
