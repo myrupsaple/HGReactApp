@@ -29,14 +29,16 @@ const AppHome = (props) => {
             Legend for the menu bar:
             </h6>
             <p>
-                Items in the menu with a * next to them have not yet been implemented. 
+                * not yet been implemented. 
             </p>
             <p>
-                Items with a ^ next to them are in progress. 
+                ^ in progress. 
             </p>
             <p>
-                Items with a + are just about complete, functionally. I will make things
-                look nicer once the basics have been set up.
+                + functionally complete, for the most part.
+            </p>
+            <p>
+                - progress paused
             </p>
         </>
     );

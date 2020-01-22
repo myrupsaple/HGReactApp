@@ -49,6 +49,8 @@ connection.connect(async (err) => {
             tributes: false,
             tribute_stats:false,
             donations: false,
+            resources: false,
+            life_events: false,
             game_state: false
         }
         
@@ -66,6 +68,11 @@ connection.connect(async (err) => {
                 case 'donations':
                     tableList.donations = true;
                     break;
+                case 'resources':
+                    tableList.resources = true;
+                    break;
+                case 'life_events':
+                    tableList.life_events = true;
                 case 'game_state':
                     tableList.game_state = true;
                     break;
@@ -122,6 +129,19 @@ connection.connect(async (err) => {
             tags VARCHAR(50)
         )`;
 
+        const createResources = `CREATE TABLE resources(
+            // TODO
+        )`;
+
+        const createLifeEvents = `CREATE TABLE life_events(
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            tribute_email VARCHAR(40),
+            type VARCHAR(10),
+            method VARCHAR(20),
+            time INT,
+            Notes VARCHAR(50)
+        )`;
+
         const createGameState = `CREATE TABLE game_state(
             start_time DATETIME,
             tributes_remaining TINYINT
@@ -150,6 +170,20 @@ connection.connect(async (err) => {
         }
         if(!tableList.donations){
             connection.query(createDonations, (err, results, fields) => {
+                if(err){
+                    console.log(err.message);
+                }
+            });
+        }
+        // if(!tableList.resources){
+        //     connection.query(createResources, (err, results, fields) => {
+        //         if(err){
+        //             console.log(err.message);
+        //         }
+        //     });
+        // }
+        if(!tableList.lifeEvents){
+            connection.query(createLifeEvents, (err, results, fields) => {
                 if(err){
                     console.log(err.message);
                 }
@@ -532,7 +566,85 @@ app.delete(`/donations/delete/:id`, (req, res) => {
 
 //######################### (4) Resource Management ##########################//
 
-//######################## (5) Game State Management #########################//
+//########################### (5) Life Management ############################//
+
+// FETCH_LIFE_EVENT
+app.get(`/life-events/get/single/:id`, (req, res) => {
+    const id = req.params.id;
+    const queryStringGetLifeEvent = `SELECT * FROM life_events WHERE id = ${id}`;
+    console.log(queryStringGetLifeEvent);
+    connection.query(queryStringGetLifeEvent, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// FETCH_LIFE_EVENTS
+app.get(`/life-events/get/list/:type/:query`, (req, res) => {
+    const { type, query } = req.params;
+    const queryStringGetLifeEvents = `SELECT * FROM life_events WHERE ${type} = '${query}'`;
+    console.log(queryStringGetLifeEvents);
+    connection.query(queryStringGetLifeEvents, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// FETCH_LIFE_EVENTS_RANGE
+app.get(`/life-events/get/range/:type/:query_lower/:query_upper`, (req, res) => {
+    const { type, query_lower, query_upper } = req.params;
+    const queryStringGetLifeEventsRange = `SELECT * FROM life_events WHERE 
+    ${type} >= ${query_lower} AND ${type} <= ${query_upper}`;
+    console.log(queryStringGetLifeEventsRange);
+    connection.query(queryStringGetLifeEventsRange, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// FETCH_ALL_LIFE_EVENTS
+app.get(`/life-events/get/all`, (req, res) => {
+    const queryStringGetAllLifeEvents = `SELECT * FROM life_events`
+    console.log(queryStringGetAllLifeEvents);
+    connection.query(queryStringGetAllLifeEvents, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+//######################## (6) Game State Management #########################//
 
 // FETCH_GAMESTATE
 app.get(`/game-state/get`, (req, res) => {

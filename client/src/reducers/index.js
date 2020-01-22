@@ -7,6 +7,8 @@ import tributeReducer from './tributeReducer';
 import tributesReducer from './tributesReducer';
 import donationReducer from './donationReducer';
 import donationsReducer from './donationsReducer';
+import lifeEventReducer from './lifeEventReducer';
+import lifeEventsReducer from './lifeEventsReducer';
 import gameStateReducer from './gameStateReducer';
 
 export default combineReducers({
@@ -18,5 +20,7 @@ export default combineReducers({
     tributes: tributesReducer,
     selectedDonation: donationReducer,
     donations: donationsReducer,
+    selectedLifeEvent: lifeEventReducer,
+    lifeEvents: lifeEventsReducer,
     gameState: gameStateReducer
 });

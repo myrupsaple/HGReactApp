@@ -43,7 +43,9 @@ class GoogleAuth extends React.Component {
     onAuthChange = (isSignedIn) => {
         if(isSignedIn){
             // Upon sign in, load up user data given their email
-            const userEmail = this.auth.currentUser.get().w3.getEmail();
+            // TODO: Figure out how to get the email reliably:
+            // console.log(this.auth.currentUser.get());
+            const userEmail = this.auth.currentUser.get().getBasicProfile().getEmail();
             console.log('GoogleAuth: Sign in attempt');
             this.props.signIn(userEmail);
         } else {

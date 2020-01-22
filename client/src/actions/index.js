@@ -13,6 +13,10 @@ import {
     FETCH_DONATIONS,
     FETCH_ALL_DONATIONS,
     CLEAR_DONATIONS_QUEUE,
+    FETCH_LIFE_EVENT,
+    FETCH_LIFE_EVENTS,
+    FETCH_ALL_LIFE_EVENTS,
+    CLEAR_LIFE_EVENTS_QUEUE,
     FETCH_GAMESTATE
 } from './types';
 
@@ -359,7 +363,81 @@ export const clearDonationsList = () => async dispatch => {
 
 //######################### (4) Resource Management ##########################//
 
-//######################## (5) Game State Management #########################//
+//########################### (5) Life Management ############################//
+
+export const fetchLifeEvent = id => async dispatch => {
+    console.log(`Actions: Get Life Event initiated with id ${id}`);
+    var response = null;
+    await app.get(`/life-events/get/single/${id}`)
+        .then(res => {
+            response = res;
+            console.log('Successfully Fetched Life Event');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    
+    if(response && response.data){
+        dispatch ({ type: FETCH_LIFE_EVENT, payload: response.data });
+    }
+}
+
+export const fetchLifeEvents = (type, query) => async dispatch => {
+    console.log(`Actions: Get Life Event List initiated: ${type} with query ${query}`);
+    var response = null;
+    await app.get(`/life-events/get/list/${type}/${query}`)
+        .then(res => {
+            response = res;
+            console.log('Successfully Fetched Life Events');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    
+    if(response && response.data){
+        dispatch ({ type: FETCH_LIFE_EVENTS, payload: response.data });
+    }
+}
+
+export const fetchLifeEventsRange = (type, queryLower, queryUpper) => async dispatch => {
+    console.log(`Actions: Get Life Event Range: ${type} from ${queryLower} to ${queryUpper}`);
+    var response = null;
+    await app.get(`/life-events/get/range/${type}/${queryLower}/${queryUpper}`)
+        .then(res => {
+            response = res;
+            console.log('Successfully Fetched Life Event Range');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    
+    if(response && response.data){
+        dispatch ({ type: FETCH_LIFE_EVENTS, payload: response.data });
+    }
+}
+
+export const fetchAllLifeEvents = () => async dispatch => {
+    console.log(`Actions: Get All Life Events`);
+    var response = null;
+    await app.get(`/life-events/get/all`)
+        .then(res => {
+            response = res;
+            console.log('Successfully Fetched All Life Events');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    
+    if(response && response.data){
+        dispatch ({ type: FETCH_ALL_LIFE_EVENTS, payload: response.data });
+    }
+}
+
+export const clearLifeEventsList = () => async dispatch => {
+    dispatch({ type: CLEAR_LIFE_EVENTS_QUEUE });
+}
+
+//######################## (6) Game State Management #########################//
 
 export const getGameState = () => async dispatch => {
     console.log(`Actions: Get Game State initiated`);
@@ -374,7 +452,6 @@ export const getGameState = () => async dispatch => {
         });
     
     if(response && response.data){
-        console.log('Successfully searched for donations range');
         dispatch ({ type: FETCH_GAMESTATE, payload: response.data });
     }
 }

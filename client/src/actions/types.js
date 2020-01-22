@@ -17,5 +17,11 @@ export const FETCH_ALL_DONATIONS = 'FETCH_ALL_DONATIONS';
 export const CLEAR_DONATIONS_QUEUE = 'CLEAR_DONATIONS_QUEUE';
 // (4) Resource Management
 
-// (5) Game State Management
+// (5) Life Management
+export const FETCH_LIFE_EVENT = 'FETCH_LIFE_EVENT';
+export const FETCH_LIFE_EVENTS = 'FETCH_LIFE_EVENTS';
+export const FETCH_ALL_LIFE_EVENTS = 'FETCH_ALL_LIFE_EVENTS';
+export const CLEAR_LIFE_EVENTS_QUEUE = 'CLEAR_LIFE_EVENTS_QUEUE';
+
+// (6) Game State Management
 export const FETCH_GAMESTATE = 'FETCH_GAMESTATE';

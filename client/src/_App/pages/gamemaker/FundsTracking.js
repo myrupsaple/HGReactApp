@@ -36,7 +36,7 @@ class ManageFunds extends React.Component {
             showCreate: false,
             showEdit: false,
             showDelete: false,
-            // Neded to access individual user data
+            // Neded to access individual donation data
             selectedId: null
         };
 
@@ -112,7 +112,7 @@ class ManageFunds extends React.Component {
     }
 
     handleSearchTerm(event) {
-        if(this.state.searchType === 'Date'){
+        if(this.state.searchType === 'Date Range'){
             const day = event.getDate().toLocaleString(undefined, {minimumIntegerDigits: 2});
             const month = (event.getMonth() + 1).toLocaleString(undefined, {minimumIntegerDigits: 2});
             const year = event.getFullYear();
@@ -125,7 +125,7 @@ class ManageFunds extends React.Component {
         }
     }
     handleSearchTermSecondary(event) {
-        if(this.state.searchType === 'Date'){
+        if(this.state.searchType === 'Date Range'){
             const day = event.getDate().toLocaleString(undefined, {minimumIntegerDigits: 2});
             const month = (event.getMonth() + 1).toLocaleString(undefined, {minimumIntegerDigits: 2});
             const year = event.getFullYear();
@@ -187,7 +187,7 @@ class ManageFunds extends React.Component {
                 return 'donor_name';
             case 'Donation Method':
                 return 'method';
-            case 'Date':
+            case 'Date Range':
                 return 'date';
             case 'Amount':
                 return 'amount';
@@ -201,6 +201,58 @@ class ManageFunds extends React.Component {
     renderWarnings = () => {
         // TODO: Render specific formatting instructions for each search input type
         return null;
+    }
+
+    fetchAllDonations = () => {
+        this.setState({ searchTerm: '', searchTermSecondary: '', queried: true });
+        this.props.fetchAllDonations();
+    }
+
+    renderSearchForm() {
+        return(
+            <>
+            <Form onSubmit={this.handleSearchSubmit}>
+                <Form.Label>Search For Donations:</Form.Label>
+                <Form.Row>
+                    <Col>
+                        <Form.Group controlId="searchBy">
+                            <Form.Control as="select"
+                                value={this.state.searchType}
+                                onChange={this.handleSearchType}
+                            >
+                                <option>Tribute Name</option>
+                                <option>Donor Name</option>
+                                <option>Donation Method</option>
+                                <option>Date Range</option>
+                                <option>Amount</option>
+                                <option>Tags</option>
+                            </Form.Control>
+                        </Form.Group>
+                    </Col>
+                    <Col>
+                        {this.renderSearchField()}
+                    </Col>
+                </Form.Row>
+                <Form.Row>
+                    <Col>
+                        <Button 
+                        variant="secondary" 
+                        className="coolor-bg-purple-lighten-2" 
+                        onClick={() => this.setState({ showCreate: true })}
+                        >
+                            Add New Donation
+                        </Button>
+                    </Col>
+                    <Col>
+                        <Button className="coolor-bg-blue-darken-2" onClick={this.fetchAllDonations}>Show All Donations</Button>
+                    </Col>
+                    <Col>
+                        <Button className="coolor-bg-blue-lighten-2" type="submit">Search</Button>
+                    </Col>
+                </Form.Row>
+            </Form>
+            </>
+        )
     }
 
     renderSearchField = () => {
@@ -221,7 +273,7 @@ class ManageFunds extends React.Component {
                     />
                 </Form.Group>
             )
-        } else if(this.state.searchType === 'Date') {
+        } else if(this.state.searchType === 'Date Range') {
             return(
                 <>
                 <Form.Group controlId="query">
@@ -267,62 +319,10 @@ class ManageFunds extends React.Component {
         }
     }
 
-    fetchAllDonations = () => {
-        this.setState({ searchTerm: '', searchTermSecondary: '', queried: true });
-        this.props.fetchAllDonations();
-    }
-
-    renderSearchForm() {
-        return(
-            <>
-            <Form onSubmit={this.handleSearchSubmit}>
-                <Form.Label>Search For Donations: </Form.Label>
-                <Form.Row>
-                    <Col>
-                        <Form.Group controlId="searchBy">
-                            <Form.Control as="select"
-                                value={this.state.searchType}
-                                onChange={this.handleSearchType}
-                            >
-                                <option>Tribute Name</option>
-                                <option>Donor Name</option>
-                                <option>Donation Method</option>
-                                <option>Date</option>
-                                <option>Amount</option>
-                                <option>Tags</option>
-                            </Form.Control>
-                        </Form.Group>
-                    </Col>
-                    <Col>
-                        {this.renderSearchField()}
-                    </Col>
-                </Form.Row>
-                <Form.Row>
-                    <Col>
-                        <Button 
-                        variant="secondary" 
-                        className="coolor-bg-purple-lighten-2" 
-                        onClick={() => this.setState({ showCreate: true })}
-                        >
-                            Add New Donation
-                        </Button>
-                    </Col>
-                    <Col>
-                        <Button className="coolor-bg-blue-darken-2" onClick={this.fetchAllDonations}>Show All Donations</Button>
-                    </Col>
-                    <Col>
-                        <Button className="coolor-bg-blue-lighten-2" type="submit">Search</Button>
-                    </Col>
-                </Form.Row>
-            </Form>
-            </>
-        )
-    }
-
     renderTableHeader(){
         return(
             <h5 className="row">
-                <div className="col">Tribute Email</div>
+                <div className="col">Tribute Name</div>
                 <div className="col">Donor Name</div>
                 <div className="col">Method</div>
                 <div className="col">Date</div>
@@ -352,7 +352,7 @@ class ManageFunds extends React.Component {
         );
     }
 
-    sumUnassigned(){
+    sumUnassignedFunds(){
         var total = 0;
         this.props.donations.map(donation => {
             if(donation.tribute_email === 'No Assignment'){
@@ -381,7 +381,7 @@ class ManageFunds extends React.Component {
         }
         return(
             <>
-            <h5>Unassigned Funds: ${this.sumUnassigned()}</h5>
+            <h5>Unassigned Funds: ${this.sumUnassignedFunds()}</h5>
             <h3>Donations found:</h3>
             <ul className="list-group">
                 {this.renderTableHeader()}
@@ -389,7 +389,7 @@ class ManageFunds extends React.Component {
                     return(
                         <li className="list-group-item" key={donation.id}>
                             <div className="row">
-                                <div className="col">{donation.tribute_email}</div>
+                                <div className="col">{this.getTributeName(donation.tribute_email)}</div>
                                 <div className="col">{donation.donor_name}</div>
                                 <div className="col">{donation.method}</div>
                                 <div className="col">{donation.date}</div>
@@ -403,6 +403,18 @@ class ManageFunds extends React.Component {
             </ul>
             </>
         );
+    }
+
+    getTributeName = (email) => {
+        if(email === 'No Assignment'){
+            return 'No Assignment';
+        }
+        for (let tribute of this.props.tributes){
+            if(email === tribute.email){
+                return (tribute.first_name + ' ' + tribute.last_name);
+            }
+        }
+        return 'Unrecognized Tribute';
     }
 
     onSubmitCallback = () => {
@@ -477,8 +489,7 @@ const mapStateToProps = state => {
         userPerms: state.auth.userPerms,
         donation: state.selectedDonation,
         donations: Object.values(state.donations),
-        tributes: Object.values(state.tributes),
-        users: Object.values(state.users)
+        tributes: Object.values(state.tributes)
     }
 }
 
