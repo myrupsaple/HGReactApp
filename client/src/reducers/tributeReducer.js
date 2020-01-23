@@ -1,11 +1,9 @@
 import { FETCH_TRIBUTE } from '../actions/types';
-import _ from 'lodash';
 
 export default (state = {}, action) => {
     switch(action.type){
         case FETCH_TRIBUTE:
-            const tributeObject = {..._.mapKeys(action.payload.response, 'id')};
-            const tribute = tributeObject[action.payload.id];
+        const tribute = action.payload[0];
             if(!tribute){
                 return {};
             }

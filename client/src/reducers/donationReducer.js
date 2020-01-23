@@ -1,11 +1,9 @@
 import { FETCH_DONATION } from '../actions/types';
-import _ from 'lodash';
 
 export default (state = {}, action) => {
     switch(action.type){
         case FETCH_DONATION:
-            const donationObject = {..._.mapKeys(action.payload.response, 'id')};
-            const donation = donationObject[action.payload.id];
+            const donation = action.payload[0];
             if(!donation){
                 return {};
             }

@@ -35,7 +35,7 @@ const FundsTracking = (
 
 const LifeTracking = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/life-tracking">
-        Life Tracking^
+        Life Tracking+
     </NavDropdown.Item>
 );
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Form, Col, Button, Checkbox } from 'react-bootstrap';
+import { Form, Col, Button } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -13,12 +13,14 @@ import {
     fetchLifeEvents,
     fetchLifeEventsRange,
     fetchAllLifeEvents,
+    deleteLifeEvent,
     clearLifeEventsList
 } from '../../../actions';
+import LifeEventForm from './life_components/LifeEventForm';
 import DeleteModal from './shared_components/DeleteModal';
 
 class ManageFunds extends React.Component {
-    _isMounted = true;
+    _isMounted = false;
     constructor(props){
         super(props);
         this.state = {
@@ -32,17 +34,21 @@ class ManageFunds extends React.Component {
             searchTermSecondary: '',
             timeFormatted: '',
             timeFormattedSecondary: '',
-            filterEventType: 'All',
-            showDetails: false,
+            filterEventType: 'all',
+            showDetails: true,
+            showPairedCombat: false,
             showCreate: false, 
             showEdit: false,
             showDelete: false,
+            // Neded to access individual life event data
+            selectedId: null
         };
         this.handleSearchType = this.handleSearchType.bind(this);
         this.handleSearchTerm = this.handleSearchTerm.bind(this);
         this.handleSearchTermSecondary = this.handleSearchTermSecondary.bind(this);
         this.handleFilterEventType = this.handleFilterEventType.bind(this);
         this.handleShowDetails = this.handleShowDetails.bind(this);
+        this.handlePairedCombat = this.handlePairedCombat.bind(this);
         this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
     }
 
@@ -88,6 +94,7 @@ class ManageFunds extends React.Component {
     }
 
     componentDidMount = async () => {
+        this._isMounted = true;
         this.props.setNavBar('app')
         // Check authorization
         const authPayload = await this.checkAuth();
@@ -109,14 +116,11 @@ class ManageFunds extends React.Component {
         });
     }
     handleSearchTerm(event) {
-        console.log('handleserachterm')
         if(this.state.searchType === 'Time Range'){
-            const hours = event.getHours();
-            const minutes = event.getMinutes();
-            const time = 60 * hours + minutes
+            const time = this.formatTimeFromDate(event);
             this.setState({ 
-                searchTerm: time,
-                timeFormatted: `${hours}:${minutes}`
+                searchTerm: time[0],
+                timeFormatted: time[1]
         });
         } else {
             this.setState({ searchTerm: event.target.value });
@@ -124,23 +128,30 @@ class ManageFunds extends React.Component {
     }
     handleSearchTermSecondary(event) {
         if(this.state.searchType === 'Time Range'){
-            const hours = event.getHours();
-            const minutes = event.getMinutes();
-            const time = 60 * hours + minutes
+            const time = this.formatTimeFromDate(event);
             this.setState({ 
-                searchTermSecondary: time,
-                timeFormattedSecondary: `${hours}:${minutes}`
+                searchTermSecondary: time[0],
+                timeFormattedSecondary: time[1]
         });
         } else {
             this.setState({ searchTermSecondary: event.target.value });
         }
     }
     handleFilterEventType(event){
-        this.setState({ filterEventType: event.target.value });
+        const button = event.target.id;
+        if(button === 'radio-show-all'){
+            this.setState({ filterEventType: 'all' });    
+        } else if(button === 'radio-show-gained'){
+            this.setState({ filterEventType: 'gained' });    
+        } else if(button === 'radio-show-lost'){
+            this.setState({ filterEventType: 'lost' });    
+        } 
     }
-    handleShowDetails(){
-        // TODO: Find a better way to do this
-        this.setState({ showDetails: !this.state.showDetails });
+    handlePairedCombat(event){
+        this.setState({ showPairedCombat: event.target.checked });
+    }
+    handleShowDetails(event){
+        this.setState({ showDetails: event.target.checked });
     }
     
     async handleSearchSubmit(event){
@@ -172,8 +183,8 @@ class ManageFunds extends React.Component {
         } else if(searchType === 'method'){
             if(searchTerm === 'purchase' || searchTerm === 'combat'){
                 this.props.fetchLifeEvents(searchType, searchTerm);
-            } else if(searchTerm === 'mutt'){
-                this.props.fetchLifeEvents('tribute_email', 'mutt')
+            } else if(searchTerm === 'mutts'){
+                this.props.fetchLifeEvents('method', 'mutts')
             } else if(searchTermSecondary === 'all'){
                 const resources = ['life', 'food', 'water', 'medicine'];
                 for (let resource of resources){
@@ -204,16 +215,16 @@ class ManageFunds extends React.Component {
         }
     }
 
-    formatSearchTerm(type){
-        switch(type){
+    formatSearchTerm(method){
+        switch(method){
             case 'Purchased':
                 return 'purchased';
             case 'Resource':
                 return 'resource';
             case 'Combat':
                 return 'combat';
-            case 'Mutt':
-                return 'mutt';
+            case 'Mutts':
+                return 'mutts';
             case 'Show All':
                 return 'all';
             case 'Life (gained)':
@@ -229,8 +240,26 @@ class ManageFunds extends React.Component {
             case 'Other':
                 return 'other';
             default:
-                return type;
+                return method;
         }
+    }
+
+    formatTimeFromDate(time){
+        const hours = time.getHours().toLocaleString(undefined, { minimumIntegerDigits: 2 });
+        const minutes = time.getMinutes().toLocaleString(undefined, { minimumIntegerDigits: 2 });
+        // * 1 prevents the values from being formatted into a string
+        // eg. 12:00 would be formatted to 60 * '12' + '00' = '720' + '00' = '72000'
+        return [60 * hours + 1 * minutes, `${hours}:${minutes}`];
+    }
+
+    formatTimeFromInt(time){
+        const hours = Math.floor(time/60).toLocaleString(undefined, { minimumIntegerDigits: 2 });
+        const minutes = (time % 60).toLocaleString(undefined, { minimumIntegerDigits: 2 });
+        return `${hours}:${minutes}`;
+    }
+
+    capitalizeFirst(string){
+        return string.slice(0, 1).toUpperCase() + string.slice(1, string.length).toLowerCase();
     }
 
     renderSearchForm = () => {
@@ -256,39 +285,44 @@ class ManageFunds extends React.Component {
                     </Col>
                 </Form.Row>
                 <Form.Row>
-                    {/* TODO: Make this section look nicer (radio buttons preferrably) */}
                     <Form.Label>Filter Events By:</Form.Label>
                     <Form.Group controlId="filter-by">
-                        <Form.Control
-                            as="select"
-                            value={this.state.filterEventType}
+                        <Form.Check
+                            defaultChecked
+                            type="radio"
+                            name="filter-event-radios"
+                            label="All"
+                            id="radio-show-all"
                             onChange={this.handleFilterEventType}
-                        >
-                            <option>All</option>
-                            <option>Gained</option>
-                            <option>Lost</option>
-                        </Form.Control>
+                        />
+                        <Form.Check
+                            type="radio"
+                            name="filter-event-radios"
+                            label="Gained"
+                            id="radio-show-gained"
+                            onChange={this.handleFilterEventType}
+                        />
+                        <Form.Check
+                            type="radio"
+                            name="filter-event-radios"
+                            label="Lost"
+                            id="radio-show-lost"
+                            onChange={this.handleFilterEventType}
+                        />
                     </Form.Group>
-                    <Form.Check
-                        value={this.state.showDetails}
-                        onChange={this.handleShowDetails}
-                        label="Show Details"
-                    />
-                    {/* <Radio inline
-                        onChange={this.handleFilterEventType}
-                    >
-                        Gained
-                    </Radio>
-                    <Radio inline
-                        onChange={this.handleFilterEventType}
-                    >
-                        Lost
-                    </Radio>
-                    <Radio inline
-                        onChange={this.handleFilterEventType}
-                    >
-                        All
-                    </Radio> */}
+                    <Form.Group controlId="extra-options">
+                        <Form.Check
+                            defaultChecked
+                            value={this.state.showDetails}
+                            onChange={this.handleShowDetails}
+                            label="Show Details"
+                        />
+                        <Form.Check
+                            value={this.state.showPairedCombat}
+                            onChange={this.handlePairedCombat}
+                            label="Show Paired Combat Events"
+                        />
+                    </Form.Group>
                 </Form.Row>
                 <Form.Row>
                     <Col>
@@ -301,7 +335,7 @@ class ManageFunds extends React.Component {
                     </Button>
                     </Col>
                     <Col>
-                    <Button className="coolor-bg-blue-darken-2" onClick={this.props.fetchAllLifeEvents}>Show All Events</Button>
+                    <Button className="coolor-bg-blue-darken-2" onClick={this.searchForAllLifeEvents}>Show All Events</Button>
                     </Col>
                     <Col>
                     <Button className="coolor-bg-blue-lighten-2" type="submit">Search</Button>
@@ -310,6 +344,11 @@ class ManageFunds extends React.Component {
             </Form>
             </>
         )
+    }
+
+    searchForAllLifeEvents = () => {
+        this.setState({ searchTerm: '', searchTermSecondary: '', queried: true});
+        this.props.fetchAllLifeEvents();
     }
 
     renderSearchField = () => {
@@ -355,7 +394,7 @@ class ManageFunds extends React.Component {
                         showTimeSelect
                         showTimeSelectOnly
                         value={this.state.timeFormatted}
-                        onSelect={this.handleSearchTerm}
+                        onChange={this.handleSearchTerm}
                         dateFormat="hh:mm aa"
                     />
                 </Form.Group>
@@ -366,7 +405,7 @@ class ManageFunds extends React.Component {
                         showTimeSelect
                         showTimeSelectOnly
                         value={this.state.timeFormattedSecondary}
-                        onSelect={this.handleSearchTermSecondary}
+                        onChange={this.handleSearchTermSecondary}
                         dateFormat="hh:mm aa"
                     />
                     <div><Form.Label>
@@ -399,13 +438,26 @@ class ManageFunds extends React.Component {
         }
     }
 
+    renderTableHeader(){
+        return(
+            <h4 className="row">
+                <div className="col">Tribute Name</div>
+                <div className="col">Event Type</div>
+                <div className="col">Method</div>
+                <div className="col">Time</div>
+                <div className="col">Notes</div>
+                <div className="col">Modify</div>
+            </h4>
+        );
+    }
+
     renderLifeEvents(){
         if(Object.keys(this.props.lifeEvents).length === 0){
             // Return different message before and after first search is sent
             if(!this.state.queried) {
                 return(
                     <h5>
-                        Search the database of donations
+                        Search the database of life events
                     </h5>
                 );
             }
@@ -416,9 +468,11 @@ class ManageFunds extends React.Component {
             );
         }
 
-        const eventTypeFilter = this.state.filterEventType.toLowerCase();
+        const eventTypeFilter = this.state.filterEventType;
         var lifeEvents = this.props.lifeEvents;
-        if(this.state.filterEventType !== 'All'){
+        if(eventTypeFilter === 'all' && !this.state.showPairedCombat){
+            lifeEvents = lifeEvents.filter(lifeEvent => lifeEvent.type !== 'combat');
+        } else if(eventTypeFilter !== 'all') {
             lifeEvents = lifeEvents.filter(lifeEvent => lifeEvent.type === eventTypeFilter);
         }
         return(
@@ -431,18 +485,49 @@ class ManageFunds extends React.Component {
                 return(
                     <li className="list-group-item" key={lifeEvent.id}>
                         <div className="row">
-                            <div className="col">{lifeEvent.tribute_email}</div>
-                            <div className="col">{lifeEvent.type}</div>
-                            <div className="col">{lifeEvent.method}</div>
-                            <div className="col">{lifeEvent.time}</div>
+                            <div className="col">{this.getTributeName(lifeEvent.tribute_email)}</div>
+                            <div className="col">{this.capitalizeFirst(lifeEvent.type)}</div>
+                            <div className="col">{this.capitalizeFirst(lifeEvent.method)}</div>
+                            <div className="col">{this.formatTimeFromInt(lifeEvent.time)}</div>
                             <div className="col">{lifeEvent.notes}</div>
-                            {/* <div className="col">{this.renderAdmin(lifeEvent)}</div> */}
+                            <div className="col">{this.renderAdmin(lifeEvent)}</div>
                         </div>
                     </li>
                 );
             })}
             </ul>
             </>
+        );
+    }
+
+    getTributeName = (email) => {
+        if(email === 'No Assignment'){
+            return 'No Assignment';
+        }
+        for (let tribute of this.props.tributes){
+            if(email === tribute.email){
+                return (tribute.first_name + ' ' + tribute.last_name);
+            }
+        }
+        return 'Unrecognized Tribute';
+    }
+
+    renderAdmin = (lifeEvent) => {
+        return(
+            <div className="row">
+                <Button 
+                variant="info"
+                onClick={() => this.setState({ showEdit: true, selectedId: lifeEvent.id })}
+                >
+                    Edit
+                </Button>
+                <Button
+                variant="danger"
+                onClick={() => this.setState({ showDelete: true, selectedId: lifeEvent.id })}
+                >
+                    Delete
+                </Button>
+            </div>
         );
     }
 
@@ -461,11 +546,10 @@ class ManageFunds extends React.Component {
         var combat = 0;
         var mutts = 0;
         var other = 0;
-        console.log(lifeEvents);
         for (let lifeEvent of lifeEvents) {
             if(lifeEvent.type === 'gained'){
                 gained += 1;
-            } else {
+            } else if (lifeEvent.type === 'lost'){
                 lost += 1;
             }
             if(lifeEvent.method === 'purchased'){
@@ -502,17 +586,34 @@ class ManageFunds extends React.Component {
         );
     }
 
-    renderTableHeader(){
-        return(
-            <h4 className="row">
-                <div className="col">Tribute Name</div>
-                <div className="col">Action Type</div>
-                <div className="col">Method</div>
-                <div className="col">Time</div>
-                <div className="col">Notes</div>
-                <div className="col">Modify</div>
-            </h4>
-        );
+    onSubmitCallback = () => {
+        if(this.state.showCreate){
+            this.setState({ showCreate: false })
+        } else if(this.state.showEdit){
+            this.setState({ showEdit: false })
+        } else if(this.state.showDelete){
+            this.setState({ showDelete: false })
+        }
+        if(!this.state.queried){
+            return;
+        }
+        if(this.state.searchTerm === ''){
+            this.props.fetchAllLifeEvents();
+        } else {
+            this.props.fetchLifeEvents(this.formatSearchType(this.state.searchType), this.state.searchTerm);
+        }
+    }
+
+    renderModal(){
+        if(this.state.showCreate) {
+            return <LifeEventForm tributes={this.props.tributes} id={this.state.selectedId} mode="create" onSubmitCallback={this.onSubmitCallback}/>;
+        } else if(this.state.showEdit) {
+            return <LifeEventForm tributes={this.props.tributes} id={this.state.selectedId} mode="edit" onSubmitCallback={this.onSubmitCallback}/>;
+        } else if(this.state.showDelete){
+            return <DeleteModal id={this.state.selectedId} actionType="Life Event" 
+            onConfirm={this.props.deleteLifeEvent}
+            onSubmitCallback={this.onSubmitCallback} />
+        }
     }
 
     renderContent = () => {
@@ -529,6 +630,7 @@ class ManageFunds extends React.Component {
                 <>
                     {this.renderSearchForm()}
                     {this.renderLifeEvents()}
+                    {this.renderModal()}
                 </>
             );
         } else {
@@ -537,6 +639,7 @@ class ManageFunds extends React.Component {
     }
 
     render = () => {
+        console.log(this.state);
         return(
             <>
                 {this.renderContent()}
@@ -567,5 +670,6 @@ export default connect(mapStateToProps,
         fetchLifeEvents,
         fetchLifeEventsRange,
         fetchAllLifeEvents,
+        deleteLifeEvent,
         clearLifeEventsList
     })(ManageFunds);

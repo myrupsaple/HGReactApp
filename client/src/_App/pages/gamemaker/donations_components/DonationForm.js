@@ -5,7 +5,7 @@ import DatePicker from 'react-datepicker';
 
 import { fetchDonation, createDonation, updateDonation } from '../../../../actions';
 
-class EditDonation extends React.Component {
+class DonationForm extends React.Component {
     _isMounted = false;
 
     constructor(props){
@@ -272,4 +272,4 @@ const mapStateToProps = state => {
 
 export default connect(mapStateToProps, { 
     fetchDonation, createDonation, updateDonation 
-})(EditDonation);
+})(DonationForm);

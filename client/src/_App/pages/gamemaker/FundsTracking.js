@@ -441,7 +441,7 @@ class ManageFunds extends React.Component {
         } else if(this.state.showEdit) {
             return <DonationForm tributes={this.props.tributes} id={this.state.selectedId} mode="edit" onSubmitCallback={this.onSubmitCallback}/>;
         } else if(this.state.showDelete){
-            return <DeleteModal id={this.state.selectedId} description="yes" actionType="Donation" 
+            return <DeleteModal id={this.state.selectedId} actionType="Donation" 
             onConfirm={this.props.deleteDonation}
             onSubmitCallback={this.onSubmitCallback} />
         }

@@ -433,6 +433,39 @@ export const fetchAllLifeEvents = () => async dispatch => {
     }
 }
 
+export const createLifeEvent = (lifeEvent) => async dispatch => {
+    console.log(`Actions: Create Life Event`);
+    await app.post(`/life-events/post/${lifeEvent.email}/${lifeEvent.type}/${lifeEvent.method}/${lifeEvent.time}/${lifeEvent.notes}`)
+        .then(res => {
+            console.log('Successfully Created Life Event');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const updateLifeEvent = (lifeEvent) => async dispatch => {
+    console.log(`Actions: Update Life Event`);
+    await app.put(`/life-events/put/${lifeEvent.id}/${lifeEvent.email}/${lifeEvent.type}/${lifeEvent.method}/${lifeEvent.time}/${lifeEvent.notes}`)
+        .then(res => {
+            console.log('Successfully Updated Life Event');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const deleteLifeEvent = (id) => async dispatch => {
+    console.log(`Actions: DELETE Life Event with id ${id}`);
+    await app.delete(`/life-events/delete/${id}`)
+        .then(res => {
+            console.log('Successfully Deleted Life Event');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
 export const clearLifeEventsList = () => async dispatch => {
     dispatch({ type: CLEAR_LIFE_EVENTS_QUEUE });
 }

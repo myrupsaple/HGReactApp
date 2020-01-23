@@ -35,7 +35,6 @@ class DeleteModal extends React.Component {
             return(
                 <>
                     <div>Are you sure you would like to delete this item?</div>
-                    <div>{this.props.description}</div>
                 </>
             );
         }
@@ -68,6 +67,10 @@ class DeleteModal extends React.Component {
                 </Modal.Footer>
             </Modal>
         );
+    }
+
+    componentWillUnmount(){
+        this._isMounted = false;    
     }
 };
 

@@ -644,6 +644,67 @@ app.get(`/life-events/get/all`, (req, res) => {
     });
 })
 
+// CREATE_LIFE_EVENT
+app.post(`/life-events/post/:email/:type/:method/:time/:notes`, (req, res) => {
+    const { email, type, method, time, notes } = req.params;
+    const queryStringCreateLifeEvent = `INSERT INTO life_events (tribute_email,
+        type, method, time, notes) VALUES ('${email}', '${type}', '${method}',
+        ${time}, '${notes}')`;
+    console.log(queryStringCreateLifeEvent);
+    connection.query(queryStringCreateLifeEvent, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// UPDATE_LIFE_EVENT
+app.put(`/life-events/post/:id/:email/:type/:method/:time/:notes`, (req, res) => {
+    const { id, email, type, method, time, notes } = req.params;
+    const queryStringUpdateLifeEvent = `UPDATE life_events SET email = '${email}',
+    type = '${type}', method = '${method}', time = ${time}, notes = '${notes}'
+    WHERE id = ${id}`;
+    console.log(queryStringUpdateLifeEvent);
+    connection.query(queryStringUpdateLifeEvent, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// DELETE_LIFE_EVENT
+app.delete(`/life-events/delete/:id/`, (req, res) => {
+    const id = req.params.id;
+    const queryStringDeleteLifeEvent = `DELETE FROM life_events WHERE id = ${id}`;
+    console.log(queryStringDeleteLifeEvent);
+    connection.query(queryStringDeleteLifeEvent, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
 //######################## (6) Game State Management #########################//
 
 // FETCH_GAMESTATE
