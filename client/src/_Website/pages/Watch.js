@@ -1,6 +1,10 @@
 import React from 'react';
+import { connect } from 'react-redux';
 
-const Watch = () => {
+import { setNavBar } from '../../actions';
+
+const Watch = (props) => {
+    props.setNavBar('web');
     return(
         <>
             <h1 id="header">Watch the Games</h1>
@@ -17,4 +21,4 @@ const Watch = () => {
     );
 };
 
-export default Watch;
+export default connect(null, { setNavBar})(Watch);

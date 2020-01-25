@@ -95,7 +95,7 @@ class ManageFunds extends React.Component {
 
     componentDidMount = async () => {
         this._isMounted = true;
-        this.props.setNavBar('app')
+        this.props.setNavBar('app');
         // Check authorization
         const authPayload = await this.checkAuth();
         if(this._isMounted){
@@ -285,44 +285,56 @@ class ManageFunds extends React.Component {
                     </Col>
                 </Form.Row>
                 <Form.Row>
-                    <Form.Label>Filter Events By:</Form.Label>
-                    <Form.Group controlId="filter-by">
-                        <Form.Check
-                            defaultChecked
-                            type="radio"
-                            name="filter-event-radios"
-                            label="All"
-                            id="radio-show-all"
-                            onChange={this.handleFilterEventType}
-                        />
-                        <Form.Check
-                            type="radio"
-                            name="filter-event-radios"
-                            label="Gained"
-                            id="radio-show-gained"
-                            onChange={this.handleFilterEventType}
-                        />
-                        <Form.Check
-                            type="radio"
-                            name="filter-event-radios"
-                            label="Lost"
-                            id="radio-show-lost"
-                            onChange={this.handleFilterEventType}
-                        />
-                    </Form.Group>
-                    <Form.Group controlId="extra-options">
-                        <Form.Check
-                            defaultChecked
-                            value={this.state.showDetails}
-                            onChange={this.handleShowDetails}
-                            label="Show Details"
-                        />
-                        <Form.Check
-                            value={this.state.showPairedCombat}
-                            onChange={this.handlePairedCombat}
-                            label="Show Paired Combat Events"
-                        />
-                    </Form.Group>
+                    <div className="col-">
+                        <Form.Label>Filter Events By:</Form.Label>
+                    </div>
+                    <div className="col-">
+                        <Form.Group controlId="filter-by">
+                            <Form.Check
+                                defaultChecked
+                                type="radio"
+                                name="filter-event-radios"
+                                label="All"
+                                id="radio-show-all"
+                                onChange={this.handleFilterEventType}
+                            />
+                            <Form.Check
+                                type="radio"
+                                name="filter-event-radios"
+                                label="Gained"
+                                id="radio-show-gained"
+                                onChange={this.handleFilterEventType}
+                            />
+                            <Form.Check
+                                type="radio"
+                                name="filter-event-radios"
+                                label="Lost"
+                                id="radio-show-lost"
+                                onChange={this.handleFilterEventType}
+                            />
+                        </Form.Group>
+                    </div>
+                    <div className="col-1"></div>
+                    <div className="col-">
+                        <Form.Label>Extra Options:</Form.Label>
+                    </div>
+                    <div className="col-">
+                        <Form.Group controlId="show-details" style={{ marginBottom: '0px' }}>
+                            <Form.Check
+                                defaultChecked
+                                value={this.state.showDetails}
+                                onChange={this.handleShowDetails}
+                                label="Show Details"
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="show-paired" style={{ marginBottom: '0px' }}>
+                            <Form.Check
+                                value={this.state.showPairedCombat}
+                                onChange={this.handlePairedCombat}
+                                label="Show Paired Combat Events"
+                            />
+                        </Form.Group>
+                    </div>
                 </Form.Row>
                 <Form.Row>
                     <Col>

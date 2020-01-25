@@ -1,7 +1,7 @@
 import { SET_NAVBAR } from '../actions/types';
 
 const DEFAULT_STATE = {
-    navType: 'web',
+    navType: 'none',
 }
 
 export default (state = DEFAULT_STATE, action) => {

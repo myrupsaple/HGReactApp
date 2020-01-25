@@ -1,6 +1,10 @@
 import React from 'react';
+import { connect } from 'react-redux';
+
+import { setNavBar } from '../../../actions';
 
 const AboutIV = (props) => {
+    props.setNavBar('web');
     return(
         <>
             <h1 id="header">About InterVarsity</h1>
@@ -101,4 +105,4 @@ const AboutIV = (props) => {
     );
 };
 
-export default AboutIV;
+export default connect(undefined, { setNavBar })(AboutIV);

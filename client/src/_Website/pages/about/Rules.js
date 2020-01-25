@@ -1,10 +1,14 @@
 import React from 'react';
+import { connect } from 'react-redux';
+
+import { setNavBar } from '../../../actions';
 
 const Rules = (props) => {
+    props.setNavBar('web');
+    
     const divLimiter = {
         display: 'inline-block'
     };
-
 
     return (
         <>
@@ -78,4 +82,4 @@ const Rules = (props) => {
     );
 };
 
-export default Rules;
+export default connect(null, { setNavBar })(Rules);

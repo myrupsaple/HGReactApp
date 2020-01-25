@@ -1,6 +1,10 @@
 import React from 'react';
+import { connect } from 'react-redux';
+
+import { setNavBar } from '../../../actions';
 
 const AboutHG = (props) => {
+    props.setNavBar('web');
     return(
         <>
             <h1 id="header">About the Hunger Games</h1>
@@ -40,4 +44,4 @@ const AboutHG = (props) => {
     );
 };
 
-export default AboutHG;
+export default connect(null, { setNavBar })(AboutHG);

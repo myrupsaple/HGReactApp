@@ -1,6 +1,12 @@
 import React from 'react';
+import { connect } from 'react-redux';
 
-const Home = () => {
+import { setNavBar } from '../../actions';
+import './pageStyle.css';
+
+const Home = (props) => {
+    props.setNavBar('web');
+
     const dark = 'coolor-text-green-darken-2'
     const light = 'coolor-text-green-accent-3';
 
@@ -33,4 +39,4 @@ const Home = () => {
     );
 };
 
-export default Home;
+export default connect(null, { setNavBar })(Home);

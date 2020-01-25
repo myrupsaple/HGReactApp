@@ -6,22 +6,22 @@
     margin: 0 2vw;
 }
 
-.custom-dropdown-bg-app > .dropdown > .dropdown-menu {
-    background-color: #E0F7FA;
+.theme-color-1 {
+    background-color: #2C3531;
 }
 
-.custom-dropdown-bg-web > .dropdown > .dropdown-menu {
-    background-color: #80DEEA;
+.theme-color-2 {
+    background-color: #116466;
 }
 
-.navbar {
-    margin: 0px;
+.theme-color-3 {
+    background-color: #D9B08C;
 }
 
-.navbar {
-    padding: .75vh 5vw;
+.theme-color-4 {
+    background-color: #FFCB9A;
 }
 
-.navbar-right {
-    margin-left: auto;
+.theme-color-5 {
+    background-color: #D1E8E2;
 }

@@ -39,9 +39,15 @@ const LifeTracking = (
     </NavDropdown.Item>
 );
 
-const ResourceTracking = (
-    <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/resource-tracking">
-        Resource Tracking*
+const ResourceList = (
+    <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/resource-list">
+        Resource List*
+    </NavDropdown.Item>
+);
+
+const ResourceEvents = (
+    <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/resource-events">
+        Resource Events*
     </NavDropdown.Item>
 );
 
@@ -94,7 +100,8 @@ export const OwnerTools = (
             {TributeAccountInfo}
             {FundsTracking}
             {LifeTracking}
-            {ResourceTracking}
+            {ResourceList}
+            {ResourceEvents}
             {ManageItems}
             {ViewLocations}
         </>
@@ -108,7 +115,8 @@ export const AdminTools = (
             {TributeAccountInfo}
             {FundsTracking}
             {LifeTracking}
-            {ResourceTracking}
+            {ResourceList}
+            {ResourceEvents}
             {ManageItems}
             {ViewLocations}
         </>
@@ -121,7 +129,8 @@ export const GMTools = (
             {TributeAccountInfo}
             {FundsTracking}
             {LifeTracking}
-            {ResourceTracking}
+            {ResourceList}
+            {ResourceEvents}
             {ManageItems}
             {ViewLocations}
         </>

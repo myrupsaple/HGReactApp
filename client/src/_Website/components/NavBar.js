@@ -3,6 +3,8 @@ import { connect } from 'react-redux';
 import GoogleAuth from '../../components/GoogleAuth';
 import { Navbar, NavDropdown, Nav, NavItem }from 'react-bootstrap';
 
+import './NavStyles.css';
+
 // TODO: Add admin powers to modify tribute pages
 
 class NavBar extends React.Component {
@@ -66,6 +68,8 @@ class NavBar extends React.Component {
     renderRightMenu({ name, email, authorized, perms, signedIn }) {
         console.log('Authentication: ' + authorized);
 
+        const color = { color: '#D1E8E2' };
+
         // Print a welcome message to authorized users, and allow them to access
         // the App via a dropdown link
         if(name){
@@ -80,7 +84,7 @@ class NavBar extends React.Component {
                             Access App
                         </NavDropdown.Item>
                         <NavDropdown.Item>
-                            <GoogleAuth />
+                            <GoogleAuth color={color}/>
                         </NavDropdown.Item>
                     </NavDropdown>
                 </>
@@ -94,7 +98,7 @@ class NavBar extends React.Component {
                         {email} is not authorized.
                     </NavItem>
                     <NavItem>
-                        <GoogleAuth />
+                        <GoogleAuth color={color}/>
                     </NavItem>
                 </>
             );
@@ -105,7 +109,7 @@ class NavBar extends React.Component {
                         Error retrieving user info.
                     </NavItem>
                     <NavItem>
-                        <GoogleAuth />
+                        <GoogleAuth color={color}/>
                     </NavItem>
                 </>
             );
@@ -113,7 +117,7 @@ class NavBar extends React.Component {
             return(
                 <>
                     <NavItem>
-                        <GoogleAuth />
+                        <GoogleAuth color={color}/>
                     </NavItem>
                 </>
             );
@@ -121,9 +125,8 @@ class NavBar extends React.Component {
     }
     
     render() {
-        const menuCoolor = "coolor-bg-light-blue-darken-1";
         return(
-            <Navbar variant="light" expand="sm" className={menuCoolor}>
+            <Navbar variant="light" className="navbar-for-web">
                 <Navbar.Brand href="/">IVHG 20</Navbar.Brand>
                     <Nav className="mr-auto custom-dropdown-bg-web">
                         {this.renderLeftMenu()}

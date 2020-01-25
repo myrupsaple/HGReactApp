@@ -1,6 +1,10 @@
 import React from 'react';
+import { connect } from 'react-redux';
 
-const Districts = () => {
+import { setNavBar } from '../../../actions';
+
+const Districts = (props) => {
+    props.setNavBar('web');
     return (
         <>
             <h1 id="header">Districts and Tributes</h1>
@@ -9,4 +13,4 @@ const Districts = () => {
     );
 };
 
-export default Districts;
+export default connect(null, { setNavBar })(Districts);

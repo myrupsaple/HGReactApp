@@ -1,0 +1,27 @@
+.navbar-for-app {
+    background-color: #2C3531;
+}
+
+.custom-dropdown-bg-app .dropdown-menu {
+    background-color: #003049;
+}
+
+.return-to-site-link {
+    color: #D1E8E2;
+}
+
+.dropdown-item:hover {
+    background-color: #D9B08C;
+}
+
+.navbar {
+    margin: 0px;
+}
+
+.navbar {
+    padding: .75vh 5vw;
+}
+
+.navbar-right {
+    margin-left: auto;
+}

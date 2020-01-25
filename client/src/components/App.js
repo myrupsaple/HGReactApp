@@ -40,7 +40,8 @@ import ManageGame from '../_App/pages/gamemaker/ManageGame';
 import TributeInfo from '../_App/pages/gamemaker/TributeInfo';
 import FundsTracking from '../_App/pages/gamemaker/FundsTracking';
 import LifeTracking from '../_App/pages/gamemaker/LifeTracking';
-import ResourceTracking from '../_App/pages/gamemaker/ResourceTracking';
+import ResourceList from '../_App/pages/gamemaker/ResourceList';
+import ResourceEvents from '../_App/pages/gamemaker/ResourceEvents';
 import ManageItems from '../_App/pages/gamemaker/ManageItems';
 // Owner and Admin Tools
 import ModifyUsers from '../_App/pages/owner_admin/ModifyUsers';
@@ -94,7 +95,8 @@ class App extends React.Component {
                     <Route path="/App/gamemaker/tribute-info" exact component={TributeInfo} />
                     <Route path="/App/gamemaker/funds-tracking" exact component={FundsTracking} />
                     <Route path="/App/gamemaker/life-tracking" exact component={LifeTracking} />
-                    <Route path="/App/gamemaker/resource-tracking" exact component={ResourceTracking} />
+                    <Route path="/App/gamemaker/resource-list" exact component={ResourceList} />
+                    <Route path="/App/gamemaker/resource-events" exact component={ResourceEvents} />
                     <Route path="/App/gamemaker/manage-items" exact component={ManageItems} />
                     {/* Owner and Admin Tools */}
                     <Route path="/App/owner/modify-users" exact component={ModifyUsers} />

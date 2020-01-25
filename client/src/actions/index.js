@@ -13,6 +13,14 @@ import {
     FETCH_DONATIONS,
     FETCH_ALL_DONATIONS,
     CLEAR_DONATIONS_QUEUE,
+    FETCH_RESOURCE_LIST_ITEM,
+    FETCH_RESOURCE_LIST_ITEMS,
+    FETCH_ALL_RESOURCE_LIST_ITEMS,
+    CLEAR_RESOURCE_LIST_QUEUE,
+    FETCH_RESOURCE_EVENT,
+    FETCH_RESOURCE_EVENTS,
+    FETCH_ALL_RESOURCE_EVENTS,
+    CLEAR_RESOURCE_EVENT_QUEUE,
     FETCH_LIFE_EVENT,
     FETCH_LIFE_EVENTS,
     FETCH_ALL_LIFE_EVENTS,
@@ -361,7 +369,223 @@ export const clearDonationsList = () => async dispatch => {
     dispatch({ type: CLEAR_DONATIONS_QUEUE });
 }
 
-//######################### (4) Resource Management ##########################//
+//############################ (4a) Resource List ############################//
+export const fetchResourceListItem = id => async (dispatch) => {
+    console.log('Actions: Fetch resource list item initiated');
+    var response = null;
+    await app.get(`/resource/list/get/single/${id}`)
+        .then(res => {
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+
+    if(response && response.data){
+        console.log(`Successfully retrieved resource list item ${id}`);
+        dispatch ({ type: FETCH_RESOURCE_LIST_ITEM, payload: { 
+            response: response.data,
+            id
+        }});
+    }
+};
+
+export const fetchResourceListItems = (type, query) => async (dispatch) => {
+    console.log(`Actions: Fetch resource list items initiated: ${type} containing '${query}'`);
+    var response = null;
+    await app.get(`/resource/list/get/list/${type}/${query}`)
+        .then(res => {
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+
+    if(response && response.data){
+        console.log('Successfully searched for resource list items');
+        dispatch ({ type: FETCH_RESOURCE_LIST_ITEMS, payload: response.data });
+    }
+};
+
+export const fetchResourceListItemRange = (type, query1, query2) => async (dispatch) => {
+    console.log(`Actions: Fetch resource list items range initiated: ${type} between ${query1} and ${query2}`);
+    var response = null;
+    await app.get(`/resource/list/get/range/${type}/${query1}/${query2}`)
+        .then(res => {
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+
+    if(response && response.data){
+        console.log('Successfully searched for resource list items range');
+        dispatch ({ type: FETCH_RESOURCE_LIST_ITEMS, payload: response.data });
+    }
+};
+
+export const fetchAllResourceListItems = () => async (dispatch) => {
+    console.log('Actions: Fetch all resource list items initiated');
+    var response = null;
+    await app.get(`/resource/list/get/all`)
+        .then(res => {
+        response = res;
+    })
+    .catch(err => {
+        console.log(err);
+    });
+    
+    if(response && response.data){
+        console.log('Successfully retrieved resource list');
+        dispatch ({ type: FETCH_ALL_RESOURCE_LIST_ITEMS, payload: response.data });
+    }
+};
+
+export const createResourceListItem = item => async dispatch => {
+    console.log('Actions: Create resource list item initiated');
+    await app.post(`/resource/list/post/${item.code}/${item.type}/${item.timesUsed}/${item.maxUses}/${item.usedBy}/${item.notes}`)
+        .then(res => {
+            console.log(`Successfully created resource list item of type ${item.type} via ${item.method}`);
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const updateResourceListItem = item => async dispatch => {
+    console.log('Actions: Update resource list item initiated');
+    await app.put(`/resource/list/put/${item.id}/${item.code}/${item.type}/${item.timesUsed}/${item.maxUses}/${item.usedBy}/${item.notes}`)
+        .then(res => {
+            console.log(`Successfully updated resource list item ${item.id}`);
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const deleteResourceListItem = id => async dispatch => {
+    console.log(`Actions: DELETE resource list item initiated with id ${id}`);
+    await app.delete(`/resource/list/delete/${id}`)
+        .then(res => {
+            console.log('Successfully deleted resource list item');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const clearResourceList = () => async dispatch => {
+    dispatch({ type: CLEAR_RESOURCE_LIST_QUEUE });
+}
+
+//########################### (4b) Resource Events ###########################//
+export const fetchResourceEvent = id => async (dispatch) => {
+    console.log('Actions: Fetch resource event initiated');
+    var response = null;
+    await app.get(`/resource/events/get/single/${id}`)
+        .then(res => {
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+
+    if(response && response.data){
+        console.log(`Successfully retrieved resource event ${id}`);
+        dispatch ({ type: FETCH_RESOURCE_EVENT, payload: { 
+            response: response.data,
+            id
+        }});
+    }
+};
+
+export const fetchResourceEvents = (type, query) => async (dispatch) => {
+    console.log(`Actions: Fetch resource event initiated: ${type} containing '${query}'`);
+    var response = null;
+    await app.get(`/resource/events/get/list/${type}/${query}`)
+        .then(res => {
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+
+    if(response && response.data){
+        console.log('Successfully searched for resource event');
+        dispatch ({ type: FETCH_RESOURCE_EVENTS, payload: response.data });
+    }
+};
+
+export const fetchResourceEventRange = (type, query1, query2) => async (dispatch) => {
+    console.log(`Actions: Fetch resource events range initiated: ${type} between ${query1} and ${query2}`);
+    var response = null;
+    await app.get(`/resource/events/get/range/${type}/${query1}/${query2}`)
+        .then(res => {
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+
+    if(response && response.data){
+        console.log('Successfully searched for resource event range');
+        dispatch ({ type: FETCH_RESOURCE_EVENTS, payload: response.data });
+    }
+};
+
+export const fetchAllResourceEvents = () => async (dispatch) => {
+    console.log('Actions: Fetch all resource events initiated');
+    var response = null;
+    await app.get(`/resources/events/get/all`)
+        .then(res => {
+        response = res;
+    })
+    .catch(err => {
+        console.log(err);
+    });
+    
+    if(response && response.data){
+        console.log('Successfully retrieved all resource events');
+        dispatch ({ type: FETCH_ALL_RESOURCE_EVENTS, payload: response.data });
+    }
+};
+
+export const createResourceEvent = item => async dispatch => {
+    console.log('Actions: Create resource event initiated');
+    await app.post(`/resource/events/post/${item.email}/${item.type}/${item.method}/${item.time}/${item.notes}`)
+        .then(res => {
+            console.log(`Successfully created resource event of ${item.type} via ${item.method}`);
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const updateResourceEvent = item => async dispatch => {
+    console.log('Actions: Update resource event initiated');
+    await app.put(`/resource/events/put/${item.id}/${item.email}/${item.type}/${item.method}/${item.time}/${item.notes}`)
+        .then(res => {
+            console.log(`Successfully updated resource event ${item.id}`);
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const deleteResourceEvent = id => async dispatch => {
+    console.log(`Actions: DELETE resource event initiated with id ${id}`);
+    await app.delete(`/resource/events/delete/${id}`)
+        .then(res => {
+            console.log('Successfully deleted resource event');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const clearResourceEvents = () => async dispatch => {
+    dispatch({ type: CLEAR_RESOURCE_EVENT_QUEUE });
+}
 
 //########################### (5) Life Management ############################//
 

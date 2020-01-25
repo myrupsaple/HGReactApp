@@ -1,6 +1,7 @@
 import React from 'react';
+import { connect } from 'react-redux';
 
-import NavBar from '../../components/NavBar';
+import { setNavBar } from '../../../actions';
 import District1 from './District1';
 import District2 from './District2';
 import District3 from './District3';
@@ -10,6 +11,7 @@ class DistrictRouter extends React.Component {
     state = { page: <div>Hello</div> };
 
     componentDidMount() {
+        this.props.setNavBar('web');
         switch(this.props.match.params.id) {
             case '1':
                 return(this.setState({ page: District1() }));
@@ -24,13 +26,10 @@ class DistrictRouter extends React.Component {
     render() {
         return (
             <>
-                <NavBar />
-                <div className="ui-container">
-                    {this.state.page}
-                </div>
+                {this.state.page}
             </>
         );
     }
 }
 
-export default DistrictRouter
+export default connect(null, { setNavBar })(DistrictRouter);

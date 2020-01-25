@@ -66,6 +66,8 @@ class AdjustStart extends React.Component {
         } else {
             return(
                 <>
+                    {/* TODO: Fix locale issue (server is -8 hours on selected time) */}
+                    {/* TODO: Select from range of resonable start times (rather than 12am-11:55pm) */}
                     <DatePicker 
                         value={this.state.formattedTime} 
                         onChange={this.handleChange} 
@@ -149,7 +151,6 @@ class AdjustStart extends React.Component {
     }
     
     render = () => {
-        console.log(this.state)
         return(
             <>
                 {this.renderContent()}    

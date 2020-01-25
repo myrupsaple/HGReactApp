@@ -1,6 +1,10 @@
 import React from 'react';
+import { connect } from 'react-redux';
 
-const Donate = () => {
+import { setNavBar } from '../../actions';
+
+const Donate = (props) => {
+    props.setNavBar('web');
     return(
         <>
             <h1 id="header">How Do I Donate?</h1>
@@ -54,4 +58,4 @@ const Donate = () => {
     );
 };
 
-export default Donate;
+export default connect(null, { setNavBar })(Donate);

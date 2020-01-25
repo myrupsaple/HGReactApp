@@ -5,7 +5,7 @@ import { setNavBar } from '../../../actions';
 import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components/AuthMessages';
 import Wait from '../../../components/Wait';
 
-class ManageResources extends React.Component {
+class ResourceEvents extends React.Component {
     _isMounted = true;
     state = {
         auth: {
@@ -80,7 +80,7 @@ class ManageResources extends React.Component {
         if(this.state.auth.payload === null){
             return(
                 <>
-                    Resource Tracking
+                    Resource Events
                 </>
             );
         } else {
@@ -109,4 +109,4 @@ const mapStateToProps = state => {
     }
 }
 
-export default connect(mapStateToProps, { setNavBar })(ManageResources);
+export default connect(mapStateToProps, { setNavBar })(ResourceEvents);

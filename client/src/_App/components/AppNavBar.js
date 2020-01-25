@@ -13,6 +13,8 @@ import {
     HelperTools
 } from './NavToolHelpers';
 
+import './NavStyles.css';
+
 class AppNavBar extends React.Component {
 
     // Will render out some admin tools if the user signs in and is authenticated
@@ -21,7 +23,7 @@ class AppNavBar extends React.Component {
             return (
                 <>
                     <Nav.Link href="/">
-                        <div className="coolor-text-special-color-dark">
+                        <div className="return-to-site-link">
                             Return to Website
                         </div>
                     </Nav.Link>
@@ -91,9 +93,12 @@ class AppNavBar extends React.Component {
     }
     
     renderRightMenu({ authLoaded, name, email, signedIn, authorized, perms }) {
+        const color = { color: '#D1E8E2' };
+        
         if(!authLoaded){
-            return <GoogleAuth />;
+            return <GoogleAuth color={color}/>;
         }
+        
         if(name){
             const welcomeAuthenticated = (
                 `Welcome, ${name}! Your permissions: ${this.capitalizeFirstLetter(perms)}`
@@ -101,11 +106,11 @@ class AppNavBar extends React.Component {
 
             return(
                 <NavDropdown title={welcomeAuthenticated}>
-                    <NavDropdown.Item as={Nav.Link} href="/App/user-settings">
+                    <NavDropdown.Item as={Nav.Link} href="/App/user-settings" style={{ textAlign: 'center' }}>
                         Preferences
                     </NavDropdown.Item>
                     <NavDropdown.Item>
-                       <GoogleAuth />
+                        <GoogleAuth color={color}/>
                     </NavDropdown.Item>
                </NavDropdown>
             );
@@ -118,7 +123,7 @@ class AppNavBar extends React.Component {
                         {email} is not authorized to use the app.
                     </NavItem>
                     <NavItem>
-                       <GoogleAuth />
+                        <GoogleAuth color={color}/>
                     </NavItem>
                </>
             );
@@ -129,7 +134,7 @@ class AppNavBar extends React.Component {
                         Error retrieving user info.
                     </NavItem>
                     <NavItem>
-                       <GoogleAuth />
+                        <GoogleAuth color={color}/>
                     </NavItem>
                </>
             );
@@ -141,7 +146,7 @@ class AppNavBar extends React.Component {
                         You must be signed in to use the app.
                     </NavItem>
                     <NavItem>
-                       <GoogleAuth />
+                        <GoogleAuth color={color}/>
                     </NavItem>
                </>
             );
@@ -149,9 +154,8 @@ class AppNavBar extends React.Component {
     }
 
     render(){
-        const menuCoolor = "coolor-bg-light-blue-lighten-4"
         return(
-            <Navbar variant="light" className={menuCoolor}>
+            <Navbar variant="dark" className="navbar-for-app">
                 <Navbar.Brand href="/App">IVHG 20 App</Navbar.Brand>
                     <Nav className={`custom-dropdown-bg-app navbar-left`}>
                         {this.renderLeftMenu()}

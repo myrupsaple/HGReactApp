@@ -1,0 +1,23 @@
+.custom-dropdown-bg-web .dropdown-menu {
+    background-color: #80DEEA;
+}
+
+.navbar-for-web {
+    background-color: #29B6F6;
+}
+
+.dropdown-item:hover {
+    background-color: orange;
+}
+
+.navbar {
+    margin: 0px;
+}
+
+.navbar {
+    padding: .75vh 5vw;
+}
+
+.navbar-right {
+    margin-left: auto;
+}

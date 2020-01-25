@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { setNavBar } from '../../actions';
+import './pageStyle.css';
 
 const AppHome = (props) => {
     props.setNavBar('app');
@@ -10,7 +11,7 @@ const AppHome = (props) => {
             <h2>
                 Welcome to the Hunger Games App!
             </h2>
-            <h5 className="coolor-text-red-darken-2">Please note that you must be logged in to access the app's features</h5>
+            <h5 className="coolor-text-red-darken-2">Please note that you must be logged in to access the app's features {'\n'} {'\n'} {'\n'} .</h5>
             <h4 className="coolor-text-blue-darken-3">A note to the beta testing team:</h4>
             <h5>
             I'd greatly appreciate any feedback you can provide as I release

@@ -49,7 +49,8 @@ connection.connect(async (err) => {
             tributes: false,
             tribute_stats:false,
             donations: false,
-            resources: false,
+            resource_list: false,
+            resource_events: false,
             life_events: false,
             game_state: false
         }
@@ -68,8 +69,11 @@ connection.connect(async (err) => {
                 case 'donations':
                     tableList.donations = true;
                     break;
-                case 'resources':
-                    tableList.resources = true;
+                case 'resource_list':
+                    tableList.resource_list = true;
+                    break;
+                case 'resource_events':
+                    tableList.resource_events = true;
                     break;
                 case 'life_events':
                     tableList.life_events = true;
@@ -129,8 +133,21 @@ connection.connect(async (err) => {
             tags VARCHAR(50)
         )`;
 
-        const createResources = `CREATE TABLE resources(
-            // TODO
+        const createResourceList = `CREATE TABLE resource_list(
+            tribute_email VARCHAR(40),
+            type VARCHAR(10),
+            method VARCHAR(10),
+            time INT,
+            notes VARCHAR(75)
+        )`;
+
+        const createResourceEvents = `CREATE TABLE resource_events(
+            code VARCHAR(50),
+            type VARCHAR(10),
+            times_used TINYINT,
+            max_uses TINYINT,
+            used_by VARCHAR(300),
+            notes VARCHAR(75)
         )`;
 
         const createLifeEvents = `CREATE TABLE life_events(
@@ -139,7 +156,7 @@ connection.connect(async (err) => {
             type VARCHAR(10),
             method VARCHAR(20),
             time INT,
-            Notes VARCHAR(50)
+            notes VARCHAR(75)
         )`;
 
         const createGameState = `CREATE TABLE game_state(
@@ -175,14 +192,21 @@ connection.connect(async (err) => {
                 }
             });
         }
-        // if(!tableList.resources){
-        //     connection.query(createResources, (err, results, fields) => {
-        //         if(err){
-        //             console.log(err.message);
-        //         }
-        //     });
-        // }
-        if(!tableList.lifeEvents){
+        if(!tableList.resource_list){
+            connection.query(createResourceList, (err, results, fields) => {
+                if(err){
+                    console.log(err.message);
+                }
+            });
+        }
+        if(!tableList.resource_events){
+            connection.query(createResourceEvents, (err, results, fields) => {
+                if(err){
+                    console.log(err.message);
+                }
+            });
+        }
+        if(!tableList.life_events){
             connection.query(createLifeEvents, (err, results, fields) => {
                 if(err){
                     console.log(err.message);
@@ -564,7 +588,283 @@ app.delete(`/donations/delete/:id`, (req, res) => {
     });
 })
 
-//######################### (4) Resource Management ##########################//
+//########################### (4a) Resource List #############################//
+
+// FETCH_RESOURCE_LIST_ITEM
+app.get(`/resource/list/get/single/:id`, (req, res) => {
+    const id = req.params.id;
+    const queryStringGetResListItem = `SELECT * FROM resource_list WHERE id = ${id}`;
+    console.log(queryStringGetResListItem);
+    connection.query(queryStringGetResListItem, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for resource list: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// FETCH_RESOURCE_LIST_ITEMS
+app.get(`/resource/list/get/list/:type/:query`, (req, res) => {
+    const { type, query } = req.params;
+    const queryStringGetResListItems = `SELECT * FROM resource_list WHERE ${type} LIKE '%${query}%'`;
+    console.log(queryStringGetResListItems);
+    connection.query(queryStringGetResListItems, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for resource list: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// FETCH_RESOURCE_LIST_ITEM_RANGE
+app.get(`/resource/list/get/range/:type/:query1/:query2`, (req, res) => {
+    const { type, query1, query2 } = req.params;
+    const queryStringGetResListItemRange = `SELECT * FROM resource_list WHERE
+    ${type} >= '${query1}' AND ${type} <= '${query2}'`;
+    console.log(queryStringGetResListItemRange);
+    connection.query(queryStringGetResListItemRange, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for resource list: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+        
+        res.json(rows);
+    })
+})
+
+// FETCH_ALL_RESOURCE_LIST_ITEMS
+app.get(`/resource/list/get/all`, (req, res) => {
+    const queryStringGetAllResListItems = `SELECT * FROM resource_list`;
+    console.log(queryStringGetAllResListItems);
+    connection.query(queryStringGetAllResListItems, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for resource list: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// CREATE_RESOURCE_LIST_ITEM
+app.post('/resource/list/post/:code/:type/:timesUsed/:maxUses/:usedBy/:notes', (req, res) => {
+    const { code, type, timesUsed, maxUses, usedBy, notes } = req.params;
+    const queryStringCreateResListItem = `INSERT INTO resource_list (code, type, times_used,
+        max_uses, used_by, notes) VALUES 
+        ('${code}', '${type}', '${timesUsed}', '${maxUses}', '${usedBy}', '${notes}')`
+    console.log(queryStringCreateResListItem);
+    connection.query(queryStringCreateResListItem, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for resource list: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// UPDATE_RESOURCE_LIST_ITEM
+app.put(`/resource/list/put/:id/:code/:type/:timesUsed/:maxUses/:usedBy/:notes`, (req, res) => {
+    const { id, code, type, timesUsed, maxUses, usedBy, notes } = req.params;
+    const queryStringUpdateResListItem = `UPDATE resource_list SET code = '${code}', 
+    type = '${type}', timesUsed = '${timesUsed}', maxUses = '${maxUses}', usedBy = '${usedBy}', 
+    notes = '${notes}' WHERE id = ${id}`;
+    console.log(queryStringUpdateResListItem);
+    connection.query(queryStringUpdateResListItem, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for resource list: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// DELETE_RESOURCE_LIST_ITEM
+app.delete(`/resource/list/delete/:id`, (req, res) => {
+    const id = req.params.id;
+    const queryStringDeleteResListItem = `DELETE FROM resource_list WHERE id = ${id}`
+    console.log(queryStringDeleteResListItem);
+    connection.query(queryStringDeleteResListItem, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for resource list: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+//########################## (4b) Resource Events ############################//
+
+// FETCH_RESOURCE_EVENT
+app.get(`/resource/events/get/single/:id`, (req, res) => {
+    const id = req.params.id;
+    const queryStringGetResEventItem = `SELECT * FROM resource_events WHERE id = ${id}`;
+    console.log(queryStringGetResEventItem);
+    connection.query(queryStringGetResEventItem, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for resource events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// FETCH_RESOURCE_EVENTS
+app.get(`/resource/events/get/list/:type/:query`, (req, res) => {
+    const { type, query } = req.params;
+    const queryStringGetResEventItems = `SELECT * FROM resource_event WHERE ${type} LIKE '%${query}%'`;
+    console.log(queryStringGetResEventItems);
+    connection.query(queryStringGetResEventItems, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for resource event: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// FETCH_RESOURCE_EVENT_RANGE
+app.get(`/resource/events/get/range/:type/:query1/:query2`, (req, res) => {
+    const { type, query1, query2 } = req.params;
+    const queryStringGetResEventItemRange = `SELECT * FROM resource_events WHERE
+    ${type} >= '${query1}' AND ${type} <= '${query2}'`;
+    console.log(queryStringGetResEventItemRange);
+    connection.query(queryStringGetResEventItemRange, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for resource events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+        
+        res.json(rows);
+    })
+})
+
+// FETCH_ALL_RESOURCE_EVENTS
+app.get(`/resource/events/get/all`, (req, res) => {
+    const queryStringGetAllResEventItems = `SELECT * FROM resource_events`;
+    console.log(queryStringGetAllResEventItems);
+    connection.query(queryStringGetAllResEventItems, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for resource events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// CREATE_RESOURCE_EVENT
+app.post('/resource/events/post/:email/:type/:method/:time/:notes', (req, res) => {
+    const { email, type, method, time, notes } = req.params;
+    const queryStringCreateResEventItem = `INSERT INTO resource_events (tribute_email, type,
+        method, time, notes) VALUES 
+        ('${email}', '${type}', '${method}', '${time}', '${notes}')`
+    console.log(queryStringCreateResEventItem);
+    connection.query(queryStringCreateResEventItem, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for resource events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// UPDATE_RESOURCE_EVENT
+app.put(`/resource/events/put/:id/:email/:type/:method/:time/:notes`, (req, res) => {
+    const { id, email, type, method, time, notes } = req.params;
+    const queryStringUpdateResEventItem = `UPDATE resource_events SET tribute_email = '${email}', 
+    type = '${type}', method = '${method}', time = '${time}', 
+    notes = '${notes}' WHERE id = ${id}`;
+    console.log(queryStringUpdateResEventItem);
+    connection.query(queryStringUpdateResEventItem, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for resource events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// DELETE_RESOURCE_EVENT
+app.delete(`/resource/events/delete/:id`, (req, res) => {
+    const id = req.params.id;
+    const queryStringDeleteResEventItem = `DELETE FROM resource_events WHERE id = ${id}`
+    console.log(queryStringDeleteResEventItem);
+    connection.query(queryStringDeleteResEventItem, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for resource events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
 
 //########################### (5) Life Management ############################//
 
