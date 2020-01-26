@@ -41,13 +41,13 @@ const LifeTracking = (
 
 const ResourceList = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/resource-list">
-        Resource List*
+        Resource List+
     </NavDropdown.Item>
 );
 
 const ResourceEvents = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/resource-events">
-        Resource Events*
+        Resource Events+
     </NavDropdown.Item>
 );
 

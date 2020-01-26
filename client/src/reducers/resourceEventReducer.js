@@ -1,20 +1,19 @@
-import { FETCH_RESOURCE_LIST_ITEM } from '../actions/types';
+import { FETCH_RESOURCE_EVENT } from '../actions/types';
 
 export default (state = {}, action) => {
     switch(action.type){
-        case FETCH_RESOURCE_LIST_ITEM:
-            const item = action.payload[0];
-            if(!item){
+        case FETCH_RESOURCE_EVENT:
+            const event = action.payload.response;
+            if(!event){
                 return {};
             }
             return {
-                id: item.id,
-                code: item.code,
-                type: item.type,
-                times_used: item.times_used,
-                max_uses: item.max_uses,
-                used_by: item.used_by,
-                notes: item.notes,
+                id: event.id,
+                tribute_email: event.tribute_email,
+                type: event.type,
+                method: event.method,
+                time: event.time,
+                notes: event.notes,
             };
         default:
             return state;

@@ -3,7 +3,7 @@ import { FETCH_TRIBUTE } from '../actions/types';
 export default (state = {}, action) => {
     switch(action.type){
         case FETCH_TRIBUTE:
-        const tribute = action.payload[0];
+        const tribute = action.payload.response;
             if(!tribute){
                 return {};
             }

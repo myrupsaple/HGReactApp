@@ -10,7 +10,7 @@ import TributeDetails from './info_components/TributeDetails';
 import TributeInfoForm from './info_components/TributeInfoForm';
 
 class TributeAccountInfo extends React.Component {
-    _isMounted = true;
+    _isMounted = false;
     state = {
         auth: {
             loading: true,
@@ -63,6 +63,7 @@ class TributeAccountInfo extends React.Component {
     }
 
     componentDidMount = async () => {
+        this._isMounted = true;
         this.props.setNavBar('app');
         // Check authorization
         const authPayload = await this.checkAuth();

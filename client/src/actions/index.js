@@ -116,8 +116,7 @@ export const fetchUser = (email, id) => async (dispatch) => {
     if(response && response.data){
         console.log(`Successfully retrieved user ${email}`);
         dispatch ({ type: FETCH_USER, payload: { 
-            response: response.data,
-            id
+            response: response.data[0]
         }});
     }
 };
@@ -204,8 +203,7 @@ export const fetchTribute = (email, id) => async dispatch => {
     if(response && response.data){
         console.log(`Successfully fetched tribute ${email}`);
         dispatch({ type: FETCH_TRIBUTE, payload: {
-            response: response.data,
-            id
+            response: response.data[0]
         }});
     }
 }
@@ -275,8 +273,7 @@ export const fetchDonation = id => async (dispatch) => {
     if(response && response.data){
         console.log(`Successfully retrieved donation ${id}`);
         dispatch ({ type: FETCH_DONATION, payload: { 
-            response: response.data,
-            id
+            response: response.data[0]
         }});
     }
 };
@@ -380,12 +377,10 @@ export const fetchResourceListItem = id => async (dispatch) => {
         .catch(err => {
             console.log(err);
         });
-
     if(response && response.data){
         console.log(`Successfully retrieved resource list item ${id}`);
         dispatch ({ type: FETCH_RESOURCE_LIST_ITEM, payload: { 
-            response: response.data,
-            id
+            response: response.data[0]
         }});
     }
 };
@@ -493,8 +488,7 @@ export const fetchResourceEvent = id => async (dispatch) => {
     if(response && response.data){
         console.log(`Successfully retrieved resource event ${id}`);
         dispatch ({ type: FETCH_RESOURCE_EVENT, payload: { 
-            response: response.data,
-            id
+            response: response.data[0]
         }});
     }
 };
@@ -516,7 +510,7 @@ export const fetchResourceEvents = (type, query) => async (dispatch) => {
     }
 };
 
-export const fetchResourceEventRange = (type, query1, query2) => async (dispatch) => {
+export const fetchResourceEventsRange = (type, query1, query2) => async (dispatch) => {
     console.log(`Actions: Fetch resource events range initiated: ${type} between ${query1} and ${query2}`);
     var response = null;
     await app.get(`/resource/events/get/range/${type}/${query1}/${query2}`)
@@ -536,7 +530,7 @@ export const fetchResourceEventRange = (type, query1, query2) => async (dispatch
 export const fetchAllResourceEvents = () => async (dispatch) => {
     console.log('Actions: Fetch all resource events initiated');
     var response = null;
-    await app.get(`/resources/events/get/all`)
+    await app.get(`/resource/events/get/all`)
         .then(res => {
         response = res;
     })
@@ -602,7 +596,7 @@ export const fetchLifeEvent = id => async dispatch => {
         });
     
     if(response && response.data){
-        dispatch ({ type: FETCH_LIFE_EVENT, payload: response.data });
+        dispatch ({ type: FETCH_LIFE_EVENT, payload: response.data[0] });
     }
 }
 

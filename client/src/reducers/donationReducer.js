@@ -3,7 +3,7 @@ import { FETCH_DONATION } from '../actions/types';
 export default (state = {}, action) => {
     switch(action.type){
         case FETCH_DONATION:
-            const donation = action.payload[0];
+            const donation = action.payload.response;
             if(!donation){
                 return {};
             }

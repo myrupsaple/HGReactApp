@@ -7,7 +7,7 @@ import Wait from '../../../components/Wait';
 import AdjustStart from './game_components/AdjustStart';
 
 class ManageGame extends React.Component {
-    _isMounted = true;
+    _isMounted = false;
     state = {
         auth: {
             loading: true,
@@ -59,6 +59,7 @@ class ManageGame extends React.Component {
     }
 
     componentDidMount = async () => {
+        this._isMounted = true;
         this.props.setNavBar('app');
         // Check authorization
         const authPayload = await this.checkAuth();

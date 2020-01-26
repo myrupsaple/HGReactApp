@@ -6,7 +6,7 @@ import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components
 import Wait from '../../../components/Wait';
 
 class ManageItems extends React.Component {
-    _isMounted = true;
+    _isMounted = false;
     state = {
         auth: {
             loading: true,
@@ -56,6 +56,7 @@ class ManageItems extends React.Component {
     }
 
     componentDidMount = async () => {
+        this._isMounted = true;
         this.props.setNavBar('app');
         // Check authorization
         const authPayload = await this.checkAuth();

@@ -24,10 +24,10 @@ export default combineReducers({
     tributes: tributesReducer,
     selectedDonation: donationReducer,
     donations: donationsReducer,
-    selectedResourceListItem: resourceListItemReducer,
-    resourceListItems: resourceListItemsReducer,
+    selectedResource: resourceListItemReducer,
+    resourceList: resourceListItemsReducer,
     selectedResourceEvent: resourceEventReducer,
-    resourceEvent: resourceEventsReducer,
+    resourceEvents: resourceEventsReducer,
     selectedLifeEvent: lifeEventReducer,
     lifeEvents: lifeEventsReducer,
     gameState: gameStateReducer

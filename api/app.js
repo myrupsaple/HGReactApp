@@ -134,19 +134,21 @@ connection.connect(async (err) => {
         )`;
 
         const createResourceList = `CREATE TABLE resource_list(
-            tribute_email VARCHAR(40),
-            type VARCHAR(10),
-            method VARCHAR(10),
-            time INT,
-            notes VARCHAR(75)
-        )`;
-
-        const createResourceEvents = `CREATE TABLE resource_events(
+            id INT PRIMARY KEY AUTO_INCREMENT,
             code VARCHAR(50),
             type VARCHAR(10),
             times_used TINYINT,
             max_uses TINYINT,
             used_by VARCHAR(300),
+            notes VARCHAR(75)
+        )`;
+
+        const createResourceEvents = `CREATE TABLE resource_events(
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            tribute_email VARCHAR(40),
+            type VARCHAR(10),
+            method VARCHAR(10),
+            time INT,
             notes VARCHAR(75)
         )`;
 
@@ -691,7 +693,7 @@ app.post('/resource/list/post/:code/:type/:timesUsed/:maxUses/:usedBy/:notes', (
 app.put(`/resource/list/put/:id/:code/:type/:timesUsed/:maxUses/:usedBy/:notes`, (req, res) => {
     const { id, code, type, timesUsed, maxUses, usedBy, notes } = req.params;
     const queryStringUpdateResListItem = `UPDATE resource_list SET code = '${code}', 
-    type = '${type}', timesUsed = '${timesUsed}', maxUses = '${maxUses}', usedBy = '${usedBy}', 
+    type = '${type}', times_used = '${timesUsed}', max_uses = '${maxUses}', used_by = '${usedBy}', 
     notes = '${notes}' WHERE id = ${id}`;
     console.log(queryStringUpdateResListItem);
     connection.query(queryStringUpdateResListItem, (err, rows, fields) => {

@@ -2,7 +2,6 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Form, Col, Button } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
-import "react-datepicker/dist/react-datepicker.css";
 
 import { setNavBar } from '../../../actions';
 import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components/AuthMessages';
@@ -285,58 +284,6 @@ class ManageFunds extends React.Component {
                     </Col>
                 </Form.Row>
                 <Form.Row>
-                    <div className="col-">
-                        <Form.Label>Filter Events By:</Form.Label>
-                    </div>
-                    <div className="col-">
-                        <Form.Group controlId="filter-by">
-                            <Form.Check
-                                defaultChecked
-                                type="radio"
-                                name="filter-event-radios"
-                                label="All"
-                                id="radio-show-all"
-                                onChange={this.handleFilterEventType}
-                            />
-                            <Form.Check
-                                type="radio"
-                                name="filter-event-radios"
-                                label="Gained"
-                                id="radio-show-gained"
-                                onChange={this.handleFilterEventType}
-                            />
-                            <Form.Check
-                                type="radio"
-                                name="filter-event-radios"
-                                label="Lost"
-                                id="radio-show-lost"
-                                onChange={this.handleFilterEventType}
-                            />
-                        </Form.Group>
-                    </div>
-                    <div className="col-1"></div>
-                    <div className="col-">
-                        <Form.Label>Extra Options:</Form.Label>
-                    </div>
-                    <div className="col-">
-                        <Form.Group controlId="show-details" style={{ marginBottom: '0px' }}>
-                            <Form.Check
-                                defaultChecked
-                                value={this.state.showDetails}
-                                onChange={this.handleShowDetails}
-                                label="Show Details"
-                            />
-                        </Form.Group>
-                        <Form.Group controlId="show-paired" style={{ marginBottom: '0px' }}>
-                            <Form.Check
-                                value={this.state.showPairedCombat}
-                                onChange={this.handlePairedCombat}
-                                label="Show Paired Combat Events"
-                            />
-                        </Form.Group>
-                    </div>
-                </Form.Row>
-                <Form.Row>
                     <Col>
                     <Button
                         variant="secondary"
@@ -356,6 +303,63 @@ class ManageFunds extends React.Component {
             </Form>
             </>
         )
+    }
+
+    renderOptions(){
+        return(
+            <Form.Row>
+                <div className="col-">
+                    <Form.Label>Filter Events By:</Form.Label>
+                </div>
+                <div className="col-">
+                    <Form.Group controlId="filter-by">
+                        <Form.Check
+                            defaultChecked
+                            type="radio"
+                            name="filter-event-radios"
+                            label="All"
+                            id="radio-show-all"
+                            onChange={this.handleFilterEventType}
+                        />
+                        <Form.Check
+                            type="radio"
+                            name="filter-event-radios"
+                            label="Gained"
+                            id="radio-show-gained"
+                            onChange={this.handleFilterEventType}
+                        />
+                        <Form.Check
+                            type="radio"
+                            name="filter-event-radios"
+                            label="Lost"
+                            id="radio-show-lost"
+                            onChange={this.handleFilterEventType}
+                        />
+                    </Form.Group>
+                </div>
+                <div className="col-1"></div>
+                <div className="col-">
+                    <Form.Label>Extra Options:</Form.Label>
+                </div>
+                <div className="col-">
+                    <Form.Group controlId="show-details" style={{ marginBottom: '0px' }}>
+                        <Form.Check
+                            defaultChecked
+                            value={this.state.showDetails}
+                            onChange={this.handleShowDetails}
+                            label="Show Details"
+                        />
+                    </Form.Group>
+                    <Form.Group controlId="show-paired" style={{ marginBottom: '0px' }}>
+                        <Form.Check
+                            value={this.state.showPairedCombat}
+                            onChange={this.handlePairedCombat}
+                            label="Show Paired Combat Events"
+                        />
+                    </Form.Group>
+                </div>
+            </Form.Row>
+        );
     }
 
     searchForAllLifeEvents = () => {
@@ -641,6 +645,7 @@ class ManageFunds extends React.Component {
             return(
                 <>
                     {this.renderSearchForm()}
+                    {this.renderOptions()}
                     {this.renderLifeEvents()}
                     {this.renderModal()}
                 </>
@@ -651,7 +656,6 @@ class ManageFunds extends React.Component {
     }
 
     render = () => {
-        console.log(this.state);
         return(
             <>
                 {this.renderContent()}

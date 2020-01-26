@@ -3,7 +3,7 @@ import { FETCH_USER } from '../actions/types';
 export default (state = {}, action) => {
     switch(action.type){
         case FETCH_USER:
-            const user = action.payload[0];
+            const user = action.payload.response;
             if(!user){
                 return {};
             }
