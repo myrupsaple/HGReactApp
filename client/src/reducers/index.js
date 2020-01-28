@@ -13,6 +13,8 @@ import resourceEventReducer from './resourceEventReducer';
 import resourceEventsReducer from './resourceEventsReducer';
 import lifeEventReducer from './lifeEventReducer';
 import lifeEventsReducer from './lifeEventsReducer';
+import itemReducer from './itemReducer';
+import itemsReducer from './itemsReducer';
 import gameStateReducer from './gameStateReducer';
 
 export default combineReducers({
@@ -30,5 +32,7 @@ export default combineReducers({
     resourceEvents: resourceEventsReducer,
     selectedLifeEvent: lifeEventReducer,
     lifeEvents: lifeEventsReducer,
+    selectedItem: itemReducer,
+    items: itemsReducer,
     gameState: gameStateReducer
 });

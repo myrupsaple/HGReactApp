@@ -30,5 +30,9 @@ export const FETCH_LIFE_EVENT = 'FETCH_LIFE_EVENT';
 export const FETCH_LIFE_EVENTS = 'FETCH_LIFE_EVENTS';
 export const FETCH_ALL_LIFE_EVENTS = 'FETCH_ALL_LIFE_EVENTS';
 export const CLEAR_LIFE_EVENTS_QUEUE = 'CLEAR_LIFE_EVENTS_QUEUE';
-// (6) Game State Management
+// (6) Item Management
+export const FETCH_ITEM = 'FETCH_ITEM';
+export const FETCH_ITEMS = 'FETCH_ITEMS';
+export const FETCH_ALL_ITEMS = 'FETCH_ALL_ITEMS';
+// (7) Game State Management
 export const FETCH_GAMESTATE = 'FETCH_GAMESTATE';

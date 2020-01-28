@@ -11,15 +11,20 @@ import TributeInfoForm from './info_components/TributeInfoForm';
 
 class TributeAccountInfo extends React.Component {
     _isMounted = false;
-    state = {
-        auth: {
-            loading: true,
-            payload: null
-        },
-        apiQueriedTributesList: false,
-        showCreate: false,
-        showDetails: false
-    };
+    constructor(props){
+        super(props)
+        this.state = {
+            auth: {
+                loading: true,
+                payload: null
+            },
+            // Causes a different message to be rendered during and after loading, if
+            // no tributes are found
+            queried: false,
+            showCreate: false,
+            showDetails: false
+        };
+    }
 
     checkAuth = async () => {
         // SET ALLOWED ACCESS GROUPS HERE
@@ -77,10 +82,11 @@ class TributeAccountInfo extends React.Component {
 
         await this.props.fetchTributes();
         if(this._isMounted){
-            this.setState({ apiQueriedTributesList: true })
+            this.setState({ queried: true })
         }
     }
 
+    // Render modal header (Create/refresh list buttons)
     renderTop(){
         return(
             <div style={{ display: "flex" }}>
@@ -106,7 +112,7 @@ class TributeAccountInfo extends React.Component {
     renderTributes(){
         if(Object.keys(this.props.tributes).length === 0){
             // Return different message before and after first search is sent
-            if(!this.state.apiQueriedTributesList) {
+            if(!this.state.queried) {
                 return(
                     <h5>
                         Retrieving list of tributes...
@@ -131,7 +137,7 @@ class TributeAccountInfo extends React.Component {
                                 <div className="col">{tribute.first_name} {tribute.last_name}</div>
                                 <div className="col">{tribute.email}</div>
                                 <div className="col">{tribute.district}</div>
-                                <div className="col">{tribute.area}</div>
+                                <div className="col">{this.formatArea(tribute.area)}</div>
                                 <div className="col">{this.renderAdmin(tribute)}</div>
                             </div>
                         </li>
@@ -142,12 +148,28 @@ class TributeAccountInfo extends React.Component {
         );
     }
 
+    // Converts SQL formatted areas to a more conventional format
+    formatArea(area){
+        switch(area){
+            case 'dank_denykstra':
+                return 'Dank Denykstra';
+            case 'sunsprout':
+                return 'SunSprout';
+            case 'hedrick':
+                return 'Hedrick';
+            case 'rieber':
+                return 'Rieber';
+            case 'off_campus':
+                return 'Off Campus';
+        }
+    }
+
     renderAdmin(tribute) {
         return(
             <div className="row">
                 <Button 
                 variant="info"
-                onClick={() => this.setState({ showDetails: true, selectedEmail: tribute.email, selectedId: tribute.id })}
+                onClick={() => this.setState({ showDetails: true, selectedEmail: tribute.email })}
                 >
                     View Details
                 </Button>
@@ -179,6 +201,8 @@ class TributeAccountInfo extends React.Component {
         }
     }
 
+    // Performs cleanup upon modal closure, ensuring that showCreate and showDetails
+    // do not get stuck in the 'true' state. Refreshes list upon closure
     onSubmitCallback = () => {
         this.setState({ showCreate: false, showDetails: false })
         this.props.fetchTributes();
@@ -206,7 +230,7 @@ class TributeAccountInfo extends React.Component {
         }
     }
 
-    render = () =>{
+    render = () => {
         return(
             <>
                 {this.renderContent()}

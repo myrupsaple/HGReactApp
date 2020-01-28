@@ -41,8 +41,7 @@ connection.connect(async (err) => {
         }
         res = results.map(table => {
             return table.Tables_in_hgapp;
-        });
-    
+        });    
 
         const tableList = {
             users: false,
@@ -52,6 +51,7 @@ connection.connect(async (err) => {
             resource_list: false,
             resource_events: false,
             life_events: false,
+            item_list: false,
             game_state: false
         }
         
@@ -77,6 +77,10 @@ connection.connect(async (err) => {
                     break;
                 case 'life_events':
                     tableList.life_events = true;
+                    break;
+                case 'item_list':
+                    tableList.item_list = true;
+                    break;
                 case 'game_state':
                     tableList.game_state = true;
                     break;
@@ -161,6 +165,17 @@ connection.connect(async (err) => {
             notes VARCHAR(75)
         )`;
 
+        const createItemList = `CREATE TABLE item_list(
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            item_name VARCHAR(30),
+            description VARCHAR(100),
+            quantity TINYINT,
+            tier1_cost INT,
+            tier2_cost INT,
+            tier3_cost INT,
+            tier4_cost INT
+        )`
+
         const createGameState = `CREATE TABLE game_state(
             start_time DATETIME,
             tributes_remaining TINYINT
@@ -210,6 +225,13 @@ connection.connect(async (err) => {
         }
         if(!tableList.life_events){
             connection.query(createLifeEvents, (err, results, fields) => {
+                if(err){
+                    console.log(err.message);
+                }
+            });
+        }
+        if(!tableList.item_list){
+            connection.query(createItemList, (err, results, fields) => {
                 if(err){
                     console.log(err.message);
                 }
@@ -452,8 +474,7 @@ app.delete('/tribute/info/delete/:id', (req, res) => {
 // FETCH_DONATION
 app.get(`/donation/get/:id`, (req, res) => {
     const id = req.params.id;
-    const queryStringGetDonation = `SELECT id, tribute_email, donor_name, method, 
-    DATE_FORMAT(date, '%m-%d-%Y') date, amount, tags FROM donations WHERE id = ${id}`;
+    const queryStringGetDonation = `SELECT * FROM donations WHERE id = ${id}`;
     console.log(queryStringGetDonation);
     connection.query(queryStringGetDonation, (err, rows, fields) => {
         if(err){
@@ -472,8 +493,7 @@ app.get(`/donation/get/:id`, (req, res) => {
 // FETCH_DONATIONS
 app.get(`/donations/get/:type/:query`, (req, res) => {
     const { type, query } = req.params;
-    const queryStringGetDonations = `SELECT id, tribute_email, donor_name, method, 
-    DATE_FORMAT(date, '%m-%d-%Y') date, amount, tags FROM donations WHERE ${type} LIKE '%${query}%'`;
+    const queryStringGetDonations = `SELECT * FROM donations WHERE ${type} LIKE '%${query}%'`;
     console.log(queryStringGetDonations);
     connection.query(queryStringGetDonations, (err, rows, fields) => {
         if(err){
@@ -492,8 +512,7 @@ app.get(`/donations/get/:type/:query`, (req, res) => {
 // FETCH_DONATIONS_RANGE
 app.get(`/donations/get/range/:type/:query1/:query2`, (req, res) => {
     const { type, query1, query2 } = req.params;
-    const queryStringGetDonationsRange = `SELECT id, tribute_email, donor_name, method, 
-    DATE_FORMAT(date, '%m-%d-%Y') date, amount, tags FROM donations WHERE
+    const queryStringGetDonationsRange = `SELECT * FROM donations WHERE
     ${type} >= '${query1}' AND ${type} <= '${query2}'`;
     console.log(queryStringGetDonationsRange);
     connection.query(queryStringGetDonationsRange, (err, rows, fields) => {
@@ -512,8 +531,7 @@ app.get(`/donations/get/range/:type/:query1/:query2`, (req, res) => {
 
 // FETCH_ALL_DONATIONS
 app.get(`/donations/get/all`, (req, res) => {
-    const queryStringGetAllDonations = `SELECT id, tribute_email, donor_name, method, 
-    DATE_FORMAT(date, '%m-%d-%Y') date, amount, tags FROM donations`;
+    const queryStringGetAllDonations = `SELECT * FROM donations`;
     console.log(queryStringGetAllDonations);
     connection.query(queryStringGetAllDonations, (err, rows, fields) => {
         if(err){
@@ -1007,7 +1025,126 @@ app.delete(`/life-events/delete/:id/`, (req, res) => {
     });
 })
 
-//######################## (6) Game State Management #########################//
+//############################## (6) Item List ###############################//
+
+// FETCH_ITEM
+app.get(`/item-list/get/single/:id`, (req, res) => {
+    const id = req.params.id;
+    const queryStringGetItem = `SELECT * FROM item_list WHERE id = ${id}`;
+    console.log(queryStringGetItem);
+    connection.query(queryStringGetItem, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// FETCH_ITEMS
+app.get(`/item-list/get/list/:type/:query`, (req, res) => {
+    const { type, query } = req.params;
+    const queryStringGetItems = `SELECT * FROM item_list WHERE ${type} = '${query}'`;
+    console.log(queryStringGetItems);
+    connection.query(queryStringGetItems, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// FETCH_ALL_ITEMS
+app.get(`/item-list/get/all`, (req, res) => {
+    const queryStringGetAllItems = `SELECT * FROM item_list`
+    console.log(queryStringGetAllItems);
+    connection.query(queryStringGetAllItems, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// CREATE_ITEM
+app.post(`/item-list/post/:name/:description/:quantity/:t1cost/:t2cost/:t3cost/:t4cost`, (req, res) => {
+    const { name, description, quantity, t1cost, t2cost, t3cost, t4cost } = req.params;
+    const queryStringCreateItem = `INSERT INTO item_list (item_name,
+        description, quantity, tier1_cost, tier2_cost, tier3_cost, tier4_cost) VALUES 
+        ('${name}', '${description}', '${quantity}', ${t1cost}, '${t2cost}', '${t3cost}', '${t4cost}')`;
+    console.log(queryStringCreateItem);
+    connection.query(queryStringCreateItem, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// UPDATE_ITEM
+app.put(`/item-list/put/:id/:name/:description/:quantity/:t1cost/:t2cost/:t3cost/:t4cost`, (req, res) => {
+    const { id, name, description, quantity, t1cost, t2cost, t3cost, t4cost } = req.params;
+    const queryStringUpdateItem = `UPDATE item_list SET item_name = '${name}',
+    description = '${description}', quantity = '${quantity}', tier1_cost = ${t1cost}, 
+    tier2_cost = '${t2cost}', tier3_cost = '${t3cost}', tier4_cost = '${t4cost}' WHERE id = ${id}`;
+    console.log(queryStringUpdateItem);
+    connection.query(queryStringUpdateItem, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// DELETE_ITEM
+app.delete(`/item-list/delete/:id/`, (req, res) => {
+    const id = req.params.id;
+    const queryStringDeleteItem = `DELETE FROM item_list WHERE id = ${id}`;
+    console.log(queryStringDeleteItem);
+    connection.query(queryStringDeleteItem, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+//######################## (7) Game State Management #########################//
 
 // FETCH_GAMESTATE
 app.get(`/game-state/get`, (req, res) => {

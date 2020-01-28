@@ -3,7 +3,7 @@ import { FETCH_LIFE_EVENT } from '../actions/types';
 export default (state = {}, action) => {
     switch(action.type){
         case FETCH_LIFE_EVENT:
-            const lifeEvent = action.payload.response;
+            const lifeEvent = action.payload;
             if(!lifeEvent){
                 return {};
             }

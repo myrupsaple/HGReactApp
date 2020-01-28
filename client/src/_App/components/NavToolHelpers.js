@@ -53,7 +53,7 @@ const ResourceEvents = (
 
 const ManageItems = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/manage-items">
-        Update Item Inventory*
+        Update Item Inventory^
     </NavDropdown.Item>
 );
 

@@ -16,7 +16,7 @@ class TributeDetails extends React.Component {
 
     async componentDidMount() {
         this._isMounted = true;
-        await this.props.fetchTribute(this.props.email, this.props.id);
+        await this.props.fetchTribute(this.props.email);
     
         if(this._isMounted){
             this.setState({
@@ -36,60 +36,62 @@ class TributeDetails extends React.Component {
     }
 
     renderModalBody() {
-        // Use props for first_name to see if the user was successfully loaded
-        // (state may not update right away)
-        if(this._isMounted && !this.props.tribute.first_name){
+        // Use if the tribute prop doesn't have a first name, the API is taking
+        // too long to respond, or some other error occurred during loading
+        if(!this.props.tribute.first_name){
             return ( 
                 <h3>
                     An error occurred while retrieving user data. Please try again.
                 </h3>
             );
         }
+
+        const paidReg = this.state.paidRegistration === 1 ? 'Yes' : 'No';
         return (
-            <>
-                {this.renderDetails()}
-            </>
+            <div style={{ marginLeft: "20px" }}>
+                <div className="row"><span className="font-weight-bold">Name:</span><span>&nbsp;{this.state.first_name} {this.state.last_name}</span></div>
+                <div className="row"><span className="font-weight-bold">Email:</span><span>&nbsp;{this.state.email}</span></div>
+                <div className="row"><span className="font-weight-bold">District:</span><span>&nbsp;{this.state.district}</span></div>
+                <div className="row"><span className="font-weight-bold">District Partner:</span><span>&nbsp;{this.state.districtPartner}</span></div>
+                <div className="row"><span className="font-weight-bold">Area:</span><span>&nbsp;{this.formatArea(this.state.area)}</span></div>
+                <div className="row"><span className="font-weight-bold">Mentor:</span><span>&nbsp;{this.state.mentor}</span></div>
+                <div className="row"><span className="font-weight-bold">Paid Registration:</span><span>&nbsp;{paidReg}</span></div>
+            </div>
         );
     }
 
-    renderDetails = () => {
-        const paidReg = this.state.paidRegistration === 1 ? 'yes' : 'no';
-        return(
-            <>
-            <div style={{ marginLeft: "20px" }}>
-                <div className="row"><p className="font-weight-bold">Name: </p><p>{this.state.first_name} {this.state.last_name}</p></div>
-                <div className="row"><p className="font-weight-bold">Email: </p><p>{this.state.email}</p></div>
-                <div className="row"><p className="font-weight-bold">District: </p><p>{this.state.district}</p></div>
-                <div className="row"><p className="font-weight-bold">District Partner: </p><p>{this.state.districtPartner}</p></div>
-                <div className="row"><p className="font-weight-bold">Area: </p><p>{this.state.area}</p></div>
-                <div className="row"><p className="font-weight-bold">Mentor: </p><p>{this.state.mentor}</p></div>
-                <div className="row"><p className="font-weight-bold">Paid Registration: </p><p>{paidReg}</p></div>
-            </div>
-            </>
-        );
+    // Converts the area from SQL syntax to a more conventional form
+    formatArea(area){
+        switch(area){
+            case 'dank_denykstra':
+                return 'Dank Denykstra';
+            case 'sunsprout':
+                return 'SunSprout';
+            case 'hedrick':
+                return 'Hedrick';
+            case 'rieber':
+                return 'Rieber';
+            case 'off_campus':
+                return 'Off Campus';
+        }
     }
 
     renderActions(){
         return(
             <>
-            <Button variant="info" onClick={this.displayEdit}>Edit Tribute Info</Button>
-            <Button variant="danger" onClick={this.displayDelete}>Delete Tribute</Button>
+            <Button variant="info" onClick={() => this.setState({ showEdit: true })}>Edit Tribute Info</Button>
+            <Button variant="danger" onClick={() => this.setState({ showDelete: true })}>Delete Tribute</Button>
             </>
         );
     }
 
+    // Ensures cleanup of values is completed upon modal closure (tribute info form)
+    // This prevents the base state from getting stuck in the 'modal open' state
     onSubmitCallback = () => {
         this.handleClose();
     };
-
-    displayEdit = () => {
-        this.setState({ showEdit: true });
-    }
-
-    displayDelete = () => {
-        this.setState({ showDelete: true });
-    }
     
+    // Closes the modal and performs any cleanup in the base state (tribute info page)
     handleClose = () => {
         if(this._isMounted){
             this.setState({ showModal: false });
@@ -97,10 +99,12 @@ class TributeDetails extends React.Component {
         this.props.onSubmitCallback();
     }
 
-    payload(){
+    // Values to be sent to the tribute info form if the 'edit' button is clicked
+    // These will be used as default values in the form
+    payload = () => {
         return(
             {
-                id: this.props.id,
+                id: this.props.tribute.id,
                 first_name: this.state.first_name,
                 last_name: this.state.last_name,
                 email: this.state.email,
@@ -123,7 +127,7 @@ class TributeDetails extends React.Component {
         } else if(this.state.showDelete) {
             return(
                 <>
-                    <DeleteTribute id={this.props.id} email={this.props.email} onSubmitCallback={this.onSubmitCallback}/>
+                    <DeleteTribute id={this.props.tribute.id} email={this.props.tribute.email} onSubmitCallback={this.onSubmitCallback}/>
                 </>
             );
         } else {
