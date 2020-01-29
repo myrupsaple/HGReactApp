@@ -4,12 +4,9 @@ import { Modal, Button } from 'react-bootstrap';
 class DeleteModal extends React.Component {
     // PARAMS: id, description, actionType, onConfirm, onSubmitCallback
     _isMounted = false;
-    
-    constructor(props){
-        this.state = {
-            showModal: true,
-            confirmed: false
-        }
+    state = {
+        showModal: true,
+        confirmed: false
     }
 
     componentDidMount(){

@@ -88,35 +88,17 @@ class ResourceEventForm extends React.Component {
         this.setState({ notes: event.target.value });
     }
 
-    handleFormSubmit = async () => {
-        if(!this.state.time || !this.state.tribute_email || !this.state.type ||
-            !this.state.method){
-                alert('Please fill in the required fields');
-                return;
-            }
-
-        if(this._isMounted){
-            this.setState({ submitted: true })
+    formatEventMethod(method){
+        switch(method){
+            case 'Code':
+                return 'code';
+            case 'Purchased':
+                return 'purchased';
+            case 'Other':
+                return 'other';
+            default:
+                return method;
         }
-
-        const resourceEventObject = {
-            email: this.state.tribute_email,
-            type: this.state.type,
-            method: this.state.method,
-            time: this.state.time,
-            notes: this.state.notes
-        };
-        if (!resourceEventObject.notes.replace(/\s/g, '').length) {
-            resourceEventObject.notes = 'none';
-        }
-
-        if(this.props.mode === 'edit'){
-            resourceEventObject.id = this.props.id;
-            await this.props.updateResourceEvent(resourceEventObject);
-        } else if(this.props.mode === 'create'){
-            await this.props.createResourceEvent(resourceEventObject);
-        }
-        setTimeout(() => this.handleClose(), 1000);
     }
 
     renderModalHeader(){
@@ -147,7 +129,7 @@ class ResourceEventForm extends React.Component {
             <Form>
                 <Form.Row>
                     <div className="col-4"><Form.Group controlId="time">
-                        <Form.Label>Resource Event Time*</Form.Label>
+                        <Form.Label>Resource Event Time</Form.Label>
                         <DatePicker
                             showTimeSelect
                             showTimeSelectOnly
@@ -159,7 +141,7 @@ class ResourceEventForm extends React.Component {
                 </Form.Row>
                 <Form.Row>
                     <div className="col-12"><Form.Group controlId="tribute">
-                        <Form.Label>Tribute Name*</Form.Label>    
+                        <Form.Label>Tribute Name</Form.Label>    
                         <Form.Control 
                             defaultValue={this.state.tribute_email} 
                             onChange={this.handleTribute} 
@@ -171,30 +153,30 @@ class ResourceEventForm extends React.Component {
                 </Form.Row>
                 <Form.Row>
                     <div className="col-6"><Form.Group controlId="type">
-                        <Form.Label>Resource Type*</Form.Label>    
+                        <Form.Label>Resource Type</Form.Label>    
                         <Form.Control 
                             defaultValue="gained"
                             onChange={this.handleType}
                             as="select"
                         >
-                            <option value="food">Food</option>
-                            <option value="water">Water</option>
-                            <option value="medicine">Medicine</option>
-                            <option value="roulette">Roulette</option>
-                            <option value="life">Life</option>
-                            <option value="golden">Golden</option>
+                            <option>Food</option>
+                            <option>Water</option>
+                            <option>Medicine</option>
+                            <option>Roulette</option>
+                            <option>Life</option>
+                            <option>Golden</option>
                         </Form.Control>
                     </Form.Group></div>
                     <div className="col-6"><Form.Group controlId="method">
-                        <Form.Label>Method*</Form.Label>    
+                        <Form.Label>Method</Form.Label>    
                         <Form.Control 
                             defaultValue="gained"
                             onChange={this.handleMethod}
                             as="select"
                         >
-                            <option value="code">Code</option>
-                            <option value="purchased">Purchased</option>
-                            <option value="other">Other</option>
+                            <option>Code</option>
+                            <option>Purchased</option>
+                            <option>Other</option>
                         </Form.Control>
                     </Form.Group></div>
                     <div className="col-12"><Form.Group controlId="notes">
@@ -213,10 +195,10 @@ class ResourceEventForm extends React.Component {
     renderNameChoices(){
         return (
         <>
-            <option value="">Please Select a Tribute...</option>
+            <option>Please Select a Tribute...</option>
             {this.props.tributes.map(tribute => {
                 return (
-                <option key={tribute.id} value={`{tribute.first_name} {tribute.last_name} || {tribute.email}`}>
+                <option key={tribute.id}>
                     {tribute.first_name} {tribute.last_name} || {tribute.email}
                 </option>
                 );
@@ -235,6 +217,46 @@ class ResourceEventForm extends React.Component {
                 <Button variant="info" onClick={this.handleFormSubmit}>Submit</Button>
             </Form.Row>
         );
+    }
+
+    handleFormSubmit = async () => {
+        if(!this.state.time || !this.state.tribute_email || !this.state.type ||
+            !this.state.method){
+                alert('Please fill in the required fields');
+                return;
+            }
+
+        if(this._isMounted){
+            this.setState({ submitted: true })
+        }
+
+        if(this.props.mode === 'edit'){
+            const resourceEventObject = {
+                id: this.props.id,
+                email: this.state.tribute_email,
+                type: this.state.type,
+                method: this.state.method,
+                time: this.state.time,
+                notes: this.state.notes
+            };
+            if (!resourceEventObject.notes.replace(/\s/g, '').length) {
+                resourceEventObject.notes = 'none';
+            }
+            await this.props.updateResourceEvent(resourceEventObject);
+        } else if(this.props.mode === 'create'){
+            const resourceEventObject = {
+                email: this.state.tribute_email,
+                type: this.state.type,
+                method: this.state.method,
+                time: this.state.time,
+                notes: this.state.notes
+            };
+            if (!resourceEventObject.notes.replace(/\s/g, '').length) {
+                resourceEventObject.notes = 'none';
+            }
+            await this.props.createResourceEvent(resourceEventObject);
+        }
+        setTimeout(() => this.handleClose(), 1000);
     }
 
     handleClose = () => {

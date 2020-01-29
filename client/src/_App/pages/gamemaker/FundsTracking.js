@@ -28,14 +28,11 @@ class ManageFunds extends React.Component {
                 payload: null
             },
             queried: false,
-            searchType: 'tribute_email',
+            searchType: 'Tribute Name',
             searchTerm: '',
             searchTermSecondary: '',
-            // Formatted string dates that will be displayed in the form.
-            // Actual dates used for query will be stored in the 'searchTerm' and 
-            // 'searchTermSecondary' fields
-            formattedDate: '',
-            formattedDateSecondary: '',
+            us_date1: '',
+            us_date2: '',
             showCreate: false,
             showEdit: false,
             showDelete: false,
@@ -115,26 +112,26 @@ class ManageFunds extends React.Component {
     }
 
     handleSearchTerm(event) {
-        if(this.state.searchType === 'date'){
+        if(this.state.searchType === 'Date Range'){
             const day = event.getDate().toLocaleString(undefined, {minimumIntegerDigits: 2});
             const month = (event.getMonth() + 1).toLocaleString(undefined, {minimumIntegerDigits: 2});
             const year = event.getFullYear();
             this.setState({ 
                 searchTerm: `${year}-${month}-${day}`,
-                formattedDate: `${month}-${day}-${year}`
+                us_date1: `${month}-${day}-${year}`
         });
         } else {
             this.setState({ searchTerm: event.target.value });
         }
     }
     handleSearchTermSecondary(event) {
-        if(this.state.searchType === 'date'){
+        if(this.state.searchType === 'Date Range'){
             const day = event.getDate().toLocaleString(undefined, {minimumIntegerDigits: 2});
             const month = (event.getMonth() + 1).toLocaleString(undefined, {minimumIntegerDigits: 2});
             const year = event.getFullYear();
             this.setState({ 
                 searchTermSecondary: `${year}-${month}-${day}`,
-                formattedDateSecondary: `${month}-${day}-${year}`,
+                us_date2: `${month}-${day}-${year}`,
             });
         } else {
             this.setState({ searchTermSecondary: event.target.value });
@@ -146,48 +143,64 @@ class ManageFunds extends React.Component {
             this.setState({ queried: true });
         }
         event.preventDefault();
-        // In the tribute_email case, the user actually searches by first name.
-        // We thus need to find all tribute items that match this first name query
-        // and return the list of emails associated with those matches. The email
-        // list is then iterated over and used as the search terms for the fetchDonations
-        // call. Because multiple fetchDonations calls are made, the state must
-        // contain the cumulative list of donation entries, rather than containing
-        // only the entries from the most recent call. clearDonationsList is used as
-        // a 'reset' between search calls to ensure that results do not overlap
-        // between search events
+        // In the tribute_email case, we have to do a separate donations fetch for each
+        // email that was matched. Thus, the reducer adds to the state after
+        // each donations search rather than replacing state with the new results.
+        // The clearDonationsList action clears this list upon each user search
+        // call so that there is no overlap in the results displayed
         await this.props.clearDonationsList();
-        const searchType = this.state.searchType;
+        const searchType = this.formatSearchType(this.state.searchType);
 
         if(searchType === 'tribute_email'){
-            const emails = [];
+            const matches = [];
             const name = this.state.searchTerm.toLowerCase();
             this.props.tributes.map(tribute => {
                 if(tribute.first_name.toLowerCase().includes(name)){
-                    emails.push(tribute.email);
+                    matches.push(tribute.email);
                 }
-                return;
+                return null;
             });
-            emails.map(email => {
-                this.props.fetchDonations('tribute_email', email);
-                return;
+            matches.map(match => {
+                this.props.fetchDonations('tribute_email', match);
+                return null;
             })
-        } else if(this.state.searchTermSecondary === '') {
-            if(this.state.searchType === 'amount' || this.state.searchType === 'date'){
-                // If no secondary term is provided and the search type is by amount or date,
-                // use fetchDonationsRange. Using regular fetchDonations will perform
-                // a 'LIKE' search (eg. Searching for $10 would also return $100, $1000,
-                // $910, etc.). Range using the same number twice will perform an exact
-                // match search
-                this.props.fetchDonationsRange(searchType, this.state.searchTerm, this.state.searchTerm);
-            } else {
-                this.props.fetchDonations(searchType, this.state.searchTerm)
+            return;
+        }
+        if(this.state.searchTermSecondary === ''){
+            if(searchType === 'amount'){
+                this.props.fetchDonationsRange(searchType,
+                this.state.searchTerm, this.state.searchTerm);
+                return;
             }
-                
+            this.props.fetchDonations(searchType, this.state.searchTerm);
         } else {
-            // Will only be called for 'amount' and 'date' search types
             this.props.fetchDonationsRange(searchType,
             this.state.searchTerm, this.state.searchTermSecondary);
         }
+    }
+
+    formatSearchType(type) {
+        switch(type){
+            case 'Tribute Name':
+                return 'tribute_email';
+            case 'Donor Name':
+                return 'donor_name';
+            case 'Donation Method':
+                return 'method';
+            case 'Date Range':
+                return 'date';
+            case 'Amount':
+                return 'amount';
+            case 'Tags':
+                return 'tags';
+            default:
+                return null;
+        }
+    }
+
+    renderWarnings = () => {
+        // TODO: Render specific formatting instructions for each search input type
+        return null;
     }
 
     fetchAllDonations = () => {
@@ -207,12 +220,12 @@ class ManageFunds extends React.Component {
                                 value={this.state.searchType}
                                 onChange={this.handleSearchType}
                             >
-                                <option value="tribute_email">Tribute Name</option>
-                                <option value="donor_name">Donor Name</option>
-                                <option value="method">Donation Method</option>
-                                <option value="date">Date Range</option>
-                                <option value="amount">Amount</option>
-                                <option value="tags">Tags</option>
+                                <option>Tribute Name</option>
+                                <option>Donor Name</option>
+                                <option>Donation Method</option>
+                                <option>Date Range</option>
+                                <option>Amount</option>
+                                <option>Tags</option>
                             </Form.Control>
                         </Form.Group>
                     </Col>
@@ -242,15 +255,14 @@ class ManageFunds extends React.Component {
         )
     }
 
-    // Search query will be different depending on search type
     renderSearchField = () => {
         if(Object.keys(this.props.tributes).length === 0){
             return 'Loading...';
         }
-        if( this.state.searchType === 'tribute_email' ||
-            this.state.searchType === 'donor_name' || 
-            this.state.searchType === 'method' ||
-            this.state.searchType === 'tags') {
+        if(this.state.searchType === 'Donor Name' || 
+        this.state.searchType === 'Donation Method' ||
+        this.state.searchType === 'Tribute Name' ||
+        this.state.searchType === 'Tags') {
             return(
                 <Form.Group controlId="query">
                     <Form.Control required 
@@ -261,13 +273,13 @@ class ManageFunds extends React.Component {
                     />
                 </Form.Group>
             )
-        } else if(this.state.searchType === 'date') {
+        } else if(this.state.searchType === 'Date Range') {
             return(
                 <>
                 <Form.Group controlId="query">
                     <div><Form.Label>From (Start Date)</Form.Label></div>
                     <DatePicker dateFormat="MM-dd-yyyy" 
-                        value={this.state.formattedDate}
+                        value={this.state.us_date1}
                         onSelect={this.handleSearchTerm}
                     />
                 </Form.Group>
@@ -275,7 +287,7 @@ class ManageFunds extends React.Component {
                     <div><Form.Label>To (End Date)</Form.Label></div>
                     
                     <DatePicker dateFormat="MM-dd-yyyy" 
-                        value={this.state.formattedDateSecondary}
+                        value={this.state.us_date2}
                         onSelect={this.handleSearchTermSecondary}
                     />
                     <div><Form.Label>
@@ -285,7 +297,7 @@ class ManageFunds extends React.Component {
                 </>
             );
 
-        } else if(this.state.searchType === 'amount') {
+        } else if(this.state.searchType === 'Amount') {
             return(
                 <>
                 <Form.Group controlId="query">
@@ -299,7 +311,7 @@ class ManageFunds extends React.Component {
                 <Form.Control
                     value={this.state.searchTermSecondary}
                     onChange={this.handleSearchTermSecondary}
-                    placeholder="Enter maximum value (If blank, the first value will be matched exactly)."
+                    placeholder="Enter maximum value (If blank, the first value will be matched)."
                 />
                 </Form.Group>
                 </>
@@ -340,7 +352,6 @@ class ManageFunds extends React.Component {
         );
     }
 
-    // Sums up the amount of unassigned funds in the search results
     sumUnassignedFunds(){
         var total = 0;
         this.props.donations.map(donation => {
@@ -375,16 +386,14 @@ class ManageFunds extends React.Component {
             <ul className="list-group">
                 {this.renderTableHeader()}
                 {this.props.donations.map(donation => {
-                    var [year, month, day] = donation.date.split('-');
-                    day = day.split('T')[0];
                     return(
                         <li className="list-group-item" key={donation.id}>
                             <div className="row">
                                 <div className="col">{this.getTributeName(donation.tribute_email)}</div>
                                 <div className="col">{donation.donor_name}</div>
                                 <div className="col">{donation.method}</div>
-                                <div className="col">{`${month}-${day}-${year}`}</div>
-                                <div className="col">${donation.amount}</div>
+                                <div className="col">{donation.date}</div>
+                                <div className="col">{donation.amount}</div>
                                 <div className="col">{donation.tags}</div>
                                 <div className="col">{this.renderAdmin(donation)}</div>
                             </div>
