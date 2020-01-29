@@ -6,37 +6,21 @@ import { createTribute, updateTribute } from '../../../../actions';
 
 class TributeInfoForm extends React.Component {
     _isMounted = false;
+
     constructor(props){
         super(props);
-        this.state = { showModal: true, submitted: false }
 
-        if(this.props.mode === 'edit'){
-            this.state = {
-                id: this.props.payload.id,
-                first_name: this.props.payload.first_name,
-                last_name: this.props.payload.last_name,
-                email: this.props.payload.email,
-                district: this.props.payload.district,
-                districtPartner: this.props.payload.districtPartner,
-                area: this.props.payload.area,
-                mentor: this.props.payload.mentor,
-                paidRegistration: this.props.payload.paidRegistration,
-                showModal: true,
-                submitted: false
-            }
-        } else {
-            this.state = {
-                first_name: '',
-                last_name: '',
-                email: '',
-                district: 1,
-                districtPartner: '',
-                area: 'Dank Denykstra',
-                mentor: '',
-                paidRegistration: 1,
-                showModal: true,
-                submitted: false
-            }
+        this.state = {
+            first_name: '',
+            last_name: '',
+            email: '',
+            district: 1,
+            districtPartner: '',
+            area: 'dank_denykstra',
+            mentor: '',
+            paidRegistration: 1,
+            showModal: true,
+            submitted: false
         }
 
         this.handleFirstName = this.handleFirstName.bind(this);
@@ -50,6 +34,24 @@ class TributeInfoForm extends React.Component {
 
         this.handleClose = this.handleClose.bind(this);
         this.handleFormSubmit = this.handleFormSubmit.bind(this);
+    }
+
+    componentDidMount(){
+        this._isMounted = true;
+
+        if(this.props.mode === 'edit' && this._isMounted){
+            this.setState({
+                id: this.props.payload.id,
+                first_name: this.props.payload.first_name,
+                last_name: this.props.payload.last_name,
+                email: this.props.payload.email,
+                district: this.props.payload.district,
+                districtPartner: this.props.payload.districtPartner,
+                area: this.props.payload.area,
+                mentor: this.props.payload.mentor,
+                paidRegistration: this.props.payload.paidRegistration
+            })
+        }
     }
 
     handleFirstName(event) {
@@ -77,10 +79,6 @@ class TributeInfoForm extends React.Component {
         this.setState({ paidRegistration: event.target.value });
     }    
 
-    componentDidMount() {
-        this._isMounted = true;
-    }
-
     renderForm = () => {
         if(this.state.submitted) {
             const message = this.props.mode === 'edit' ? 'Updated' : 'Created';
@@ -93,14 +91,14 @@ class TributeInfoForm extends React.Component {
                 <Form.Row>
                     <div className="col-6"><Form.Group controlId="first-name">
                         <Form.Label>First Name</Form.Label>
-                        <Form.Control defaultValue={this.state.first_name}
+                        <Form.Control value={this.state.first_name}
                             onChange={this.handleFirstName}
                             autoComplete="off"
                         />
                     </Form.Group></div>
                     <div className="col-6"><Form.Group controlId="last-name">
                         <Form.Label>Last Name</Form.Label>
-                        <Form.Control defaultValue={this.state.last_name}
+                        <Form.Control value={this.state.last_name}
                             onChange={this.handleLastName}
                             autoComplete="off"
                         />
@@ -112,7 +110,6 @@ class TributeInfoForm extends React.Component {
                         <Form.Control value={this.state.email}
                             onChange={this.handleEmail}
                             autoComplete="off"
-                            type="email"
                         />
                     </Form.Group></div>
                 </Form.Row>
@@ -122,7 +119,6 @@ class TributeInfoForm extends React.Component {
                         <Form.Control value={this.state.districtPartner}
                             onChange={this.handleDistrictPartner}
                             autoComplete="off"
-                            type="email"
                         />
                     </Form.Group></div>
                 </Form.Row>
@@ -132,50 +128,48 @@ class TributeInfoForm extends React.Component {
                         <Form.Control value={this.state.mentor}
                             onChange={this.handleMentor}
                             autoComplete="off"
-                            type="email"
                         />
                     </Form.Group></div>
                 </Form.Row>
                 <Form.Row>
-                    <div className="col-4"><Form.Group control-group="perms">
+                    <div className="col-4"><Form.Group control-group="district">
                         <Form.Label>District</Form.Label>
                         <Form.Control 
-                            defaultValue={this.state.district}
+                            value={this.state.district}
                             onChange={this.handleDistrict}
                             as="select"
                         >
                             {/* TODO: Make this dynamic */}
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                            <option>4</option>
+                            <option value={1}>1</option>
+                            <option value={2}>2</option>
+                            <option value={3}>3</option>
+                            <option value={4}>4</option>
                         </Form.Control>
                     </Form.Group></div>
                     <div className="col-4"><Form.Group control-group="area">
                         <Form.Label>Area</Form.Label>
                         <Form.Control
-                            defaultValue={this.state.area}
+                            value={this.state.area}
                             onChange={this.handleArea}
                             as="select"
                         >
                             {/* TODO: Make this dynamic */}
-                            <option>Dank Denykstra</option>
-                            <option>SunSprout</option>
-                            <option>Hedrick</option>
-                            <option>Rieber</option>
-                            <option>Off Campus</option>
+                            <option value="dank_denykstra">Dank Denykstra</option>
+                            <option value="sunsprout">SunSprout</option>
+                            <option value="hedrick">Hedrick</option>
+                            <option value="rieber">Rieber</option>
+                            <option value="off_campus">Off Campus</option>
                         </Form.Control>
                     </Form.Group></div>  
                     <div className="col-4"><Form.Group control-group="paid-registration">
                         <Form.Label>Paid Registration?</Form.Label>
                         <Form.Control
-                            defaultValue={this.state.paidRegistration === 1 ? "Yes" : "No"}
+                            value={this.state.paidRegistration}
                             onChange={this.handlePaidRegistration}
                             as="select"
                         >
-                            {/* TODO: Make this dynamic */}
-                            <option>Yes</option>
-                            <option>No</option>
+                            <option value={1}>Yes</option>
+                            <option value={0}>No</option>
                         </Form.Control>
                     </Form.Group></div>  
                 </Form.Row>
@@ -207,32 +201,20 @@ class TributeInfoForm extends React.Component {
         if(this._isMounted){
             this.setState({ submitted: true });
         }
-        const paidReg = this.state.paidRegistration === 'Yes' ? 1 : 0; 
-        var sendUser = {};
+        const sendUser = {
+            first_name: this.state.first_name,
+            last_name: this.state.last_name,
+            email: this.state.email,
+            district: this.state.district,
+            districtPartner: this.state.districtPartner,
+            area: this.state.area,
+            mentor: this.state.mentor,
+            paidRegistration: this.state.paidRegistration
+        }
         if(this.props.mode === 'edit'){
-            sendUser = {
-                id: this.state.id,
-                first_name: this.state.first_name,
-                last_name: this.state.last_name,
-                email: this.state.email,
-                district: this.state.district,
-                districtPartner: this.state.districtPartner,
-                area: this.state.area,
-                mentor: this.state.mentor,
-                paidRegistration: paidReg
-            }
+            sendUser.id = this.state.id;
             this.props.updateTribute(sendUser);
         } else if(this.props.mode === 'create') {
-            sendUser = {
-                first_name: this.state.first_name,
-                last_name: this.state.last_name,
-                email: this.state.email,
-                district: this.state.district,
-                districtPartner: this.state.districtPartner,
-                area: this.state.area,
-                mentor: this.state.mentor,
-                paidRegistration: paidReg
-            }
             this.props.createTribute(sendUser);
         }
         setTimeout(() => this.handleClose(), 1000);
@@ -255,7 +237,7 @@ class TributeInfoForm extends React.Component {
         }
     }
 
-    render(){
+    render = () => {
         return(
             <>
                 <Modal show={this.state.showModal} onHide={this.handleClose}>

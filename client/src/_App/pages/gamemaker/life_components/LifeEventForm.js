@@ -14,6 +14,7 @@ class LifeEventForm extends React.Component {
 
     constructor(props){
         super(props);
+
         const now = new Date();
         const hours = now.getHours().toLocaleString(undefined, { minimumIntegerDigits: 2 });
         const minutes = now.getMinutes().toLocaleString(undefined, { minimumIntegerDigits: 2 });
@@ -81,11 +82,8 @@ class LifeEventForm extends React.Component {
         const [name, email] = event.target.value.split(' || ');
         this.setState({ secondaryInput: email, secondaryInputName: name });
     }
-    handleDonor(event){
-        this.setState({ donor_name: event.target.value });
-    }
     handleType(event){
-        const type = event.target.value.toLowerCase();
+        const type = event.target.value;
         this.setState({ type: type});
         if(type === 'gained'){ 
             this.setState({ 
@@ -102,7 +100,7 @@ class LifeEventForm extends React.Component {
         };
     }
     handleMethod(event){
-        this.setState({ method: this.formatEventMethod(event.target.value) });
+        this.setState({ method: event.target.value });
         if(this.state.method !== 'combat'){
             const object = { target: { value: ' || ' }};
             this.handleSecondary(object);
@@ -131,29 +129,61 @@ class LifeEventForm extends React.Component {
         this.setState({ notes: event.target.value });
     }
 
-    formatEventMethod(method){
-        switch(method){
-            case 'Purchased':
-                return 'purchased';
-            case 'Combat':
-                return 'combat';
-            case 'Mutts (Specify who in notes)':
-                return 'mutts';
-            case 'Life Resource':
-                return 'life_resource';
-            case 'Food Resource':
-                return 'food_resource';
-            case 'Water Resource':
-                return 'water_resource';
-            case 'Medicine Resource':
-                return 'medicine_resource';
-            case  'Roulette Resource':
-                return 'roulette_resource';
-            case 'Other (Specify in notes)':
-                return 'other';
-            default:
-                return method;
+    handleFormSubmit = async () => {
+        if(!this.state.time || !this.state.tribute_email || !this.state.type ||
+            !this.state.method || ((this.state.method === 'combat') === (this.state.secondaryInput === ''))){
+                alert('Please fill in the required fields');
+                return;
+            }
+
+        if(this._isMounted){
+            this.setState({ submitted: true })
         }
+
+        // Object to be passed to create action handler
+        const lifeEventObject = {
+            email: this.state.tribute_email,
+            type: this.state.type,
+            method: this.state.method,
+            time: this.state.time,
+            notes: this.state.notes
+        };
+
+        // Pass an additional object if the method is 'combat' since we want to
+        // create a secondary 'combat' type event to track each tribute's kills
+        var lifeEventObjectSecondary = {};
+        if(lifeEventObject.method === 'combat'){
+            // Automatically set notes for both objects if the method is 'combat'
+            lifeEventObject.notes = `${this.state.tributeName} was slain by ${this.state.secondaryInputName}`;
+            lifeEventObjectSecondary = {
+                email: this.state.secondaryInput,
+                type: 'combat',
+                method: 'NA',
+                time: this.state.time,
+                notes: `${this.state.secondaryInputName} slaid ${this.state.tributeName}`
+            }
+        } else if (!lifeEventObject.notes.replace(/\s/g, '').length) {
+            // If not combat, and notes are full of whitespaces, change to 'none'
+            lifeEventObject.notes = 'none';
+        }
+
+        // Dispatch actions
+        if(this.props.mode === 'edit'){
+            lifeEventObject.id = this.props.id;
+            await this.props.updateLifeEvent(lifeEventObject);
+
+            if(this.state.method === 'combat'){
+                lifeEventObjectSecondary.id = this.props.id + 1;
+                this.props.updateLifeEvent(lifeEventObjectSecondary);
+            }
+        } else if(this.props.mode === 'create'){
+            await this.props.createLifeEvent(lifeEventObject);
+
+            if(this.state.method === 'combat'){
+                this.props.createLifeEvent(lifeEventObjectSecondary);
+            }
+        }
+        setTimeout(() => this.handleClose(), 1000);
     }
 
     renderModalHeader(){
@@ -214,8 +244,8 @@ class LifeEventForm extends React.Component {
                             onChange={this.handleType}
                             as="select"
                         >
-                            <option>Gained</option>
-                            <option>Lost</option>
+                            <option value="gained">Gained</option>
+                            <option value="lost">Lost</option>
                         </Form.Control>
                     </Form.Group></div>
                     <div className="col-6"><Form.Group controlId="method">
@@ -242,10 +272,11 @@ class LifeEventForm extends React.Component {
     renderNameChoices(){
         return (
         <>
-            <option>Please Select a Tribute...</option>
+            <option value="">Please Select a Tribute...</option>
             {this.props.tributes.map(tribute => {
                 return (
-                <option key={tribute.id}>
+                // Name is needed for automated notes logging for combat events
+                <option key={tribute.id} value={`${tribute.first_name} ${tribute.last_name} || ${tribute.email}`}>
                     {tribute.first_name} {tribute.last_name} || {tribute.email}
                 </option>
                 );
@@ -262,10 +293,10 @@ class LifeEventForm extends React.Component {
                     onChange={this.handleMethod}
                     as="select"
                 >
-                    <option>Purchased</option>
-                    <option>Life Resource</option>
-                    <option>Roulette Resource</option>
-                    <option>Other (Specify in notes)</option>
+                    <option value="purchased">Purchased</option>
+                    <option value="life_resource">Life Resource</option>
+                    <option value="roulette_resource">Roulette Resource</option>
+                    <option value="other">Other (Specify in notes)</option>
                 </Form.Control>
             );
         } else if (this.state.type === 'lost'){
@@ -275,13 +306,13 @@ class LifeEventForm extends React.Component {
                     onChange={this.handleMethod}
                     as="select"
                 >
-                    <option>Combat</option>
-                    <option>Food Resource</option>
-                    <option>Water Resource</option>
-                    <option>Medicine Resource</option>
-                    <option>Roulette Resource</option>
-                    <option>Mutts (Specify who in notes)</option>
-                    <option>Special Event (Specify in notes)</option>
+                    <option value="combat">Combat</option>
+                    <option value="food_resource">Food Resource</option>
+                    <option value="water_resource">Water Resource</option>
+                    <option value="medicine_resource">Medicine Resource</option>
+                    <option value="roulette_resource">Roulette Resource</option>
+                    <option value="mutts">Mutts (Specify who in notes)</option>
+                    <option value="other">Special Event (Specify in notes)</option>
                 </Form.Control>
             );
         }
@@ -300,13 +331,13 @@ class LifeEventForm extends React.Component {
                         onChange={this.handleSecondary}
                         as="select"
                     >
-                        <option>Please Select a Tribute...</option>
+                        <option value="">Please Select a Tribute...</option>
                         {this.props.tributes.map(tribute => {
                             if(tribute.email === this.state.tribute_email){
                                 return null;
                             }
                             return (
-                            <option key={tribute.id}>
+                            <option key={tribute.id} value={`${tribute.first_name} ${tribute.last_name} || ${tribute.email}`}>
                                 {tribute.first_name} {tribute.last_name} || {tribute.email}
                             </option>
                             );
@@ -329,73 +360,6 @@ class LifeEventForm extends React.Component {
         );
     }
 
-    handleFormSubmit = async () => {
-        if(!this.state.time || !this.state.tribute_email || !this.state.type ||
-            !this.state.method || ((this.state.method === 'combat') === (this.state.secondaryInput === ''))){
-                alert('Please fill in the required fields');
-                return;
-            }
-
-        if(this._isMounted){
-            this.setState({ submitted: true })
-        }
-
-        if(this.props.mode === 'edit'){
-            const lifeEventObject = {
-                id: this.props.id,
-                email: this.state.tribute_email,
-                type: this.state.type,
-                method: this.state.method,
-                time: this.state.time,
-                notes: this.state.notes
-            };
-            if(lifeEventObject.method === 'combat'){
-                lifeEventObject.notes = `${this.state.tributeName} was slain by ${this.state.secondaryInputName}`
-            }
-            if (!lifeEventObject.notes.replace(/\s/g, '').length) {
-                lifeEventObject.notes = 'none';
-            }
-            await this.props.updateLifeEvent(lifeEventObject);
-            if(this.state.method === 'combat'){
-                const lifeEventObjectSecondary = {
-                    id: this.props.id + 1,
-                    email: this.state.secondaryInput,
-                    type: 'combat',
-                    method: 'NA',
-                    time: this.state.time,
-                    notes: `${this.state.secondaryInputName} slaid ${this.state.tributeName}`
-                }
-                this.props.updateLifeEvent(lifeEventObjectSecondary);
-            }
-        } else if(this.props.mode === 'create'){
-            const lifeEventObject = {
-                email: this.state.tribute_email,
-                type: this.state.type,
-                method: this.state.method,
-                time: this.state.time,
-                notes: this.state.notes
-            };
-            if(lifeEventObject.method === 'combat'){
-                lifeEventObject.notes = `${this.state.tributeName} was slain by ${this.state.secondaryInputName}`
-            }
-            if (!lifeEventObject.notes.replace(/\s/g, '').length) {
-                lifeEventObject.notes = 'none';
-            }
-            await this.props.createLifeEvent(lifeEventObject);
-            if(this.state.method === 'combat'){
-                const lifeEventObjectSecondary = {
-                    email: this.state.secondaryInput,
-                    type: 'combat',
-                    method: 'NA',
-                    time: this.state.time,
-                    notes: `${this.state.secondaryInputName} has slain ${this.state.tributeName}`
-                }
-                this.props.createLifeEvent(lifeEventObjectSecondary);
-            }
-        }
-        setTimeout(() => this.handleClose(), 1000);
-    }
-
     handleClose = () => {
         if(this._isMounted){
             this.setState({ showModal: false });
@@ -403,7 +367,7 @@ class LifeEventForm extends React.Component {
         }
     }
 
-    render(){
+    render = () => {
         return(
             <Modal show={this.state.showModal} onHide={this.handleClose}>
                 <Modal.Header>
