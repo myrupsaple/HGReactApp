@@ -36,7 +36,6 @@ class ManageFunds extends React.Component {
             filterByType: 'all',
             filterByMethod: 'all',
             showDetails: true,
-            showPairedCombat: false,
             showCreate: false, 
             showEdit: false,
             showDelete: false,
@@ -115,7 +114,7 @@ class ManageFunds extends React.Component {
         });
     }
     handleSearchTerm(event) {
-        if(this.state.searchType === 'Time Range'){
+        if(this.state.searchType === 'time'){
             const time = this.formatTimeFromDate(event);
             this.setState({ 
                 searchTerm: time[0],
@@ -126,7 +125,7 @@ class ManageFunds extends React.Component {
         }
     }
     handleSearchTermSecondary(event) {
-        if(this.state.searchType === 'Time Range'){
+        if(this.state.searchType === 'time'){
             const time = this.formatTimeFromDate(event);
             this.setState({ 
                 searchTermSecondary: time[0],
@@ -207,18 +206,6 @@ class ManageFunds extends React.Component {
         }
     }
 
-    formatSearchType(type){
-        switch(type){
-            case 'Tribute Name':
-                return 'tribute_email';
-            case 'Time Range':
-                return 'time';
-            case 'Notes':
-                return 'notes';
-            default:
-                return null;
-        }
-    }
 
     formatTimeFromDate(time){
         const hours = time.getHours().toLocaleString(undefined, { minimumIntegerDigits: 2 });
@@ -250,9 +237,9 @@ class ManageFunds extends React.Component {
                             value={this.state.searchType}
                             onChange={this.handleSearchType}
                         >
-                            <option>Tribute Name</option>
-                            <option>Time Range</option>
-                            <option>Notes</option>
+                            <option value="tribute_email">Tribute Name</option>
+                            <option value="time">Time Range</option>
+                            <option value="notes">Notes</option>
                         </Form.Control>
                     </Form.Group>
                     </Col>
@@ -398,7 +385,7 @@ class ManageFunds extends React.Component {
         if(Object.keys(this.props.tributes).length === 0){
             return 'Loading...';
         }
-        if(this.state.searchType === 'Tribute Name' || this.state.searchType === 'Notes'){
+        if(this.state.searchType === 'tribute_email' || this.state.searchType === 'notes'){
             return(
                 <Form.Group controlId="query">
                     <Form.Control required 
@@ -409,7 +396,7 @@ class ManageFunds extends React.Component {
                     />
                 </Form.Group>
             );
-        } else if(this.state.searchType === 'Time Range'){
+        } else if(this.state.searchType === 'time'){
             return(
                 <>
                 <Form.Group controlId="query">
@@ -460,7 +447,7 @@ class ManageFunds extends React.Component {
             if(!this.state.queried) {
                 return(
                     <h5>
-                        Search the database of life events
+                        Search the database of resource events
                     </h5>
                 );
             }
@@ -635,7 +622,7 @@ class ManageFunds extends React.Component {
         if(this.state.searchTerm === ''){
             this.props.fetchAllResourceEvents();
         } else {
-            this.props.fetchResourceEvents(this.formatSearchType(this.state.searchType), this.state.searchTerm);
+            this.props.fetchResourceEvents(this.state.searchType, this.state.searchTerm);
         }
     }
 

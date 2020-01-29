@@ -25,6 +25,9 @@ import {
     FETCH_LIFE_EVENTS,
     FETCH_ALL_LIFE_EVENTS,
     CLEAR_LIFE_EVENTS_QUEUE,
+    FETCH_ITEM,
+    FETCH_ITEMS,
+    FETCH_ALL_ITEMS,
     FETCH_GAMESTATE
 } from './types';
 
@@ -688,7 +691,93 @@ export const clearLifeEventsList = () => async dispatch => {
     dispatch({ type: CLEAR_LIFE_EVENTS_QUEUE });
 }
 
-//######################## (6) Game State Management #########################//
+//############################## (6) Item List ###############################//
+
+export const fetchItem = id => async dispatch => {
+    console.log(`Actions: Get Item initiated with id ${id}`);
+    var response = null;
+    await app.get(`/item-list/get/single/${id}`)
+        .then(res => {
+            response = res;
+            console.log('Successfully Fetched Item');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    
+    if(response && response.data){
+        dispatch ({ type: FETCH_ITEM, payload: response.data[0] });
+    }
+}
+
+export const fetchItems = (type, query) => async dispatch => {
+    console.log(`Actions: Get Item List initiated: ${type} with query ${query}`);
+    var response = null;
+    await app.get(`/item-list/get/list/${type}/${query}`)
+        .then(res => {
+            response = res;
+            console.log('Successfully Fetched Items');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    
+    if(response && response.data){
+        dispatch ({ type: FETCH_ITEMS, payload: response.data });
+    }
+}
+
+export const fetchAllItems = () => async dispatch => {
+    console.log(`Actions: Get All Items`);
+    var response = null;
+    await app.get(`/item-list/get/all`)
+        .then(res => {
+            response = res;
+            console.log('Successfully Fetched All Items');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    
+    if(response && response.data){
+        dispatch ({ type: FETCH_ALL_ITEMS, payload: response.data });
+    }
+}
+
+export const createItem = (item) => async dispatch => {
+    console.log(`Actions: Create Item`);
+    await app.post(`/item-list/post/${item.name}/${item.description}/${item.quantity}/${item.tier1_cost}/${item.tier2_cost}/${item.tier3_cost}/${item.tier4_cost}`)
+        .then(res => {
+            console.log('Successfully Created Item');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const updateItem = (item) => async dispatch => {
+    console.log(`Actions: Update Item`);
+    await app.put(`/item-list/put/${item.id}/${item.name}/${item.description}/${item.quantity}/${item.tier1_cost}/${item.tier2_cost}/${item.tier3_cost}/${item.tier4_cost}`)
+        .then(res => {
+            console.log('Successfully Updated Item');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const deleteItem = (id) => async dispatch => {
+    console.log(`Actions: DELETE Item with id ${id}`);
+    await app.delete(`/item-list/delete/${id}`)
+        .then(res => {
+            console.log('Successfully Deleted Item');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+//######################## (7) Game State Management #########################//
 
 export const getGameState = () => async dispatch => {
     console.log(`Actions: Get Game State initiated`);

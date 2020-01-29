@@ -20,7 +20,7 @@ class DonationForm extends React.Component {
             donor_name: '',
             method: '',
             date: `${year}-${month}-${day}`,
-            us_date: `${month}-${day}-${year}`,
+            dateFormatted: `${month}-${day}-${year}`,
             amount: '',
             tags: '',
             showModal: true,
@@ -40,13 +40,14 @@ class DonationForm extends React.Component {
         if(this.props.mode === 'edit'){
             await this.props.fetchDonation(this.props.id);
             
-            const dmy = this.props.donation.date.split('-');
+            var [year, month, day] = this.props.donation.date.split('-');
+            day = day.split('T')[0];
             if(this._isMounted){
                 this.setState({
                     tribute_email: this.props.donation.tribute_email,
                     donor_name: this.props.donation.donor_name,
-                    date: `${dmy[2]}-${dmy[0]}-${dmy[1]}`,
-                    us_date: `${dmy[0]}-${dmy[1]}-${dmy[2]}`,
+                    date: `${year}-${month}-${day}`,
+                    dateFormatted: `${month}-${day}-${year}`,
                     method: this.props.donation.method,
                     amount: this.props.donation.amount,
                     tags: this.props.donation.tags
@@ -56,11 +57,7 @@ class DonationForm extends React.Component {
     }
 
     handleTribute(event){
-        if(event.target.value === 'No Assignment'){
-            this.setState({ tribute_email: event.target.value });
-        } else {
-            this.setState({ tribute_email: event.target.value.split('|| ')[1] })
-        }
+        this.setState({ tribute_email: event.target.value });
     }
     handleDonor(event){
         this.setState({ donor_name: event.target.value });
@@ -69,12 +66,12 @@ class DonationForm extends React.Component {
         this.setState({ method: event.target.value });
     }
     handleDate(date){
-        const day = date.getDate().toLocaleString(undefined, {minimumIntegerDigits: 2});
-        const month = (date.getMonth() + 1).toLocaleString(undefined, {minimumIntegerDigits: 2});
+        const day = date.getDate().toLocaleString(undefined, { minimumIntegerDigits: 2 });
+        const month = (date.getMonth() + 1).toLocaleString(undefined, { minimumIntegerDigits: 2 });
         const year = date.getFullYear();
         this.setState({ 
             date: `${year}-${month}-${day}`,
-            us_date: `${month}-${day}-${year}`
+            dateFormatted: `${month}-${day}-${year}`
         });
     }
     handleAmount(event){
@@ -82,6 +79,37 @@ class DonationForm extends React.Component {
     }
     handleTags(event){
         this.setState({ tags: event.target.value });
+    }
+
+    handleFormSubmit = () => {
+        if(!this.state.date || !this.state.tribute_email || !this.state.donor_name ||
+            !this.state.method || !this.state.amount){
+                alert('Please fill in the required fields');
+                return;
+            }
+
+        if(this._isMounted){
+            this.setState({ submitted: true })
+        }
+
+        const donationObject = {
+            email: this.state.tribute_email,
+            donor: this.state.donor_name,
+            method: this.state.method,
+            date: this.state.date,
+            amount: this.state.amount,
+            tags: this.state.tags
+        };
+        if (!donationObject.tags.replace(/\s/g, '').length) {
+            donationObject.tags = 'none';
+        }
+        if(this.props.mode === 'edit'){
+            donationObject.id = this.props.id;
+            this.props.updateDonation(donationObject);
+        } else if(this.props.mode === 'create'){
+            this.props.createDonation(donationObject);
+        }
+        setTimeout(() => this.handleClose(), 1000);
     }
 
     renderModalHeader(){
@@ -107,38 +135,23 @@ class DonationForm extends React.Component {
         }
     }
 
-    renderNameChoices(){
-        return (
-        <>
-            <option>No Assignment</option>
-            {this.props.tributes.map(tribute => {
-                return (
-                <option key={tribute.id}>
-                    {tribute.first_name} {tribute.last_name} || {tribute.email}
-                </option>
-                );
-            })}
-        </>
-        );
-    }
-
     renderForm(){
         return(
             <Form>
                 <Form.Row>
                     <div className="col-4"><Form.Group controlId="date">
-                        <Form.Label>Donation Date</Form.Label>
+                        <Form.Label>Donation Date*</Form.Label>
                         <DatePicker dateFormat="MM-dd-yyyy" 
-                            value={this.state.us_date}
+                            value={this.state.dateFormatted}
                             onSelect={this.handleDate}
                         />
                     </Form.Group></div>
                 </Form.Row>
                 <Form.Row>
                     <div className="col-12"><Form.Group controlId="tribute">
-                        <Form.Label>Tribute Name</Form.Label>    
+                        <Form.Label>Tribute Name*</Form.Label>    
                         <Form.Control 
-                            defaultValue={this.state.tribute_email} 
+                            value={this.state.tribute_email} 
                             onChange={this.handleTribute} 
                             as="select" autoComplete="off"
                         >
@@ -148,9 +161,9 @@ class DonationForm extends React.Component {
                 </Form.Row>
                 <Form.Row>
                     <div className="col-12"><Form.Group controlId="donor">
-                        <Form.Label>Donor Name</Form.Label>    
+                        <Form.Label>Donor Name*</Form.Label>    
                         <Form.Control 
-                            defaultValue={this.state.donor_name}
+                            value={this.state.donor_name}
                             autoComplete="off"
                             onChange={this.handleDonor}
                         />
@@ -158,17 +171,17 @@ class DonationForm extends React.Component {
                 </Form.Row>
                 <Form.Row>
                     <div className="col-6"><Form.Group controlId="method">
-                        <Form.Label>Donation Method</Form.Label>    
+                        <Form.Label>Donation Method*</Form.Label>    
                         <Form.Control 
-                            defaultValue={this.state.method}
+                            value={this.state.method}
                             onChange={this.handleMethod}
                             autoComplete="off"
                         />
                     </Form.Group></div>
                     <div className="col-6"><Form.Group controlId="amount">
-                        <Form.Label>Amount</Form.Label>    
+                        <Form.Label>Amount*</Form.Label>    
                         <Form.Control 
-                            defaultValue={this.state.amount}
+                            value={this.state.amount}
                             onChange={this.handleAmount}
                             autoComplete="off"
                         />
@@ -178,13 +191,28 @@ class DonationForm extends React.Component {
                     <div className="col-12"><Form.Group controlId="tags">
                         <Form.Label>Tags</Form.Label>    
                         <Form.Control 
-                            defaultValue={this.state.tags}
+                            value={this.state.tags}
                             autoComplete="off"
                             onChange={this.handleTags}
                         />
                     </Form.Group></div>
                 </Form.Row>
             </Form>
+        );
+    }
+
+    renderNameChoices(){
+        return (
+        <>
+            <option value="No Assignment">No Assignment</option>
+            {this.props.tributes.map(tribute => {
+                return (
+                <option key={tribute.id} value={tribute.email}>
+                    {tribute.first_name} {tribute.last_name} || {tribute.email}
+                </option>
+                );
+            })}
+        </>
         );
     }
 
@@ -200,50 +228,14 @@ class DonationForm extends React.Component {
         );
     }
 
-    handleFormSubmit = () => {
-        if(!this.state.date || !this.state.tribute_email || !this.state.donor_name ||
-            !this.state.method || !this.state.amount){
-                alert('Please fill in the required fields');
-                return;
-            }
-
-        if(this._isMounted){
-            this.setState({ submitted: true })
-        }
-
-        if(this.props.mode === 'edit'){
-            const donationObject = {
-                id: this.props.id,
-                email: this.state.tribute_email,
-                donor: this.state.donor_name,
-                method: this.state.method,
-                date: this.state.date,
-                amount: this.state.amount,
-                tags: this.state.tags
-            };
-            this.props.updateDonation(donationObject);
-        } else if(this.props.mode === 'create'){
-            const donationObject = {
-                email: this.state.tribute_email,
-                donor: this.state.donor_name,
-                method: this.state.method,
-                date: this.state.date,
-                amount: this.state.amount,
-                tags: this.state.tags
-            };
-            this.props.createDonation(donationObject);
-        }
-        setTimeout(() => this.handleClose(), 1000);
-    }
-
     handleClose = () => {
         if(this._isMounted){
             this.setState({ showModal: false });
-            this.props.onSubmitCallback();
         }
+        this.props.onSubmitCallback();
     }
 
-    render(){
+    render = () => {
         return(
             <Modal show={this.state.showModal} onHide={this.handleClose}>
                 <Modal.Header>

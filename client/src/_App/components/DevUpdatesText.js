@@ -5,6 +5,19 @@ const DevUpdatesText = () =>{
         <>
         <h1>Development Updates and Things to Look Out For</h1>
         <h5>Remember, if you run into any errors, please notify me by sending a screenshot and a description of how you got to the error. Thanks!</h5>
+        <h4>January 27</h4>
+        <ol>
+            <li>Implemented Items List</li>
+            <li>Code refactoring and debugging day</li>
+        </ol>
+        <h4>January 25</h4>
+        <ol>
+            <li>Implemented Resource List and Resource Event Tabs</li>
+        </ol>
+        <h4>January 24</h4>
+        <ol>
+            <li>Changed the styling a bit</li>
+        </ol>
         <h4>January 22</h4>
         <ol>
             <li>Completed the life event tracking page. Includes additional search filters and a fully functional create/edit form.</li>

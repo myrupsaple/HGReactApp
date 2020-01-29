@@ -13,7 +13,7 @@ class UserForm extends React.Component {
             first_name: '',
             last_name: '',
             email: '',
-            permissions: 'Tribute',
+            permissions: '',
             showModal: true, 
             submitted: false
         };
@@ -28,7 +28,7 @@ class UserForm extends React.Component {
     async componentDidMount() {
         this._isMounted = true;
         if(this.props.mode === 'edit'){
-            await this.props.fetchUser(this.props.email, this.props.id);
+            await this.props.fetchUser(this.props.email);
     
             if(this._isMounted){
                 this.setState({
@@ -51,6 +51,9 @@ class UserForm extends React.Component {
         this.setState({ email: event.target.value });
     }
     handlePermissions(event) {
+        if(event.target.value === 'none'){
+            this.setState({ permissions: '' });
+        }
         this.setState({ permissions: event.target.value });
     }
 
@@ -90,17 +93,18 @@ class UserForm extends React.Component {
     renderForm() {
         const allowAdminAssignmentIfOwner = () => {
             if(this.props.authPerms === 'owner'){
-                return <option>Admin</option>;
+                return <option value='admin'>Admin</option>;
             } else {
                 return null;
             }
         }
         var authChoices = (
             <>
-                <option>Tribute</option>
-                <option>Helper</option>
-                <option>Mentor</option>
-                <option>Gamemaker</option>
+                {this.showDefault()}
+                <option value='tribute'>Tribute</option>
+                <option value='helper'>Helper</option>
+                <option value='mentor'>Mentor</option>
+                <option value='gamemaker'>Gamemaker</option>
                 {allowAdminAssignmentIfOwner()}
             </>
         );
@@ -109,21 +113,21 @@ class UserForm extends React.Component {
                 <Form.Row>
                     <div className="col-4"><Form.Group controlId="first-name">
                         <Form.Label>First Name</Form.Label>
-                        <Form.Control defaultValue={this.state.first_name}
+                        <Form.Control value={this.state.first_name}
                             onChange={this.handleFirstName}
                             autoComplete="off"
                         />
                     </Form.Group></div>
                     <div className="col-4"><Form.Group controlId="last-name">
                         <Form.Label>Last Name</Form.Label>
-                        <Form.Control defaultValue={this.state.last_name}
+                        <Form.Control value={this.state.last_name}
                             onChange={this.handleLastName}
                             autoComplete="off"
                         />
                     </Form.Group></div>
                     <div className="col-4"><Form.Group control-group="perms">
                         <Form.Label>Permissions</Form.Label>
-                        <Form.Control defaultValue={this.state.permissions}
+                        <Form.Control value={this.state.permissions}
                             onChange={this.handlePermissions}
                             as="select"
                             autoComplete="off"
@@ -144,6 +148,13 @@ class UserForm extends React.Component {
                 </Form.Row>
             </Form>
         );
+    }
+
+    showDefault = () => {
+        if(this.state.permissions === ''){
+            return(<option value='none'>Please select...</option>);
+        }
+        return null;
     }
 
     renderModalFooter(){
@@ -168,33 +179,13 @@ class UserForm extends React.Component {
             this.setState({ submitted: true })
         }
         
-        var formattedPerms = null;
-        switch(this.state.permissions){
-            case 'Tribute':
-                formattedPerms = 'tribute';
-                break;
-            case 'Helper':
-                formattedPerms = 'helper';
-                break;
-            case 'Mentor':
-                formattedPerms = 'mentor';
-                break;
-            case 'Gamemaker':
-                formattedPerms = 'gamemaker';
-                break;
-            case 'Admin':
-                formattedPerms = 'admin';
-                break;
-            default:
-                break;
-        }
         if(this.props.mode === 'edit'){
             const userObject = {
                 id: this.props.user.id,
                 first_name: this.state.first_name,
                 last_name: this.state.last_name,
                 email: this.state.email,
-                permissions: formattedPerms
+                permissions: this.state.permissions
             };
             this.props.updateUser(userObject);
         } else if(this.props.mode === 'create') {
@@ -202,7 +193,7 @@ class UserForm extends React.Component {
                 first_name: this.state.first_name,
                 last_name: this.state.last_name,
                 email: this.state.email,
-                permissions: formattedPerms
+                permissions: this.state.permissions
             };
             this.props.createUser(userObject);
         }
@@ -218,6 +209,7 @@ class UserForm extends React.Component {
     }
 
     render = () => {
+        console.log(this.state);
         return(
             <Modal show={this.state.showModal} onHide={this.handleClose}>
                 <Modal.Header>

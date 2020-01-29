@@ -49,16 +49,48 @@ class ResourceListForm extends React.Component {
     }
 
     handleCode(event){
-        this.setState({ code: event.target.value.toLowerCase() });
+        this.setState({ code: event.target.value });
     }
     handleType(event){
-        this.setState({ type: event.target.value.toLowerCase() });
+        this.setState({ type: event.target.value });
     }
     handleMaxUses(event){
         this.setState({ method: event.target.value });
     }
     handleNotes(event){
         this.setState({ notes: event.target.value });
+    }
+
+
+    handleFormSubmit = async () => {
+        if(!this.state.code || !this.state.type || !this.state.maxUses){
+                alert('Please fill in the required fields');
+                return;
+            }
+
+        if(this._isMounted){
+            this.setState({ submitted: true })
+        }
+
+        const resourceItem = {
+            code: this.state.code,
+            type: this.state.type,
+            timesUsed: this.state.timesUsed,
+            maxUses: this.state.maxUses,
+            usedBy: this.state.usedBy,
+            notes: this.state.notes
+        };
+        if (!resourceItem.notes.replace(/\s/g, '').length) {
+            resourceItem.notes = 'none';
+        }
+
+        if(this.props.mode === 'edit'){
+            resourceItem.id = this.props.id;
+            this.props.updateResourceListItem(resourceItem);
+        } else if(this.props.mode === 'create'){
+            this.props.createResourceListItem(resourceItem);
+        }
+        setTimeout(() => this.handleClose(), 1000);
     }
 
     renderModalHeader(){
@@ -89,9 +121,9 @@ class ResourceListForm extends React.Component {
             <Form>
                 <Form.Row>
                     <div className="col-12"><Form.Group controlId="tribute">
-                        <Form.Label>Resource Code (case insensitive)</Form.Label>    
+                        <Form.Label>Resource Code (case insensitive)*</Form.Label>    
                         <Form.Control 
-                            defaultValue={this.state.code} 
+                            value={this.state.code} 
                             onChange={this.handleCode} 
                             autoComplete="off"
                         />
@@ -99,23 +131,26 @@ class ResourceListForm extends React.Component {
                 </Form.Row>
                 <Form.Row>
                     <div className="col-6"><Form.Group controlId="type">
-                        <Form.Label>Resource Type</Form.Label>    
+                        <Form.Label>Resource Type*</Form.Label>    
                         <Form.Control 
-                            defaultValue="food"
+                            value={this.state.type}
                             onChange={this.handleType}
                             as="select"
                         >
-                            <option>Food</option>
-                            <option>Water</option>
-                            <option>Medicine</option>
-                            <option>Roulette</option>
-                            <option>Life</option>
-                            <option>Golden</option>
+                            <option value="food">Food</option>
+                            <option value="water">Water</option>
+                            <option value="medicine">Medicine</option>
+                            <option value="roulette">Roulette</option>
+                            <option value="life">Life</option>
+                            <option value="golden">Golden</option>
                         </Form.Control>
                     </Form.Group></div>
                     <div className="col-6"><Form.Group controlId="method">
-                        <Form.Label>Maximum Uses</Form.Label>
-                        <Form.Control defaultValue={1}/>
+                        <Form.Label>Maximum Uses*</Form.Label>
+                        <Form.Control 
+                            value={this.state.maxUses}
+                            onChange={this.handleMaxUses}
+                        />
                     </Form.Group></div>
                 </Form.Row>
                 <Form.Row>
@@ -142,47 +177,6 @@ class ResourceListForm extends React.Component {
                 <Button variant="info" onClick={this.handleFormSubmit}>Submit</Button>
             </Form.Row>
         );
-    }
-
-    handleFormSubmit = async () => {
-        if(!this.state.code || !this.state.type || !this.state.maxUses){
-                alert('Please fill in the required fields');
-                return;
-            }
-
-        if(this._isMounted){
-            this.setState({ submitted: true })
-        }
-
-        if(this.props.mode === 'edit'){
-            const resourceItem = {
-                id: this.props.id,
-                code: this.state.code,
-                type: this.state.type,
-                timesUsed: this.state.timesUsed,
-                maxUses: this.state.maxUses,
-                usedBy: this.state.usedBy,
-                notes: this.state.notes
-            };
-            if (!resourceItem.notes.replace(/\s/g, '').length) {
-                resourceItem.notes = 'none';
-            }
-            await this.props.updateResourceListItem(resourceItem);
-        } else if(this.props.mode === 'create'){
-            const resourceItem = {
-                code: this.state.code,
-                type: this.state.type,
-                timesUsed: this.state.timesUsed,
-                maxUses: this.state.maxUses,
-                usedBy: this.state.usedBy,
-                notes: this.state.notes
-            };
-            if (!resourceItem.notes.replace(/\s/g, '').length) {
-                resourceItem.notes = 'none';
-            }
-            await this.props.createResourceListItem(resourceItem);
-        }
-        setTimeout(() => this.handleClose(), 1000);
     }
 
     handleClose = () => {
