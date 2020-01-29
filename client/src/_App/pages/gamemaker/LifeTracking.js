@@ -28,18 +28,13 @@ class ManageFunds extends React.Component {
                 payload: null
             },
             queried: false,
-            searchType: 'tribute_email',
-            // For time, search terms will be in minutes (eg. 12:00 pm = 720)
+            searchType: 'Tribute Name',
             searchTerm: '',
             searchTermSecondary: '',
-            // These will hold the hh:mm time values as strings
             timeFormatted: '',
             timeFormattedSecondary: '',
             filterEventType: 'all',
-            showStats: true,
-            // A paired combat event of type 'combat' is created each time a life lost
-            // through combat is reported. This is to more easily keep track of
-            // kill counts
+            showDetails: true,
             showPairedCombat: false,
             showCreate: false, 
             showEdit: false,
@@ -51,7 +46,7 @@ class ManageFunds extends React.Component {
         this.handleSearchTerm = this.handleSearchTerm.bind(this);
         this.handleSearchTermSecondary = this.handleSearchTermSecondary.bind(this);
         this.handleFilterEventType = this.handleFilterEventType.bind(this);
-        this.handleshowStats = this.handleshowStats.bind(this);
+        this.handleShowDetails = this.handleShowDetails.bind(this);
         this.handlePairedCombat = this.handlePairedCombat.bind(this);
         this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
     }
@@ -118,21 +113,9 @@ class ManageFunds extends React.Component {
             searchTerm: '',
             searchTermSecondary: ''
         });
-        if(event.target.value === 'method'){
-            this.setState({ searchTerm: 'purchased' });
-        } if(event.target.value === 'time'){
-            const now = new Date();
-            const hours = now.getHours().toLocaleString(undefined, { minimumIntegerDigits: 2 });
-            const minutes = now.getMinutes().toLocaleString(undefined, { minimumIntegerDigits: 2 });
-            this.setState({
-                searchTerm: 60 * hours + 1 * minutes,
-                timeFormatted: `${hours}:${minutes}`
-            })
-        }
     }
     handleSearchTerm(event) {
-        if(this.state.searchType === 'time'){
-            // Returns as [timeInMinutes, hh:mm]
+        if(this.state.searchType === 'Time Range'){
             const time = this.formatTimeFromDate(event);
             this.setState({ 
                 searchTerm: time[0],
@@ -143,7 +126,7 @@ class ManageFunds extends React.Component {
         }
     }
     handleSearchTermSecondary(event) {
-        if(this.state.searchType === 'time'){
+        if(this.state.searchType === 'Time Range'){
             const time = this.formatTimeFromDate(event);
             this.setState({ 
                 searchTermSecondary: time[0],
@@ -166,8 +149,8 @@ class ManageFunds extends React.Component {
     handlePairedCombat(event){
         this.setState({ showPairedCombat: event.target.checked });
     }
-    handleshowStats(event){
-        this.setState({ showStats: event.target.checked });
+    handleShowDetails(event){
+        this.setState({ showDetails: event.target.checked });
     }
     
     async handleSearchSubmit(event){
@@ -178,31 +161,31 @@ class ManageFunds extends React.Component {
 
         await this.props.clearLifeEventsList();
 
-        const searchType = this.state.searchType;
-        const searchTerm = this.state.searchTerm;
-        const searchTermSecondary = this.state.searchTermSecondary;
+        const searchType = this.formatSearchType(this.state.searchType);
+        const searchTerm = this.formatSearchTerm(this.state.searchTerm);
+        const searchTermSecondary = this.formatSearchTerm(this.state.searchTermSecondary);
 
         if(searchType === 'tribute_email'){
-            const emails = [];
+            const matches = [];
             const name = this.state.searchTerm.toLowerCase();
             this.props.tributes.map(tribute => {
                 if(tribute.first_name.toLowerCase().includes(name)){
-                    emails.push(tribute.email);
+                    matches.push(tribute.email);
                 }
                 return null;
             });
-            emails.map(email => {
-                this.props.fetchLifeEvents(searchType, email);
+            matches.map(match => {
+                this.props.fetchLifeEvents(searchType, match);
                 return null;
             })
 
         } else if(searchType === 'method'){
-            if(searchTerm === 'purchased' || searchTerm === 'combat'){
+            if(searchTerm === 'purchase' || searchTerm === 'combat'){
                 this.props.fetchLifeEvents(searchType, searchTerm);
             } else if(searchTerm === 'mutts'){
                 this.props.fetchLifeEvents('method', 'mutts')
             } else if(searchTermSecondary === 'all'){
-                const resources = ['life', 'food', 'water', 'medicine', 'roulette'];
+                const resources = ['life', 'food', 'water', 'medicine'];
                 for (let resource of resources){
                     this.props.fetchLifeEvents('method', resource);
                 }
@@ -215,6 +198,48 @@ class ManageFunds extends React.Component {
             } else {
                 this.props.fetchLifeEventsRange(searchType, searchTerm, searchTermSecondary);
             }
+        }
+    }
+
+    formatSearchType(type){
+        switch(type){
+            case 'Tribute Name':
+                return 'tribute_email';
+            case 'Method':
+                return 'method';
+            case 'Time Range':
+                return 'time';
+            default:
+                return type;
+        }
+    }
+
+    formatSearchTerm(method){
+        switch(method){
+            case 'Purchased':
+                return 'purchased';
+            case 'Resource':
+                return 'resource';
+            case 'Combat':
+                return 'combat';
+            case 'Mutts':
+                return 'mutts';
+            case 'Show All':
+                return 'all';
+            case 'Life (gained)':
+                return 'life_resource';
+            case 'Food (lost)':
+                return 'food_resource';
+            case 'Water (lost)':
+                return 'water_resource';
+            case 'Medicine (lost)':
+                return 'medicine_resource';
+            case  'Roulette':
+                return 'roulette_resource';
+            case 'Other':
+                return 'other';
+            default:
+                return method;
         }
     }
 
@@ -233,7 +258,7 @@ class ManageFunds extends React.Component {
     }
 
     capitalizeFirst(string){
-        return string.slice(0, 1).toUpperCase() + string.slice(1, string.length);
+        return string.slice(0, 1).toUpperCase() + string.slice(1, string.length).toLowerCase();
     }
 
     renderSearchForm = () => {
@@ -243,14 +268,14 @@ class ManageFunds extends React.Component {
                 <Form.Label>Search For Lives Gained/Lost:</Form.Label>
                 <Form.Row>
                     <Col>
-                    <Form.Group controlId="search-type">
+                    <Form.Group controlId="searchBy">
                         <Form.Control as="select"
                             value={this.state.searchType}
                             onChange={this.handleSearchType}
                         >
-                            <option value="tribute_email">Tribute Name</option>
-                            <option value="method">Method</option>
-                            <option value="time">Time Range</option>
+                            <option>Tribute Name</option>
+                            <option>Method</option>
+                            <option>Time Range</option>
                         </Form.Control>
                     </Form.Group>
                     </Col>
@@ -278,93 +303,6 @@ class ManageFunds extends React.Component {
             </Form>
             </>
         )
-    }
-
-    renderSearchField = () => {
-        if(Object.keys(this.props.tributes).length === 0){
-            return 'Loading...';
-        }
-        if(this.state.searchType === 'tribute_email'){
-            return(
-                <Form.Group controlId="query">
-                    <Form.Control required 
-                        value={this.state.searchTerm}
-                        autoComplete="off"
-                        placeholder="Enter tribute name..."
-                        onChange={this.handleSearchTerm}
-                    />
-                </Form.Group>
-            );
-        } else if(this.state.searchType === 'method'){
-            return(
-                <>
-                <Form.Group controlId="query">
-                    <Form.Control required
-                        as="select"
-                        value={this.state.searchTerm}
-                        onChange={this.handleSearchTerm}
-                    >
-                        <option value="purchased">Purchased</option>
-                        <option value="resource">Resource</option>
-                        <option value="combat">Combat</option>
-                        <option value="mutts">Mutts</option>
-                        <option value="other">Other</option>
-                    </Form.Control>
-                </Form.Group>
-                {this.renderEventTypeSecondary()}
-                </>
-            );
-        } else if(this.state.searchType === 'time'){
-            return(
-                <>
-                <Form.Group controlId="query">
-                    <div><Form.Label>From (Start Time)</Form.Label></div>
-                    <DatePicker 
-                        showTimeSelect
-                        showTimeSelectOnly
-                        value={this.state.timeFormatted}
-                        onChange={this.handleSearchTerm}
-                        dateFormat="hh:mm aa"
-                    />
-                </Form.Group>
-                <Form.Group controlId="query-secondary">
-                    <div><Form.Label>To (End Time)</Form.Label></div>
-                    
-                    <DatePicker
-                        showTimeSelect
-                        showTimeSelectOnly
-                        value={this.state.timeFormattedSecondary}
-                        onChange={this.handleSearchTermSecondary}
-                        dateFormat="hh:mm aa"
-                    />
-                    <div><Form.Label>
-                        Leaving the second parameter blank will search for a perfect match on the first time.
-                    </Form.Label></div>
-                </Form.Group>
-                </>
-            );
-        }
-    }
-
-    renderEventTypeSecondary = () => {
-        if(this.state.searchTerm === 'resource'){
-            return(
-                <Form.Group controlId="query-secondary">
-                    <Form.Control
-                        as="select"
-                        value={this.state.searchTermSecondary}
-                        onChange={this.handleSearchTermSecondary}
-                    >
-                        <option value="all">Show All</option>
-                        <option value="life_resource">Life (gained)</option>
-                        <option value="food_resource">Food (lost)</option>
-                        <option value="water">Water (lost)</option>
-                        <option value="medicine">Medicine (lost)</option>
-                        <option value="roulette">Roulette</option>
-                    </Form.Control>
-                </Form.Group>
-            )
-        }
     }
 
     renderOptions(){
@@ -407,8 +345,8 @@ class ManageFunds extends React.Component {
                     <Form.Group controlId="show-details" style={{ marginBottom: '0px' }}>
                         <Form.Check
                             defaultChecked
-                            value={this.state.showStats}
-                            onChange={this.handleshowStats}
+                            value={this.state.showDetails}
+                            onChange={this.handleShowDetails}
                             label="Show Details"
                         />
                     </Form.Group>
@@ -427,6 +365,93 @@ class ManageFunds extends React.Component {
     searchForAllLifeEvents = () => {
         this.setState({ searchTerm: '', searchTermSecondary: '', queried: true});
         this.props.fetchAllLifeEvents();
+    }
+
+    renderSearchField = () => {
+        if(Object.keys(this.props.tributes).length === 0){
+            return 'Loading...';
+        }
+        if(this.state.searchType === 'Tribute Name'){
+            return(
+                <Form.Group controlId="query">
+                    <Form.Control required 
+                        value={this.state.searchTerm}
+                        autoComplete="off"
+                        placeholder="Enter tribute name..."
+                        onChange={this.handleSearchTerm}
+                    />
+                </Form.Group>
+            );
+        } else if(this.state.searchType === 'Method'){
+            return(
+                <>
+                <Form.Group controlId="query">
+                    <Form.Control required
+                        as="select"
+                        value={this.state.searchTerm}
+                        onChange={this.handleSearchTerm}
+                    >
+                        <option>Purchased</option>
+                        <option>Resource</option>
+                        <option>Combat</option>
+                        <option>Mutts</option>
+                        <option>Other</option>
+                    </Form.Control>
+                </Form.Group>
+                {this.renderEventTypeSecondary()}
+                </>
+            );
+        } else if(this.state.searchType === 'Time Range'){
+            return(
+                <>
+                <Form.Group controlId="query">
+                    <div><Form.Label>From (Start Time)</Form.Label></div>
+                    <DatePicker 
+                        showTimeSelect
+                        showTimeSelectOnly
+                        value={this.state.timeFormatted}
+                        onChange={this.handleSearchTerm}
+                        dateFormat="hh:mm aa"
+                    />
+                </Form.Group>
+                <Form.Group controlId="query-secondary">
+                    <div><Form.Label>To (End Time)</Form.Label></div>
+                    
+                    <DatePicker
+                        showTimeSelect
+                        showTimeSelectOnly
+                        value={this.state.timeFormattedSecondary}
+                        onChange={this.handleSearchTermSecondary}
+                        dateFormat="hh:mm aa"
+                    />
+                    <div><Form.Label>
+                        Leaving the second parameter blank will search for a perfect match on the first time.
+                    </Form.Label></div>
+                </Form.Group>
+                </>
+            );
+        }
+    }
+
+    renderEventTypeSecondary = () => {
+        if(this.state.searchTerm === 'Resource'){
+            return(
+                <Form.Group controlId="query-secondary">
+                    <Form.Control
+                        as="select"
+                        value={this.state.searchTermSecondary}
+                        onChange={this.handleSearchTermSecondary}
+                    >
+                        <option>Show All</option>
+                        <option>Life (gained)</option>
+                        <option>Food (lost)</option>
+                        <option>Water (lost)</option>
+                        <option>Medicine (lost)</option>
+                        <option>Roulette</option>
+                    </Form.Control>
+                </Form.Group>
+            )
+        }
     }
 
     renderTableHeader(){
@@ -469,7 +494,7 @@ class ManageFunds extends React.Component {
         return(
             <>
             <ul className="list-group">
-            {this.renderStats(lifeEvents)}
+            {this.renderDetails(lifeEvents)}
 
             {this.renderTableHeader()}
             {lifeEvents.map(lifeEvent => {
@@ -504,16 +529,6 @@ class ManageFunds extends React.Component {
     }
 
     renderAdmin = (lifeEvent) => {
-        if(lifeEvent.type === 'combat'){
-            return(
-                <Button
-                    variant="danger"
-                    onClick={() => this.setState({ showDelete: true, selectedId: lifeEvent.id })}
-                    >
-                        Delete
-                </Button>
-            );
-        }
         return(
             <div className="row">
                 <Button 
@@ -532,8 +547,8 @@ class ManageFunds extends React.Component {
         );
     }
 
-    renderStats = (lifeEvents) => {
-        if(!this.state.showStats){
+    renderDetails = (lifeEvents) => {
+        if(!this.state.showDetails){
             return null;
         }
         var gained = 0;
@@ -601,7 +616,7 @@ class ManageFunds extends React.Component {
         if(this.state.searchTerm === ''){
             this.props.fetchAllLifeEvents();
         } else {
-            this.props.fetchLifeEvents(this.state.searchType, this.state.searchTerm);
+            this.props.fetchLifeEvents(this.formatSearchType(this.state.searchType), this.state.searchTerm);
         }
     }
 

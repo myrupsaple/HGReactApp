@@ -7,6 +7,7 @@ import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components
 import Wait from '../../../components/Wait';
 import {
     fetchTributes,
+    fetchResourceListItem,
     fetchResourceListItems,
     fetchResourceListItemRange,
     fetchAllResourceListItems,
@@ -28,6 +29,7 @@ class ResourceList extends React.Component {
             queried: false,
             searchType: 'Resource Code',
             searchTerm: '',
+            timeFormatted: '',
             filterByUses: 'all',
             filterByType: 'all',
             showDetails: true,
@@ -110,7 +112,15 @@ class ResourceList extends React.Component {
         });
     }
     handleSearchTerm(event) {
-        this.setState({ searchTerm: event.target.value });
+        if(this.state.searchType === 'Time Range'){
+            const time = this.formatTimeFromDate(event);
+            this.setState({ 
+                searchTerm: time[0],
+                timeFormatted: time[1]
+        });
+        } else {
+            this.setState({ searchTerm: event.target.value });
+        }
     }
     handleFilterItemUses(event){
         const button = event.target.id;
@@ -154,10 +164,25 @@ class ResourceList extends React.Component {
 
         await this.props.clearResourceList();
 
-        const searchType = this.state.searchType;
-        const searchTerm = this.state.searchTerm.toLowerCase();
+        const searchType = this.formatSearchType(this.state.searchType);
+        const searchTerm = this.formatSearchTerm(this.state.searchTerm);
 
         this.props.fetchResourceListItems(searchType, searchTerm.toLowerCase());
+    }
+
+    formatSearchType(type){
+        switch(type){
+            case 'Resource Code':
+                return 'code';
+            case 'Notes':
+                return 'notes';
+            default:
+                return null;
+        }
+    }
+
+    formatSearchTerm(term){
+        return term.toLowerCase();
     }
 
     renderSearchForm = () =>{
@@ -172,8 +197,8 @@ class ResourceList extends React.Component {
                             value={this.state.searchType}
                             onChange={this.handleSearchType}
                         >
-                            <option value="code">Resource Code</option>
-                            <option value="notes">Notes</option>
+                            <option>Resource Code</option>
+                            <option>Notes</option>
                         </Form.Control>
                     </Form.Group>
                     </Col>
@@ -341,7 +366,7 @@ class ResourceList extends React.Component {
             if(!this.state.queried) {
                 return(
                     <h5>
-                        Search the database of resource codes
+                        Search the database of life events
                     </h5>
                 );
             }
@@ -352,13 +377,13 @@ class ResourceList extends React.Component {
             );
         }
 
-        const numberUsesFilter = this.state.filterByUses;
+        const numberUses = this.state.filterByUses;
         var resourceList = this.props.resourceList;
-        if(numberUsesFilter === 'unused'){
+        if(numberUses === 'unused'){
             resourceList = resourceList.filter(resource => resource.times_used === 0);
-        } else if(numberUsesFilter === 'used'){
+        } else if(numberUses === 'used'){
             resourceList = resourceList.filter(resource => resource.times_used !== 0);
-        } else if(numberUsesFilter === 'noUses') {
+        } else if(numberUses === 'noUses') {
             resourceList = resourceList.filter(resource => resource.times_used === resource.max_uses);
         }
         const filterType = this.state.filterByType;
@@ -378,7 +403,7 @@ class ResourceList extends React.Component {
                             <div className="col">{resource.code}</div>
                             <div className="col">{this.capitalizeFirst(resource.type)}</div>
                             <div className="col">{resource.times_used}</div>
-                            <div className="col">{resource.max_uses - resource.times_used}</div>
+                            <div className="col">{resource.max_uses}</div>
                             <div className="col">{resource.notes}</div>
                             <div className="col">{this.renderAdmin(resource)}</div>
                         </div>
@@ -391,7 +416,7 @@ class ResourceList extends React.Component {
     }
 
     capitalizeFirst(string){
-        return string.slice(0, 1).toUpperCase() + string.slice(1, string.length);
+        return string.slice(0, 1).toUpperCase() + string.slice(1, string.length).toLowerCase();
     }
 
     renderAdmin = (resource) => {
@@ -489,7 +514,7 @@ class ResourceList extends React.Component {
         if(this.state.searchTerm === ''){
             this.props.fetchAllResourceListItems();
         } else {
-            this.props.fetchResourceListItems(this.state.searchType, this.state.searchTerm);
+            this.props.fetchResourceListItems(this.formatSearchType(this.state.searchType), this.state.searchTerm);
         }
     }
 
@@ -555,6 +580,7 @@ export default connect(mapStateToProps,
     { 
         setNavBar,
         fetchTributes,
+        fetchResourceListItem,
         fetchResourceListItems,
         fetchResourceListItemRange,
         fetchAllResourceListItems,

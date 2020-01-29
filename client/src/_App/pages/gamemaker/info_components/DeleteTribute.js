@@ -122,6 +122,7 @@ class DeleteTribute extends React.Component {
     }
 
     componentWillUnmount(){
+        console.log('unmounted');
         this._isMounted = false;
     }
 }

@@ -17,19 +17,13 @@ class ModifyUsers extends React.Component {
                 loading: true,
                 payload: null
             },
-            // Causes a different message to display before and after a search is made
             queried: false,
-            // SQL table column to search by
-            searchType: 'first_name',
-            // Term to be searched with
+            searchType: 'First Name',
             searchTerm: '',
-            // Renders the 'create' modal upon appropriate button click
             showCreate: false,
-            // Renders the 'edit' modal upon appropriate button click
             showEdit: false,
-            // Renders the 'delete' modal upon appropriate button click
             showDelete: false,
-            // Both are needed to access individual user data
+            // Both needed to access individual user data
             selectedId: null,
             selectedEmail: null
         };
@@ -100,15 +94,32 @@ class ModifyUsers extends React.Component {
         this.setState({ searchTerm: event.target.value })
     }
 
-    capitalizeFirst(permission) {
+    formatSearchType(type) {
+        switch(type){
+            case 'First Name':
+                return 'first_name';
+            case 'Last Name':
+                return 'last_name';
+            case 'Email':
+                return 'email';
+            case 'Group':
+                return 'permissions';
+            default:
+                return null;
+        }
+    }
+
+    formatPerms(permission) {
         return permission.slice(0, 1).toUpperCase() + permission.slice(1, permission.length);
     }
 
     handleSearchSubmit(event) {
         event.preventDefault();
 
+        var searchType = this.formatSearchType(this.state.searchType)
+        var searchTerm = this.state.searchTerm;
         this.setState({ queried: true });
-        this.props.fetchUsers(this.state.searchType, this.state.searchTerm);
+        this.props.fetchUsers(searchType, searchTerm);
     }
 
     renderUsers(){
@@ -139,7 +150,7 @@ class ModifyUsers extends React.Component {
                                 <div className="col">{user.first_name}</div>
                                 <div className="col">{user.last_name}</div>
                                 <div className="col">{user.email}</div>
-                                <div className="col">{this.capitalizeFirst(user.permissions)}</div>
+                                <div className="col">{this.formatPerms(user.permissions)}</div>
                                 <div className="col">{this.renderAdmin(user)}</div>
                             </div>
                         </li>
@@ -157,7 +168,7 @@ class ModifyUsers extends React.Component {
             <div className="col">Last Name</div>
             <div className="col">Email</div>
             <div className="col">Group</div>
-            <div className="col">Modify</div>
+            <div className="col">Modify User</div>
         </h5>
         )
     }
@@ -170,13 +181,13 @@ class ModifyUsers extends React.Component {
             <div className="row">
                 <Button 
                 variant="info"
-                onClick={() => this.setState({ showEdit: true, selectedEmail: user.email})}
+                onClick={() => this.setState({ showEdit: true, selectedEmail: user.email, selectedId: user.id })}
                 >
                     Edit
                 </Button>
                 <Button
                 variant="danger"
-                onClick={() => this.setState({ showDelete: true, selectedEmail: user.email})}
+                onClick={() => this.setState({ showDelete: true, selectedEmail: user.email, selectedId: user.id })}
                 >
                     Delete
                 </Button>
@@ -196,10 +207,10 @@ class ModifyUsers extends React.Component {
                                 value={this.state.searchType}
                                 onChange={this.handleSearchType}
                             >
-                                <option value="first_name">First Name</option>
-                                <option value="last_name">Last Name</option>
-                                <option value="email">Email</option>
-                                <option value="permissions">Perission Group</option>
+                                <option>First Name</option>
+                                <option>Last Name</option>
+                                <option>Email</option>
+                                <option>Group</option>
                             </Form.Control>
                         </Form.Group>
                     </Col>
@@ -276,7 +287,7 @@ class ModifyUsers extends React.Component {
         if(this.state.searchTerm === ''){
             this.props.fetchAllUsers();
         } else {
-            this.props.fetchUsers(this.state.searchType, this.state.searchTerm);
+            this.props.fetchUsers(this.formatSearchType(this.state.searchType), this.state.searchTerm);
         }
     };
 
