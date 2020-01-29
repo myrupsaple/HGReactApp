@@ -52,6 +52,7 @@ connection.connect(async (err) => {
             resource_events: false,
             life_events: false,
             item_list: false,
+            purchases: false,
             game_state: false
         }
         
@@ -80,6 +81,9 @@ connection.connect(async (err) => {
                     break;
                 case 'item_list':
                     tableList.item_list = true;
+                    break;
+                case 'purchases':
+                    tableList.purchases = true;
                     break;
                 case 'game_state':
                     tableList.game_state = true;
@@ -174,7 +178,20 @@ connection.connect(async (err) => {
             tier2_cost INT,
             tier3_cost INT,
             tier4_cost INT
-        )`
+        )`;
+
+        const createPurchases = `CREATE TABLE purchases(
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            time INT,
+            status VARCHAR(10),
+            mentor_email VARCHAR(40),
+            payer_email VARCHAR(40),
+            receiver_email VARCHAR(40),
+            type VARCHAR(10),
+            secondary_description VARCHAR(25),
+            cost INT,
+            quantity TINYINT
+        )`;
 
         const createGameState = `CREATE TABLE game_state(
             start_time DATETIME,
@@ -232,6 +249,13 @@ connection.connect(async (err) => {
         }
         if(!tableList.item_list){
             connection.query(createItemList, (err, results, fields) => {
+                if(err){
+                    console.log(err.message);
+                }
+            });
+        }
+        if(!tableList.purchases){
+            connection.query(createPurchases, (err, results, fields) => {
                 if(err){
                     console.log(err.message);
                 }
@@ -1144,7 +1168,321 @@ app.delete(`/item-list/delete/:id/`, (req, res) => {
     });
 })
 
-//######################## (7) Game State Management #########################//
+//############################## (7) Purchases ###############################//
+
+// FETCH_MENTORS
+app.get(`/purchases/get/mentors`, (req, res) => {
+    const queryStringGetPurchase = `SELECT * FROM users WHERE permissions = 'mentor'`;
+    console.log(queryStringGetPurchase);
+    connection.query(queryStringGetPurchase, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for users: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// FETCH_PURCHASE
+app.get(`/purchases/get/single/:id`, (req, res) => {
+    const id = req.params.id;
+    const queryStringGetPurchase = `SELECT * FROM purchases WHERE id = ${id}`;
+    console.log(queryStringGetPurchase);
+    connection.query(queryStringGetPurchase, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// FETCH_ALL_PURCHASES
+app.get(`/purchases/get/all`, (req, res) => {
+    const queryStringAllGetPurchases = `SELECT * FROM purchases`;
+    console.log(queryStringAllGetPurchases);
+    connection.query(queryStringAllGetPurchases, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for purchases: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// CREATE_PURCHASE_REQUEST
+app.post(`/purchases/post/:time/:status/:mentorEmail/:payerEmail/:receiverEmail/:type/:secondary/:cost/:quantity`, (req, res) => {
+    const { time, status, mentorEmail, payerEmail, receiverEmail, type, secondary, cost, quantity } = req.params;
+    const queryStringCreatePurchaseRequest = `INSERT INTO purchases (time, status,
+        mentor_email, payer_email, receiver_email, type, secondary_description,
+        cost, quantity) VALUES (${time}, '${status}', '${mentorEmail}', '${payerEmail}',
+        '${receiverEmail}', '${type}', '${secondary}', '${cost}', '${quantity}')`;
+    console.log(queryStringCreatePurchaseRequest)
+    connection.query(queryStringCreatePurchaseRequest, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for purchases: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// UPDATE_PURCHASE_STATUS
+app.put(`/purchases/put/:id/:status`, (req, res) => {
+    const { id, status } = req.params;
+    const queryStringUpdatePurchaseStatus = `UPDATE purchases SET status = '${status}' WHERE id = ${id}`
+    console.log(queryStringUpdatePurchaseStatus)
+    connection.query(queryStringUpdatePurchaseStatus, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for purchases: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// DELETE_PURCHASE_REQUEST
+app.delete(`/purchases/delete/:id`, (req, res) => {
+    const id = req.params.id;
+    const queryStringDeletePurchaseRequest = `DELETE FROM purchases WHERE id = ${id}`
+    console.log(queryStringDeletePurchaseRequest)
+    connection.query(queryStringDeletePurchaseRequest, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for purchases: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// CHECK_FUNDS
+app.get(`/purchases/tribute-stats/check-funds/get/:email`, (req, res) => {
+    const email = req.params.email;
+    const queryStringCheckFunds = `SELECT funds_remaining FROM tribute_stats WHERE email = ${email}`;
+    console.log(queryStringCheckFunds);
+    connection.query(queryStringCheckFunds, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for tribute stats: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// UPDATE_FUNDS
+app.get(`/purchases/tribute-stats/update-funds/put/:email/:amount`, (req, res) => {
+    const { email, amount } = req.params;
+    const queryStringCheckFunds = `UPDATE tribute_stats SET funds_remaining = 
+    funds_remaining + ${amount} WHERE email = ${email}`;
+    console.log(queryStringCheckFunds);
+    connection.query(queryStringCheckFunds, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for tribute stats: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// UPDATE_ITEM_QUANTITY
+app.put(`/purchases/items/put/:id/:quantity`, (req, res) => {
+    const { id, quantity } = req.params;
+    const queryStringUpdateItemQuantity = `UPDATE item_list SET quantity = quantity + ${quantity} WHERE id = ${id}`;
+    console.log(queryStringUpdateItemQuantity);
+    connection.query(queryStringUpdateItemQuantity, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for purchases: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// INSERT_LIFE_EVENT
+app.post(`/purchases/life-events/post/:email/:type/:method/:time/:notes`, (req, res) => {
+    const { email, type, method, time, notes } = req.params;
+    const queryStringInsertLifeEvent = `INSERT INTO life_events (tribute_email, type,
+        method, time, notes) VALUES ('${email}', '${type}', '${method}', 
+        ${time}, '${notes}')`;
+    console.log(queryStringInsertLifeEvent);
+    connection.query(queryStringInsertLifeEvent, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// ADD_PURCHASED_LIFE
+app.put(`/purchases/tribute-stats/lives/put/:email`, (req, res) => {
+    const email = req.params.email;
+    const queryStringAddPurchasedLife = `UPDATE tribute_stats SET lives_purchased = 
+    lives_purchased + 1 WHERE email = '${email}'`;
+    console.log(queryStringAddPurchasedLife);
+    connection.query(queryStringAddPurchasedLife, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for tribute stats: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// INSERT_RESOURCE_EVENT
+app.post(`/purchases/resources/post/:email/:type/:time/:notes`, (req, res) => {
+    const { email, type, time, notes } = req.params;
+    const method = 'purchased';
+    const queryStringInsertResourceEvent = `INSERT INTO resource_events (tribute_email, type,
+        method, time, notes) VALUES ('${email}', '${type}', '${method}', 
+        ${time}, '${notes}')`;
+    console.log(queryStringInsertResourceEvent);
+    connection.query(queryStringInsertResourceEvent, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for resource events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// ADD_PURCHASED_RESOURCE
+app.put(`/purchases/tribute-stats/resources/put/:email/:formattedType`, (req, res) => {
+    const { email, formattedType } = req.params;
+    const queryStringAddPurchasedResource = `UPDATE tribute_stats SET ${formattedType} = 
+    ${formattedType} + 1 WHERE email = '${email}'`;
+    console.log(queryStringAddPurchasedResource);
+    connection.query(queryStringAddPurchasedResource, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for tribute stats: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// ADD_IMMUNITY
+app.put(`/purchases/tribute-stats/immunity/put/:email`, (req, res) => {
+    const email = req.params.email;
+    const queryStringGiveImmunity = `UPDATE tribute_stats SET has_immunity = 
+    1 WHERE email = '${email}'`;
+    console.log(queryStringGiveImmunity);
+    connection.query(queryStringGiveImmunity, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for tribute stats: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// TRANSFER_FUNDS
+app.put(`/purchases/tribute-stats/funds-transfer/put/:emailFrom/:emailTo/:amount`, (req, res) => {
+    const { emailTo, emailFrom, amount } = req.params;
+    const queryStringTransferFrom = `UPDATE tribute_stats SET funds_remaining = 
+    funds_remaining - ${amount} WHERE email = '${emailFrom}'`;
+    console.log(queryStringTransferFrom);
+    connection.query(queryStringTransferFrom, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for tribute stats: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+
+    const queryStringTransferTo = `UPDATE tribute_stats SET funds_remaining = 
+    funds_remaining + ${amount} WHERE email = '${emailTo}'`;
+    console.log(queryStringTransferTo);
+    connection.query(queryStringTransferTo, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for tribute stats: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+//######################## (8) Game State Management #########################//
 
 // FETCH_GAMESTATE
 app.get(`/game-state/get`, (req, res) => {

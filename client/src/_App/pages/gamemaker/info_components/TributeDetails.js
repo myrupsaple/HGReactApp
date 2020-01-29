@@ -73,6 +73,8 @@ class TributeDetails extends React.Component {
                 return 'Rieber';
             case 'off_campus':
                 return 'Off Campus';
+            default:
+                return null;
         }
     }
 

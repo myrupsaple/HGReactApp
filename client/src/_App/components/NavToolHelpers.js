@@ -27,9 +27,15 @@ const TributeAccountInfo = (
     </NavDropdown.Item>
 );
 
-const FundsTracking = (
-    <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/funds-tracking">
-        Funds Tracking+
+const DonationTracking = (
+    <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/donation-tracking">
+        Donation Tracking+
+    </NavDropdown.Item>
+);
+
+const ApprovePurchases = (
+    <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/purchase-requests">
+        Purchase Requests^
     </NavDropdown.Item>
 );
 
@@ -60,7 +66,7 @@ const ManageItems = (
 //---------------------------------MENTORS------------------------------------//
 
 const RequestPurchase = (
-    <NavDropdown.Item as={Nav.Link} href="/App/mentor/request">
+    <NavDropdown.Item as={Nav.Link} href="/App/mentor/purchase-requests">
         Request Purchase*
     </NavDropdown.Item>
 );
@@ -98,7 +104,8 @@ export const OwnerTools = (
             {Messaging}
             {ManageGameState}
             {TributeAccountInfo}
-            {FundsTracking}
+            {DonationTracking}
+            {ApprovePurchases}
             {LifeTracking}
             {ResourceList}
             {ResourceEvents}
@@ -113,7 +120,8 @@ export const AdminTools = (
             {Messaging}
             {ManageGameState}
             {TributeAccountInfo}
-            {FundsTracking}
+            {DonationTracking}
+            {ApprovePurchases}
             {LifeTracking}
             {ResourceList}
             {ResourceEvents}
@@ -127,7 +135,8 @@ export const GMTools = (
             {Messaging}
             {ManageGameState}
             {TributeAccountInfo}
-            {FundsTracking}
+            {DonationTracking}
+            {ApprovePurchases}
             {LifeTracking}
             {ResourceList}
             {ResourceEvents}

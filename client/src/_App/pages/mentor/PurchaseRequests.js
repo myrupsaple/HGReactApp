@@ -5,11 +5,15 @@ import { Button } from 'react-bootstrap';
 import { setNavBar } from '../../../actions';
 import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components/AuthMessages';
 import Wait from '../../../components/Wait';
-import { fetchTributes } from '../../../actions';
-import TributeDetails from './info_components/TributeDetails';
-import TributeInfoForm from './info_components/TributeInfoForm';
+import { 
+    fetchTributes,
+    fetchMentors,
+    fetchAllPurchaseRequests,
+    deletePurchaseRequest
+} from '../../../actions';
 
-class TributeAccountInfo extends React.Component {
+
+class PurchaseRequests extends React.Component {
     _isMounted = false;
     constructor(props){
         super(props)
@@ -18,17 +22,20 @@ class TributeAccountInfo extends React.Component {
                 loading: true,
                 payload: null
             },
+            mode: 'pending',
             // Causes a different message to be rendered during and after loading, if
             // no tributes are found
             queried: false,
             showCreate: false,
-            showDetails: false
+            showDetails: false,
+            // Needed to access individual purchase request data
+            selectedId: null
         };
     }
 
     checkAuth = async () => {
         // SET ALLOWED ACCESS GROUPS HERE
-        const allowedGroups = ['owner', 'admin', 'gamemaker'];
+        const allowedGroups = ['owner', 'admin', 'gamemaker', 'mentor'];
         var timeoutCounter = 0;
         while(!this.props.authLoaded){
             await Wait(500);
@@ -81,6 +88,8 @@ class TributeAccountInfo extends React.Component {
         }
 
         await this.props.fetchTributes();
+        await this.props.fetchAllPurchaseRequests();
+        await this.props.fetchMentors();
         if(this._isMounted){
             this.setState({ queried: true })
         }
@@ -95,67 +104,71 @@ class TributeAccountInfo extends React.Component {
             onClick={() => this.setState({ showCreate: true })}
             className="coolor-bg-purple-darken-2"
             >
-                Create Tribute Account
+                Create Purchase Request
             </Button>
             </div>
         )
     }
 
-    renderTributes(){
-        if(Object.keys(this.props.tributes).length === 0){
+    renderPurchases(){
+        if(Object.keys(this.props.purchases).length === 0){
             // Return different message before and after first search is sent
             if(!this.state.queried) {
                 return(
                     <h5>
-                        Retrieving list of tributes...
+                        Retrieving list of purchase requests...
                     </h5>
                 );
             }
             return(
                 <>
-                    <h5>No tributes were found :(</h5>
+                    <h5>All caught up :)</h5>
+                    <h6>No purchase requests were found.</h6>
                 </>
             );
         }
-        return(
-            <>
-            <h3>Tributes found:</h3>
-            <ul className="list-group">
-                {this.renderTableHeader()}
-                {this.props.tributes.map(tribute => {
-                    return(
-                        <li className="list-group-item" key={tribute.id}>
-                            <div className="row">
-                                <div className="col">{tribute.first_name} {tribute.last_name}</div>
-                                <div className="col">{tribute.email}</div>
-                                <div className="col">{tribute.district}</div>
-                                <div className="col">{this.formatArea(tribute.area)}</div>
-                                <div className="col">{this.renderAdmin(tribute)}</div>
-                            </div>
-                        </li>
-                    );
-                })}
-            </ul>
-            </>
-        );
+        if(this.state.mode === 'pending'){
+            return(
+                <>
+                <h3>Pending Purchase Requests:</h3>
+                <ul className="list-group">
+                    {this.renderTableHeader()}
+                    {this.props.purchases.map(purchase => {
+                        return(
+                            <li className="list-group-item" key={purchase.id}>
+                                <div className="row">
+                                    <div className="col">{this.renderMentorName}</div>
+                                    <div className="col">{purchase.email}</div>
+                                    <div className="col">{purchase.district}</div>
+                                    <div className="col">{this.formatArea(purchase.area)}</div>
+                                    <div className="col">{this.renderAdmin(purchase)}</div>
+                                </div>
+                            </li>
+                        );
+                    })}
+                </ul>
+                </>
+            );
+        } else if(this.state.mode === 'fulfilled'){
+
+        }
     }
 
-    // Converts SQL formatted areas to a more conventional format
-    formatArea(area){
-        switch(area){
-            case 'dank_denykstra':
-                return 'Dank Denykstra';
-            case 'sunsprout':
-                return 'SunSprout';
-            case 'hedrick':
-                return 'Hedrick';
-            case 'rieber':
-                return 'Rieber';
-            case 'off_campus':
-                return 'Off Campus';
-            default:
-                return null;
-        }
+    renderTableHeader(){
+        return(
+        <h5 className="row">
+            <div className="col">Requested By</div>
+            <div className="col">Item</div>
+            <div className="col">Quantity</div>
+            <div className="col">Payer</div>
+            <div className="col">Receiver</div>
+            <div className="col"></div>
+        </h5>
+        )
+    }
+
+    renderMentorName(){
+
     }
 
     renderAdmin(tribute) {
@@ -171,27 +184,15 @@ class TributeAccountInfo extends React.Component {
         );
     }
 
-    renderTableHeader(){
-        return(
-        <h5 className="row">
-            <div className="col">Tribute Name</div>
-            <div className="col">Email</div>
-            <div className="col">District</div>
-            <div className="col">Area</div>
-            <div className="col"></div>
-        </h5>
-        )
-    }
-
     showModal() {
         if(this.state.showDetails){
             return(
-                <TributeDetails email={this.state.selectedEmail} id={this.state.selectedId} onSubmitCallback={this.onSubmitCallback} />
-            )
+                null
+            );
         } else if(this.state.showCreate){
             return(
-                <TributeInfoForm onSubmitCallback={this.onSubmitCallback} mode="create" />
-            )
+                null
+            );
         }
     }
 
@@ -215,7 +216,7 @@ class TributeAccountInfo extends React.Component {
             return(
                 <>
                     {this.renderCreate()}
-                    {this.renderTributes()}
+                    {this.renderPurchases()}
                     {this.showModal()}
                 </>
             );
@@ -242,11 +243,16 @@ const mapStateToProps = state => {
         tributes: Object.values(state.tributes),
         authLoaded: state.auth.loaded,
         isSignedIn: state.auth.isSignedIn,
-        userPerms: state.auth.userPerms
+        userPerms: state.auth.userPerms,
+        purchases: Object.values(state.purchases),
+        mentors: Object.values(state.users)
     }
 }
 
 export default connect(mapStateToProps, { 
+    setNavBar,
     fetchTributes,
-    setNavBar
-    })(TributeAccountInfo);
+    fetchMentors,
+    fetchAllPurchaseRequests,
+    deletePurchaseRequest
+    })(PurchaseRequests);

@@ -165,11 +165,11 @@ class ManageFunds extends React.Component {
                 if(tribute.first_name.toLowerCase().includes(name)){
                     emails.push(tribute.email);
                 }
-                return;
+                return null;
             });
             emails.map(email => {
                 this.props.fetchDonations('tribute_email', email);
-                return;
+                return null;
             })
         } else if(this.state.searchTermSecondary === '') {
             if(this.state.searchType === 'amount' || this.state.searchType === 'date'){

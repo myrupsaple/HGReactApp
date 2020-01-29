@@ -72,7 +72,7 @@ class LifeEventForm extends React.Component {
             return;
         }
         const [name, email] = event.target.value.split(' || ');
-        this.setState({ tribute_email: email, tributeName: name });
+        this.setState({ tribute_email: email, tributeName: name, secondaryInput: '' });
     }
     handleSecondary(event){
         if(event.target.value === 'Please Select a Tribute...'){

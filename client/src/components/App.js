@@ -39,7 +39,8 @@ import RequestItems from '../_App/pages/mentor/RequestItems';
 // Gamemaker Tools
 import ManageGame from '../_App/pages/gamemaker/ManageGame';
 import TributeInfo from '../_App/pages/gamemaker/TributeInfo';
-import FundsTracking from '../_App/pages/gamemaker/FundsTracking';
+import DonationTracking from '../_App/pages/gamemaker/DonationTracking';
+import PurchaseReqests from '../_App/pages/mentor/PurchaseRequests';
 import LifeTracking from '../_App/pages/gamemaker/LifeTracking';
 import ResourceList from '../_App/pages/gamemaker/ResourceList';
 import ResourceEvents from '../_App/pages/gamemaker/ResourceEvents';
@@ -91,10 +92,12 @@ class App extends React.Component {
                     <Route path="/App/helper/locations" exact component={ViewLocations} />
                     {/* Mentor Tools */}
                     <Route path="/App/mentor/request" exact component={RequestItems} />
+                    <Route path="/App/mentor/purchase-requests" exact component={PurchaseReqests} />
                     {/* Gamemaker Tools */}
                     <Route path="/App/gamemaker/manage-game" exact component={ManageGame} />
                     <Route path="/App/gamemaker/tribute-info" exact component={TributeInfo} />
-                    <Route path="/App/gamemaker/funds-tracking" exact component={FundsTracking} />
+                    <Route path="/App/gamemaker/donation-tracking" exact component={DonationTracking} />
+                    <Route path="/App/gamemaker/purchase-requests" exact component={PurchaseReqests} />
                     <Route path="/App/gamemaker/life-tracking" exact component={LifeTracking} />
                     <Route path="/App/gamemaker/resource-list" exact component={ResourceList} />
                     <Route path="/App/gamemaker/resource-events" exact component={ResourceEvents} />

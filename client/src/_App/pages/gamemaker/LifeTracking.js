@@ -641,6 +641,7 @@ class ManageFunds extends React.Component {
     }
 
     render = () => {
+        console.log(this.state);
         return(
             <>
                 {this.renderContent()}

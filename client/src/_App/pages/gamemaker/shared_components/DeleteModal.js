@@ -6,6 +6,7 @@ class DeleteModal extends React.Component {
     _isMounted = false;
     
     constructor(props){
+        super(props);
         this.state = {
             showModal: true,
             confirmed: false

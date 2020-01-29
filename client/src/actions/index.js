@@ -28,6 +28,9 @@ import {
     FETCH_ITEM,
     FETCH_ITEMS,
     FETCH_ALL_ITEMS,
+    FETCH_ALL_MENTORS,
+    FETCH_PURCHASE,
+    FETCH_ALL_PURCHASES,
     FETCH_GAMESTATE
 } from './types';
 
@@ -105,7 +108,7 @@ export const signOut = () => (dispatch) => {
 
 //########################### (1) USER MANAGEMENT ############################//
 
-export const fetchUser = (email, id) => async (dispatch) => {
+export const fetchUser = (email) => async (dispatch) => {
     console.log('Actions: Fetch user initiated');
     var response = null;
     await app.get(`/user/get/${email}`)
@@ -777,7 +780,208 @@ export const deleteItem = (id) => async dispatch => {
         });
 }
 
-//######################## (7) Game State Management #########################//
+//############################## (7) Purchases ###############################//
+
+export const fetchMentors = () => async dispatch => {
+    console.log(`Actions: Fetch mentors list`);
+    var response = null;
+    await app.get(`/purchases/get/mentors`)
+        .then(res => {
+            console.log('Successfully fetched mentors');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    
+    if(response && response.data){
+        dispatch ({ type: FETCH_ALL_MENTORS, payload: response.data });
+    }
+}
+
+export const fetchPurchaseRequest = (id) => async dispatch => {
+    console.log(`Actions: Fetch purchase with id ${id}`);
+    var response = null;
+    await app.get(`/purchases/get/single/${id}`)
+        .then(res => {
+            console.log('Successfully fetched purchase');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    
+    if(response && response.data){
+        dispatch ({ type: FETCH_PURCHASE, payload: response.data });
+    }
+}
+
+export const fetchAllPurchaseRequests = () => async dispatch => {
+    console.log(`Actions: Fetch all purchases`);
+    var response = null;
+    await app.get(`/purchases/get/all`)
+        .then(res => {
+            console.log('Successfully fetched all purchases');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+
+    if(response && response.data){
+        dispatch ({ type: FETCH_ALL_PURCHASES, payload: response.data });
+    }
+}
+
+export const createPurchaseRequest = (purchase) => async dispatch => {
+    console.log(`Actions: Fetch all purchases`);
+    var response = null;
+    const { 
+        time, 
+        status, 
+        mentor_email, 
+        payer_email, 
+        receiver_email, 
+        type, 
+        secondary_description, 
+        cost, 
+        quantity
+    } = purchase;
+    await app.post(`/purchases/post/${time}/${status}/${mentor_email}/${payer_email}/${receiver_email}/${type}/${secondary_description}/${cost}/${quantity}`)
+        .then(res => {
+            console.log('Successfully created purchase request');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+
+    if(response && response.data){
+        dispatch ({ type: FETCH_ALL_PURCHASES, payload: response.data });
+    }
+}
+
+export const updatePurchaseStatus = (id, status) => async dispatch => {
+    console.log(`Actions: Update purchase request status`);
+    await app.put(`/purchases/put/${id}/${status}`)
+        .then(res => {
+            console.log('Successfully updated purchase request status');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const deletePurchaseRequest = (id) => async dispatch => {
+    console.log(`Actions: DELETE purchase request with id ${id}`);
+    await app.delete(`/purchases/delete/${id}`)
+        .then(res => {
+            console.log('Successfully deleted purchase request');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const purchaseCheckFunds = email => async dispatch => {
+    console.log(`Actions: Purchases: Check Funds`);
+    await app.get(`/purchases/tribute-stats/check-funds/get/${email}`)
+        .then(res => {
+            console.log('Successfully checked funds');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const purchaseUpdateFunds = (email, amount) => async dispatch => {
+    console.log(`Actions: Purchases: Update Funds`);
+    await app.put(`/purchases/tribute-stats/update-funds/put/${email}/${amount}`)
+        .then(res => {
+            console.log('Successfully updated funds');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const purchaseUpdateItemQuantity = (id, quantity) => async dispatch => {
+    console.log(`Actions: Purchases: Update Item Quantity`);
+    await app.put(`/purchases/items/put/${id}/${quantity}`)
+        .then(res => {
+            console.log('Successfully updated item quantity');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const purchaseCreateLifeEvent = (email, time, notes) => async dispatch => {
+    console.log(`Actions: Purchases: Create Life Event`);
+    const type = 'gained';
+    const method = 'purchased';
+    await app.post(`/purchases/life-events/post/${email}/${type}/${method}/${time}/${notes}`)
+        .then(res => {
+            console.log('Successfully created life event');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const purchaseUpdateTributeLives = (email) => async dispatch => {
+    console.log(`Actions: Purchases: Update Tribute Life Count`);
+    await app.put(`/purchases/tribute-stats/lives/put/${email}`)
+        .then(res => {
+            console.log('Successfully updated tribute life count');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const purchaseCreateResourceEvent = (email, type, time, notes) => async dispatch => {
+    console.log(`Actions: Purchases: Create resource event`);
+
+    await app.post(`/purchases/resources/post/${email}/${type}/${time}/${notes}`)
+        .then(res => {
+            console.log('Successfully created resource event');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const purchaseUpdateTributeResources = (email, formattedType) => async dispatch => {
+    console.log(`Actions: Purchases: Update tribute resource count`);
+    await app.put(`/purchases/tribute-stats/resources/put/${email}/${formattedType}`)
+        .then(res => {
+            console.log('Successfully updated tribute resource count');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const purchaseGiveImmunity = email => async dispatch => {
+    console.log(`Actions: Purchases: Give tribute immunity`);
+    await app.put(`/purchases/tribute-stats/immunity/put/${email}`)
+        .then(res => {
+            console.log('Successfully gave tribute immunity');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const transferFunds = (emailFrom, emailTo, amount) => async dispatch => {
+    console.log(`Actions: Purchases: Transfer tribute balance`);
+    await app.put(`/purchases/tribute-stats/funds-transfer/put/${emailFrom}/${emailTo}/${amount}`)
+        .then(res => {
+            console.log('Successfully transferred tribute balance');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+//######################## (8) Game State Management #########################//
 
 export const getGameState = () => async dispatch => {
     console.log(`Actions: Get Game State initiated`);

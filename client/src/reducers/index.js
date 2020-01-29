@@ -15,6 +15,8 @@ import lifeEventReducer from './lifeEventReducer';
 import lifeEventsReducer from './lifeEventsReducer';
 import itemReducer from './itemReducer';
 import itemsReducer from './itemsReducer';
+import purchaseReducer from './purchaseReducer';
+import purchasesReducer from './purchasesReducer';
 import gameStateReducer from './gameStateReducer';
 
 export default combineReducers({
@@ -34,5 +36,7 @@ export default combineReducers({
     lifeEvents: lifeEventsReducer,
     selectedItem: itemReducer,
     items: itemsReducer,
+    selectedPurchase: purchaseReducer,
+    purchases: purchasesReducer,
     gameState: gameStateReducer
 });
