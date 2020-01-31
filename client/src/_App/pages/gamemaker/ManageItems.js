@@ -126,11 +126,11 @@ class ManageItems extends React.Component {
                     return(
                         <li className="list-group-item" key={item.id}>
                             <div className="row">
-                                <div className="col">{item.item_name}</div>
-                                <div className="col">{item.description}</div>
-                                <div className="col">{item.quantity}</div>
-                                <div className="col">{item.tier1_cost}</div>
-                                <div className="col">{this.renderAdmin(item)}</div>
+                                <div className="col-2">{item.item_name}</div>
+                                <div className="col-3">{item.description}</div>
+                                <div className="col-2">{item.quantity}</div>
+                                <div className="col-3">${item.tier1_cost} >> ${item.tier2_cost} >> ${item.tier3_cost} >> ${item.tier4_cost}</div>
+                                <div className="col-2">{this.renderAdmin(item)}</div>
                             </div>
                         </li>
                     );
@@ -143,11 +143,11 @@ class ManageItems extends React.Component {
     renderTableHeader(){
         return(
             <h5 className="row">
-                <div className="col">Item Name</div>
-                <div className="col">Item Description</div>
-                <div className="col">Quantity</div>
-                <div className="col">Tier 1 Cost</div>
-                <div className="col">Actions</div>
+                <div className="col-2">Item Name</div>
+                <div className="col-3">Item Description</div>
+                <div className="col-2">Quantity</div>
+                <div className="col-3">Cost</div>
+                <div className="col-2">Actions</div>
             </h5>
         )
     }

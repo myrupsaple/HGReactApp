@@ -60,7 +60,7 @@ class GoogleAuth extends React.Component {
 
     onSignOutClick = () => {
         this.auth.signOut();
-        history.push('/App/signout-successful');
+        // history.push('/App/signout-successful');
     }
 
     renderAuthButton() {

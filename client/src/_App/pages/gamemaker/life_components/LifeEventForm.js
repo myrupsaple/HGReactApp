@@ -72,7 +72,10 @@ class LifeEventForm extends React.Component {
             return;
         }
         const [name, email] = event.target.value.split(' || ');
-        this.setState({ tribute_email: email, tributeName: name, secondaryInput: '' });
+        if(email === this.state.secondaryInput){
+            this.setState({ secondaryInput: '', secondaryInputName: ''})
+        }
+        this.setState({ tribute_email: email, tributeName: name });
     }
     handleSecondary(event){
         if(event.target.value === 'Please Select a Tribute...'){
@@ -84,7 +87,7 @@ class LifeEventForm extends React.Component {
     }
     handleType(event){
         const type = event.target.value;
-        this.setState({ type: type});
+        this.setState({ type: type, secondaryInput: '', secondaryInputName: '' });
         if(type === 'gained'){ 
             this.setState({ 
                 method: 'purchased',
@@ -219,7 +222,7 @@ class LifeEventForm extends React.Component {
                             showTimeSelect
                             showTimeSelectOnly
                             value={this.state.timeFormatted}
-                            onChange={this.time}
+                            onChange={this.handleTime}
                             dateFormat="hh:mm aa"
                         />
                     </Form.Group></div>
@@ -363,8 +366,8 @@ class LifeEventForm extends React.Component {
     handleClose = () => {
         if(this._isMounted){
             this.setState({ showModal: false });
-            this.props.onSubmitCallback();
         }
+        this.props.onSubmitCallback();
     }
 
     render = () => {

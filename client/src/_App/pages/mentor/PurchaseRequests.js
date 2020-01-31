@@ -11,6 +11,10 @@ import {
     fetchAllPurchaseRequests,
     deletePurchaseRequest
 } from '../../../actions';
+import ViewDetails from './purchase_components/ViewDetails';
+import PurchaseForm from './purchase_components/PurchaseForm';
+import ApprovalForm from './purchase_components/ApprovalForm';
+import DeleteModal from '../gamemaker/shared_components/DeleteModal';
 
 
 class PurchaseRequests extends React.Component {
@@ -22,12 +26,15 @@ class PurchaseRequests extends React.Component {
                 loading: true,
                 payload: null
             },
-            mode: 'pending',
+            displayMode: 'pending',
             // Causes a different message to be rendered during and after loading, if
             // no tributes are found
             queried: false,
             showCreate: false,
+            showEdit: false,
+            showDelete: false,
             showDetails: false,
+            showApproval: false,
             // Needed to access individual purchase request data
             selectedId: null
         };
@@ -96,51 +103,90 @@ class PurchaseRequests extends React.Component {
     }
 
     // Render modal header (Create/refresh list buttons)
-    renderCreate(){
-        return(
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <Button 
-            variant="secondary"
-            onClick={() => this.setState({ showCreate: true })}
-            className="coolor-bg-purple-darken-2"
+    renderButtons(){
+        const switchModes = (
+            <Button onClick={() => this.setState({ displayMode: this.state.displayMode === 'pending' ? 'processed' : 'pending' })}
+                    variant="secondary"
             >
-                Create Purchase Request
+                {this.state.displayMode === 'pending' ? 'Show Processed Requests' : 'Show Pending Requests'}
             </Button>
+        );
+        if(this.props.userPerms !== 'mentor' && this.props.userPerms !== 'owner'){
+            return(
+                <>
+                    {switchModes}
+                </>
+            );
+        }
+        return(
+            <div style={{ display: "flex" }}>
+                <div style={{ justifyContent: "flex-start" }}>
+                    {switchModes}
+                </div>
+                <div style={{ justifyContent: "flex-end" }}>
+                <Button 
+                    variant="secondary"
+                    onClick={() => this.setState({ showCreate: true })}
+                    className="coolor-bg-purple-darken-2"
+                    style={{ justifyContent: "flex-end"}}
+                >
+                    Create Purchase Request
+                </Button>
+                </div>
             </div>
         )
     }
 
     renderPurchases(){
-        if(Object.keys(this.props.purchases).length === 0){
-            // Return different message before and after first search is sent
+        var purchases = this.props.purchases;
+        if(this.state.displayMode === 'pending'){
+            purchases = purchases.filter(purchase => purchase.status === 'pending');
+        } else {
+            purchases = purchases.filter(purchase => purchase.status !== 'pending');
+        }
+        console.log(purchases);
+        if(Object.keys(purchases).length === 0){
             if(!this.state.queried) {
                 return(
                     <h5>
                         Retrieving list of purchase requests...
                     </h5>
                 );
+            } else {
+                // If list is empty, display the appropriate message based on the display mode
+                if(this.state.displayMode === 'pending'){
+                    return(
+                        <>
+                            <h5>All caught up :)</h5>
+                            <h6>No purchase requests were found.</h6>
+                        </>
+                    );
+                } else {
+                    return(
+                        <>
+                            <h5>There's nothing here :(</h5>
+                            <h6>Couldn't find any past purchase requests</h6>
+                        </>
+                    );
+                }
             }
-            return(
-                <>
-                    <h5>All caught up :)</h5>
-                    <h6>No purchase requests were found.</h6>
-                </>
-            );
         }
-        if(this.state.mode === 'pending'){
+        // For non-empty list, display the appropriate list
+        if(this.state.displayMode === 'pending'){
             return(
                 <>
                 <h3>Pending Purchase Requests:</h3>
                 <ul className="list-group">
                     {this.renderTableHeader()}
-                    {this.props.purchases.map(purchase => {
+                    {purchases.map(purchase => {
                         return(
                             <li className="list-group-item" key={purchase.id}>
                                 <div className="row">
-                                    <div className="col">{this.renderMentorName}</div>
-                                    <div className="col">{purchase.email}</div>
-                                    <div className="col">{purchase.district}</div>
-                                    <div className="col">{this.formatArea(purchase.area)}</div>
+                                    <div className="col">{this.getMentorName(purchase.mentor_email)}</div>
+                                    <div className="col">{purchase.item}</div>
+                                    <div className="col">{purchase.quantity}</div>
+                                    <div className="col">{this.getTributeName(purchase.payer_email)}</div>
+                                    <div className="col">{this.getTributeName(purchase.receiver_email)}</div>
                                     <div className="col">{this.renderAdmin(purchase)}</div>
                                 </div>
                             </li>
@@ -149,59 +195,193 @@ class PurchaseRequests extends React.Component {
                 </ul>
                 </>
             );
-        } else if(this.state.mode === 'fulfilled'){
-
+        } else {
+            return(
+                <>
+                <h3>Processed Purchase Requests:</h3>
+                <ul className="list-group">
+                    {this.renderTableHeader()}
+                    {purchases.map(purchase => {
+                        return(
+                            <li className="list-group-item" key={purchase.id}>
+                                <div className="row">
+                                    <div className="col">{this.getMentorName(purchase.mentor_email)}</div>
+                                    <div className="col">{purchase}</div>
+                                    <div className="col">{purchase.item}</div>
+                                    <div className="col">{this.getTributeName(purchase.payer_email)}</div>
+                                    <div className="col">{this.getTributeName(purchase.receiver_email)}</div>
+                                    <div className="col">{this.renderAdmin(purchase)}</div>
+                                </div>
+                            </li>
+                        );
+                    })}
+                </ul>
+                </>
+            );
         }
+ 
     }
 
     renderTableHeader(){
-        return(
-        <h5 className="row">
-            <div className="col">Requested By</div>
-            <div className="col">Item</div>
-            <div className="col">Quantity</div>
-            <div className="col">Payer</div>
-            <div className="col">Receiver</div>
-            <div className="col"></div>
-        </h5>
-        )
-    }
-
-    renderMentorName(){
-
-    }
-
-    renderAdmin(tribute) {
-        return(
-            <div className="row">
-                <Button 
-                variant="info"
-                onClick={() => this.setState({ showDetails: true, selectedEmail: tribute.email })}
-                >
-                    View Details
-                </Button>
-            </div>
-        );
-    }
-
-    showModal() {
-        if(this.state.showDetails){
+        if(this.state.displayMode === 'pending'){
             return(
-                null
+            <h5 className="row">
+                <div className="col">Requested By</div>
+                <div className="col">Item</div>
+                <div className="col">Quantity</div>
+                <div className="col">Payer</div>
+                <div className="col">Receiver</div>
+                <div className="col">Actions</div>
+            </h5>
             );
-        } else if(this.state.showCreate){
+        } else {
             return(
-                null
+                <h5 className="row">
+                    <div className="col">Requested By</div>
+                    <div className="col">Status</div>
+                    <div className="col">Item</div>
+                    <div className="col">Payer</div>
+                    <div className="col">Receiver</div>
+                    <div className="col">Actions</div>
+                </h5>
             );
         }
     }
 
-    // Performs cleanup upon modal closure, ensuring that showCreate and showDetails
-    // do not get stuck in the 'true' state. Refreshes list upon closure
+    renderAdmin = (purchase) => {
+        if(purchase.status !== 'pending'){
+            return(
+                <>
+                <Button variant="info"
+                    onClick={() => {this.setState({ showDetails: true, selectedId: purchase.id })}}
+                >
+                    Details
+                </Button>
+                </>
+            );
+        }
+        const userPerms = this.props.userPerms;
+        if(userPerms === 'mentor'){
+            if(purchase.mentor_email === this.props.userEmail){
+                return(
+                    <>
+                    <Button
+                        variant="info"
+                        onClick={() => {this.setState({ showEdit: true, selectedId: purchase.id})}}
+                    >
+                        Edit
+                    </Button>
+                    <Button
+                        variant="danger"
+                        onClick={() => {this.setState({ showDelete: true, selectedId: purchase.id})}}
+                    >
+                        Delete
+                    </Button>
+                    </>
+                );
+            } else {
+                return(
+                    <>
+                    <Button variant="info"
+                        onClick={() => {this.setState({ showDetails: true, selectedId: purchase.id })}}
+                    >
+                        View Details
+                    </Button>
+                    </>
+                );
+            }
+        } else if (['owner', 'admin', 'gamemaker'].includes(userPerms)){
+            return(
+                <Button
+                    variant="info"
+                    onClick={() => {this.setState({ showApproval: true, selectedId: purchase.id})}}
+                >
+                    Review
+                </Button>
+            );
+        }
+    }
+
+    getTributeName(email){
+        for (let tribute of this.props.tributes){
+            if(tribute.email === email){
+                return `${tribute.first_name} ${tribute.last_name}`;
+            }
+        }
+    }
+
+    getMentorName(email){
+        for (let mentor of this.props.mentors){
+            if(mentor.email === email){
+                return `${mentor.first_name} ${mentor.last_name}`;
+            }
+        }
+    }
+
     onSubmitCallback = () => {
-        this.setState({ showCreate: false, showDetails: false })
-        this.props.fetchTributes();
-    };
+        if(this.state.showCreate){
+            this.setState({ showCreate: false })
+        } else if(this.state.showEdit){
+            this.setState({ showEdit: false })
+        } else if(this.state.showDelete){
+            this.setState({ showDelete: false })
+        } else if(this.state.showDetails){
+            this.setState({ showDetails: false })
+        } else if(this.state.showApproval){
+            this.setState({ showApproval: false })
+        }
+        this.props.fetchAllPurchaseRequests();
+    }
+
+    showModal() {
+        if(this.state.showCreate){
+            return(
+                <PurchaseForm
+                    mode="create"
+                    tributes={this.props.tributes}
+                    mentors={this.props.mentors}
+                    id={this.state.selectedId}
+                    onSubmitCallback={this.onSubmitCallback}
+                />
+            );
+        } else if(this.state.showEdit){
+            return(
+                <PurchaseForm
+                    mode="edit"
+                    tributes={this.props.tributes}
+                    mentors={this.props.mentors}
+                    id={this.state.selectedId}
+                    onSubmitCallback={this.onSubmitCallback}
+                />
+            );
+        } else if(this.state.showDelete){
+            return(
+                <DeleteModal 
+                    id={this.state.selectedId} actionType="Purchase Request" 
+                    onConfirm={this.props.deletePurchaseRequest}
+                    onSubmitCallback={this.onSubmitCallback} 
+                />
+            );
+        } else if(this.state.showDetails){
+            return(
+                <ViewDetails
+                    tributes={this.props.tributes}
+                    mentors={this.props.mentors}
+                    id={this.state.selectedId}
+                    onSubmitCallback={this.onSubmitCallback}
+                />
+            );
+        } else if(this.state.showApproval){
+            return(
+                <ApprovalForm 
+                    tributes={this.props.tributes} 
+                    mentors={this.props.mentors} 
+                    id={this.state.selectedId} 
+                    onSubmitCallback={this.onSubmitCallback} 
+                />
+            );
+        } 
+    }
 
     renderContent = () => {
         if(this.state.auth.loading){
@@ -215,7 +395,7 @@ class PurchaseRequests extends React.Component {
         if(this.state.auth.payload === null){
             return(
                 <>
-                    {this.renderCreate()}
+                    {this.renderButtons()}
                     {this.renderPurchases()}
                     {this.showModal()}
                 </>
@@ -226,6 +406,7 @@ class PurchaseRequests extends React.Component {
     }
 
     render = () => {
+        console.log(this.state);
         return(
             <>
                 {this.renderContent()}
@@ -243,6 +424,7 @@ const mapStateToProps = state => {
         tributes: Object.values(state.tributes),
         authLoaded: state.auth.loaded,
         isSignedIn: state.auth.isSignedIn,
+        userEmail: state.auth.userEmail,
         userPerms: state.auth.userPerms,
         purchases: Object.values(state.purchases),
         mentors: Object.values(state.users)

@@ -187,8 +187,8 @@ connection.connect(async (err) => {
             mentor_email VARCHAR(40),
             payer_email VARCHAR(40),
             receiver_email VARCHAR(40),
-            type VARCHAR(10),
-            secondary_description VARCHAR(25),
+            category VARCHAR(10),
+            item VARCHAR(25),
             cost INT,
             quantity TINYINT
         )`;
@@ -1231,7 +1231,28 @@ app.post(`/purchases/post/:time/:status/:mentorEmail/:payerEmail/:receiverEmail/
     const queryStringCreatePurchaseRequest = `INSERT INTO purchases (time, status,
         mentor_email, payer_email, receiver_email, type, secondary_description,
         cost, quantity) VALUES (${time}, '${status}', '${mentorEmail}', '${payerEmail}',
-        '${receiverEmail}', '${type}', '${secondary}', '${cost}', '${quantity}')`;
+        '${receiverEmail}', '${type}', '${secondary}', ${cost}, ${quantity})`;
+    console.log(queryStringCreatePurchaseRequest)
+    connection.query(queryStringCreatePurchaseRequest, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for purchases: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// UPDATE_PURCHASE_REQUEST
+app.put(`/purchases/post/:id/:time/:status/:mentorEmail/:payerEmail/:receiverEmail/:type/:secondary/:cost/:quantity`, (req, res) => {
+    const { id, time, status, mentorEmail, payerEmail, receiverEmail, category, item, cost, quantity } = req.params;
+    const queryStringCreatePurchaseRequest = `UPDATE purchases SET time = ${time}, status = '${status}',
+    mentor_email = '${mentorEmail}', payer_email = '${payerEmail}', receiver_email = '${receiverEmail}',
+    category = '${category}', item = '${item}', cost = ${cost}, quantity = ${quantity} WHERE id = ${id}`;
     console.log(queryStringCreatePurchaseRequest)
     connection.query(queryStringCreatePurchaseRequest, (err, rows, fields) => {
         if(err){
@@ -1248,7 +1269,7 @@ app.post(`/purchases/post/:time/:status/:mentorEmail/:payerEmail/:receiverEmail/
 })
 
 // UPDATE_PURCHASE_STATUS
-app.put(`/purchases/put/:id/:status`, (req, res) => {
+app.put(`/purchases/status/put/:id/:status`, (req, res) => {
     const { id, status } = req.params;
     const queryStringUpdatePurchaseStatus = `UPDATE purchases SET status = '${status}' WHERE id = ${id}`
     console.log(queryStringUpdatePurchaseStatus)
@@ -1305,10 +1326,11 @@ app.get(`/purchases/tribute-stats/check-funds/get/:email`, (req, res) => {
 })
 
 // UPDATE_FUNDS
-app.get(`/purchases/tribute-stats/update-funds/put/:email/:amount`, (req, res) => {
+app.put(`/purchases/tribute-stats/update-funds/put/:email/:amount`, (req, res) => {
     const { email, amount } = req.params;
+    console.log(amount + ' ' + typeof(amount));
     const queryStringCheckFunds = `UPDATE tribute_stats SET funds_remaining = 
-    funds_remaining + ${amount} WHERE email = ${email}`;
+    funds_remaining + ${amount} WHERE email = '${email}'`;
     console.log(queryStringCheckFunds);
     connection.query(queryStringCheckFunds, (err, rows, fields) => {
         if(err){
@@ -1325,9 +1347,9 @@ app.get(`/purchases/tribute-stats/update-funds/put/:email/:amount`, (req, res) =
 })
 
 // UPDATE_ITEM_QUANTITY
-app.put(`/purchases/items/put/:id/:quantity`, (req, res) => {
-    const { id, quantity } = req.params;
-    const queryStringUpdateItemQuantity = `UPDATE item_list SET quantity = quantity + ${quantity} WHERE id = ${id}`;
+app.put(`/purchases/items/put/:name/:quantity`, (req, res) => {
+    const { name, quantity } = req.params;
+    const queryStringUpdateItemQuantity = `UPDATE item_list SET quantity = quantity + ${quantity} WHERE item_name = ${name}`;
     console.log(queryStringUpdateItemQuantity);
     connection.query(queryStringUpdateItemQuantity, (err, rows, fields) => {
         if(err){

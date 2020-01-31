@@ -787,6 +787,7 @@ export const fetchMentors = () => async dispatch => {
     var response = null;
     await app.get(`/purchases/get/mentors`)
         .then(res => {
+            response = res;
             console.log('Successfully fetched mentors');
         })
         .catch(err => {
@@ -799,27 +800,29 @@ export const fetchMentors = () => async dispatch => {
 }
 
 export const fetchPurchaseRequest = (id) => async dispatch => {
-    console.log(`Actions: Fetch purchase with id ${id}`);
+    console.log(`Actions: Fetch purchase request with id ${id}`);
     var response = null;
     await app.get(`/purchases/get/single/${id}`)
         .then(res => {
-            console.log('Successfully fetched purchase');
+            response = res;
+            console.log('Successfully fetched purchase request');
         })
         .catch(err => {
             console.log(err);
         });
     
     if(response && response.data){
-        dispatch ({ type: FETCH_PURCHASE, payload: response.data });
+        dispatch ({ type: FETCH_PURCHASE, payload: response.data[0] });
     }
 }
 
 export const fetchAllPurchaseRequests = () => async dispatch => {
-    console.log(`Actions: Fetch all purchases`);
+    console.log(`Actions: Fetch all purchase requests`);
     var response = null;
     await app.get(`/purchases/get/all`)
         .then(res => {
-            console.log('Successfully fetched all purchases');
+            response = res;
+            console.log('Successfully fetched all purchase requests');
         })
         .catch(err => {
             console.log(err);
@@ -831,7 +834,7 @@ export const fetchAllPurchaseRequests = () => async dispatch => {
 }
 
 export const createPurchaseRequest = (purchase) => async dispatch => {
-    console.log(`Actions: Fetch all purchases`);
+    console.log(`Actions: Create purchase request`);
     var response = null;
     const { 
         time, 
@@ -840,11 +843,11 @@ export const createPurchaseRequest = (purchase) => async dispatch => {
         payer_email, 
         receiver_email, 
         type, 
-        secondary_description, 
+        item, 
         cost, 
         quantity
     } = purchase;
-    await app.post(`/purchases/post/${time}/${status}/${mentor_email}/${payer_email}/${receiver_email}/${type}/${secondary_description}/${cost}/${quantity}`)
+    await app.post(`/purchases/post/${time}/${status}/${mentor_email}/${payer_email}/${receiver_email}/${type}/${item}/${cost}/${quantity}`)
         .then(res => {
             console.log('Successfully created purchase request');
         })
@@ -857,9 +860,37 @@ export const createPurchaseRequest = (purchase) => async dispatch => {
     }
 }
 
-export const updatePurchaseStatus = (id, status) => async dispatch => {
+export const updatePurchaseRequest = (purchase) => async dispatch => {
+    console.log(`Actions: Update purchase request`);
+    var response = null;
+    const { 
+        id,
+        time, 
+        status, 
+        mentor_email, 
+        payer_email, 
+        receiver_email, 
+        type, 
+        item, 
+        cost, 
+        quantity
+    } = purchase;
+    await app.post(`/purchases/put/${id}/${time}/${status}/${mentor_email}/${payer_email}/${receiver_email}/${type}/${item}/${cost}/${quantity}`)
+        .then(res => {
+            console.log('Successfully updated purchase request');
+        })
+        .catch(err => {
+            console.log(err);
+        });
+
+    if(response && response.data){
+        dispatch ({ type: FETCH_ALL_PURCHASES, payload: response.data });
+    }
+}
+
+export const purchaseUpdateStatus = (id, status) => async dispatch => {
     console.log(`Actions: Update purchase request status`);
-    await app.put(`/purchases/put/${id}/${status}`)
+    await app.put(`/purchases/status/put/${id}/${status}`)
         .then(res => {
             console.log('Successfully updated purchase request status');
         })
@@ -901,9 +932,9 @@ export const purchaseUpdateFunds = (email, amount) => async dispatch => {
         });
 }
 
-export const purchaseUpdateItemQuantity = (id, quantity) => async dispatch => {
+export const purchaseUpdateItemQuantity = (name, quantity) => async dispatch => {
     console.log(`Actions: Purchases: Update Item Quantity`);
-    await app.put(`/purchases/items/put/${id}/${quantity}`)
+    await app.put(`/purchases/items/put/${name}/${quantity}`)
         .then(res => {
             console.log('Successfully updated item quantity');
         })

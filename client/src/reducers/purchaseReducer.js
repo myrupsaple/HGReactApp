@@ -4,6 +4,7 @@ export default (state = {}, action) => {
     switch(action.type){
         case FETCH_PURCHASE:
             const purchase = action.payload;
+            console.log(purchase);
             if(!purchase){
                 return {};
             }
@@ -14,9 +15,10 @@ export default (state = {}, action) => {
                 mentor_email: purchase.mentor_email,
                 payer_email: purchase.payer_email,
                 receiver_email: purchase.receiver_email,
-                type: purchase.type,
-                secondary_description: purchase.secondary_description,
-                cost: purchase.cost
+                item: purchase.item,
+                category: purchase.category,
+                cost: purchase.cost,
+                quantity: purchase.quantity
             };
         default:
             return state;
