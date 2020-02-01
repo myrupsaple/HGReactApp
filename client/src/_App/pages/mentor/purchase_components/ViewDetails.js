@@ -30,14 +30,15 @@ class ViewDetails extends React.Component{
 
     renderModalBody = () => {
         const purchase = this.props.purchase;
+        console.log(purchase);
         return(
            <div style={{ marginLeft: "20px" }}>
                 <div className="row"><span className="font-weight-bold">Purchasing Tribute:</span><span>&nbsp;{this.getTributeName(purchase.payer_email)}</span></div>
                 <div className="row"><span className="font-weight-bold">Receiving Tribute:</span><span>&nbsp;{this.getTributeName(purchase.receiver_email)}</span></div>
                 <div className="row"><span className="font-weight-bold">District:</span><span>&nbsp;{this.getMentorName(purchase.mentor_email)}</span></div>
                 <div className="row"><span className="font-weight-bold">Time of Request:</span><span>&nbsp;{this.formatTimeFromInt(purchase.time)}</span></div>
-                <div className="row"><span className="font-weight-bold">Type:</span><span>&nbsp;{purchase.type}</span></div>
-                <div className="row"><span className="font-weight-bold">Description:</span><span>&nbsp;{purchase.secondary_description}</span></div>
+                <div className="row"><span className="font-weight-bold">Category:</span><span>&nbsp;{purchase.category}</span></div>
+                <div className="row"><span className="font-weight-bold">Item:</span><span>&nbsp;{purchase.item_name}</span></div>
                 <div className="row"><span className="font-weight-bold">Cost:</span><span>&nbsp;${purchase.cost}</span></div>
                 <div className="row"><span className="font-weight-bold">Quantity:</span><span>&nbsp;{purchase.quantity}</span></div>
                 <div className="row"><span className="font-weight-bold">Status:</span><span>&nbsp;{purchase.status}</span></div>

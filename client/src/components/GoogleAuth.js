@@ -12,16 +12,16 @@ class GoogleAuth extends React.Component {
         // The workaround ended up being a lot larger than expected.
         // https://codingwithspike.wordpress.com/2018/03/10/making-settimeout-an-async-await-function/
         var counter = 1;
-        function wait() {
+        function wait(time) {
             return new Promise(resolve => {
-              setTimeout(resolve, 200);
+              setTimeout(resolve, time);
             });
         }
         async function checkForGapi () {
             while(!window.gapi){
                 console.log('GAPI LOAD DELAYED: waited 200ms ' + counter + ' time(s)');
                 counter += 0;
-                await wait();
+                await wait(200);
             }
         }
         await checkForGapi();
@@ -43,8 +43,6 @@ class GoogleAuth extends React.Component {
     onAuthChange = (isSignedIn) => {
         if(isSignedIn){
             // Upon sign in, load up user data given their email
-            // TODO: Figure out how to get the email reliably:
-            // console.log(this.auth.currentUser.get());
             const userEmail = this.auth.currentUser.get().getBasicProfile().getEmail();
             console.log('GoogleAuth: Sign in attempt');
             this.props.signIn(userEmail);
@@ -60,7 +58,7 @@ class GoogleAuth extends React.Component {
 
     onSignOutClick = () => {
         this.auth.signOut();
-        // history.push('/App/signout-successful');
+        history.push('/App/signout-successful');
     }
 
     renderAuthButton() {

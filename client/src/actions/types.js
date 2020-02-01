@@ -3,6 +3,7 @@ export const SET_NAVBAR = 'SET_NAVBAR';
 // (0) Google OAuth Management
 export const SIGN_IN = 'SIGN_IN';
 export const SIGN_OUT = 'SIGN_OUT';
+export const DEV_SIGN_IN = 'DEV_SIGN_IN';
 // (1) User Management
 export const FETCH_USER = 'FETCH_USER';
 export const FETCH_USERS = 'FETCH_USERS';

@@ -3,9 +3,12 @@ import { connect } from 'react-redux';
 import { Form, Button, Modal } from 'react-bootstrap';
 
 import {
+    createPurchaseRequest,
+    updatePurchaseRequest,
     fetchPurchaseRequest,
     purchaseUpdateStatus,
     purchaseUpdateFunds,
+    purchaseUpdateItemQuantity,
     fetchAllItems,
     fetchItem
 } from '../../../../actions';
@@ -17,12 +20,13 @@ class PurchaseForm extends React.Component{
 
         this.state = {
             showModal: true,
+            firstConfirm: false,
             submitted: false,
             payer_email: '',
             receiver_email: '',
-            category: 'item',
+            category: '',
             item: '',
-            originalCost: null,
+            originalCost: 0,
             cost: 100,
             quantity: 1,
             maxQuantity: 1,
@@ -32,7 +36,6 @@ class PurchaseForm extends React.Component{
         this.handleReceiver = this.handleReceiver.bind(this);
         this.handleCategory = this.handleCategory.bind(this);
         this.handleItem = this.handleItem.bind(this);
-        this.handleCost = this.handleCost.bind(this);
         this.handleQuantity = this.handleQuantity.bind(this);
     }
 
@@ -48,11 +51,17 @@ class PurchaseForm extends React.Component{
                     payer_email: purchase.payer_email,
                     receiver_email: purchase.receiver_email,
                     category: purchase.category,
-                    item: purchase.item,
+                    item_name: purchase.item_name,
+                    item_id: purchase.item_id,
                     originalCost: purchase.cost,
                     cost: purchase.cost,
                     quantity: purchase.quantity
                 })
+
+                if(this.state.category === 'item'){
+                    this.setState({ item: `${purchase.item_name}|${purchase.item_id}` });
+                    await this.props.fetchItem(purchase.item_id);
+                }
             }
         }
         await this.props.fetchAllItems();
@@ -67,15 +76,21 @@ class PurchaseForm extends React.Component{
     handleReceiver(event){
         this.setState({ receiver_email: event.target.value });
     }
-    async handleCategory(event){
-        await this.props.fetchItem(event.target.value);
-        this.setState({ category: event.target.value });
+    handleCategory(event){
+        this.setState({ category: event.target.value, item: '' });
     }
-    handleItem(event){
-        this.setState({ item: event.target.value });
-    }
-    handleCost(event){
-        this.setState({ cost: event.target.value });
+
+    // Will only ever be accessed for item purchases
+    async handleItem(event){
+        const input = event.target.value;
+
+        if(input !== ''){
+            const [ name, id ] = input.split('|');
+            await this.props.fetchItem(id);
+            this.setState({ item: input, item_name: name, item_id: id });
+        } else {
+            this.setState({ item: input, item_name: '', item_id: '' });
+        }
     }
     handleQuantity(event){
         this.setState({ quantity: event.target.value });
@@ -88,29 +103,62 @@ class PurchaseForm extends React.Component{
         this.props.onSubmitCallback();
     }
 
-    handleSubmit = () => {
-        const purchase = this.props.purchase;
-        if(purchase.category === 'item'){
-            // update item
-            return 1;
-        } else if(purchase.category === 'life'){
-            // update life
-            return 2;
-        } else if(purchase.category === 'resource'){
-            // format item
-            // update resources
-            return 3;
-        } else if(purchase.category === 'immunity'){
-            // update immunity
-            return 4;
-        } else if(purchase.category === 'transfer'){
-            // add funds
-            // remove funds
-            return 5;
+    handleSubmit = async () => {
+        if(!this.state.payer_email || !this.state.receiver_email || !this.state.category){
+            return null;
         }
+        if(this.state.category === 'item'){
+            if(!this.state.item || !this.state.quantity){
+                return null;
+            }
+        }
+
+        this.setState({ submitted: true });
+
+        const now = new Date();
+        const time = now.getHours() * 60 + now.getMinutes();
+
+        if(this.state.category !== 'item'){
+            this.setState({ item: this.state.item, quantity: 1, item_id: 9999 });
+        }
+
+        const [ name, id ] = this.state.item.split('|');
+        const totalCost = this.props.selectedItem.tier1_cost * this.state.quantity;
+
+        const purchaseRequest = {
+            time: time,
+            status: 'pending',
+            mentor_email: this.props.userEmail,
+            payer_email: this.state.payer_email,
+            receiver_email: this.state.receiver_email,
+            category: this.state.category,
+            item_name: name,
+            item_id: id,
+            cost: totalCost,
+            quantity: this.state.quantity
+        }
+
+        if(this.props.mode === 'edit'){
+            purchaseRequest.id = this.props.id;
+            await this.props.updatePurchaseRequest(purchaseRequest);
+        } else if(this.props.mode === 'create'){
+            await this.props.createPurchaseRequest(purchaseRequest);
+        }
+
+        if(this.state.category === 'item'){
+            this.props.purchaseUpdateItemQuantity(this.state.item_id, this.state.quantity);
+        }
+
+        this.props.purchaseUpdateFunds(this.state.payer_email, totalCost - this.state.originalCost);
+
+        setTimeout(() => this.handleClose(), 1000)
     }
 
     renderModalHeader = () => {
+        if(this.state.firstConfirm){
+            return 'Confirm Request';
+        }
+        
         if(this.props.mode === 'edit'){
             return 'Modify Purchase Request';
         } else if(this.props.mode === 'create'){
@@ -122,7 +170,59 @@ class PurchaseForm extends React.Component{
 
     renderModalBody = () => {
         if(this.state.submitted){
-            return <h3>The request was sent!</h3>;
+            const message = this.props.mode === 'edit' ? 'edited' : 'created';
+            return <h3>Purchase request {message} successfully!</h3>
+        } else if(this.state.firstConfirm){
+            const totalCost = this.props.selectedItem.tier1_cost * this.state.quantity;
+            const diff = totalCost - this.state.originalCost;
+            const purchasingTribute = this.getTributeName(this.state.payer_email);
+
+            var message = '';
+            var extraText = '';
+            if(diff > 0){
+                extraText = `${purchasingTribute} will be refunded the difference of $${diff}.`;
+            } else if (diff < 0){
+                extraText = `${purchasingTribute} will be charged the difference of $${diff}.`;
+            } else {
+                extraText = `${purchasingTribute} will not be charged again.`
+            }
+            if(this.props.mode === 'edit'){
+                message = `The request you are editing had a previous total of $${this.state.originalCost}.
+                Your new request has a total of $${totalCost}. ${extraText}`;
+            } else {
+                message = `${purchasingTribute} will be charged $${totalCost} for this transaction upon submit.
+                This will be refunded if the request is deleted or rejected.`
+            }
+
+            return(
+                <div style={{ marginLeft: "20px" }}>
+                    <div className="row">
+                        <span className="font-weight-bold">Paying Tribute:</span>
+                        <span>&nbsp;{purchasingTribute}</span>
+                    </div>
+                    <div className="row">
+                        <span className="font-weight-bold">Receiving Tribute:</span>
+                        <span>&nbsp;{this.getTributeName(this.state.receiver_email)}</span>
+                    </div>
+                    <div className="row">
+                        <span className="font-weight-bold">Category:</span>
+                        <span>&nbsp;{this.state.category}</span>
+                    </div>
+                    <div className="row">
+                        <span className="font-weight-bold">Item:</span>
+                        <span>&nbsp;{this.state.item_name}</span>
+                    </div>
+                    <div className="row">
+                        <span className="font-weight-bold">Quantity:</span>
+                        <span>&nbsp;{this.state.quantity}</span>
+                    </div>
+                    <div className="row">
+                        <span className="font-weight-bold">Total Cost:</span>
+                        <span>&nbsp;${totalCost}</span>
+                    </div>
+                    <h6>{message}</h6>
+                </div>
+            );
         }
         return(
             <>
@@ -131,7 +231,15 @@ class PurchaseForm extends React.Component{
         );
     }
 
-    renderForm = () => {
+    getTributeName(email){
+        for (let tribute of this.props.tributes){
+            if(tribute.email === email){
+                return `${tribute.first_name} ${tribute.last_name}`;
+            }
+        }
+    }
+
+    renderForm = () => {  
         return(
             <Form>
                 <Form.Row>
@@ -142,7 +250,7 @@ class PurchaseForm extends React.Component{
                             onChange={this.handlePayer}
                             as="select"
                         >
-                            {this.renderPayerChoices()}
+                            {this.renderTributeChoices()}
                         </Form.Control>
                     </Form.Group></div>
                 </Form.Row>
@@ -154,7 +262,7 @@ class PurchaseForm extends React.Component{
                             onChange={this.handleReceiver}
                             as="select"
                         >
-                            {this.renderReceiverChoices()}
+                            {this.renderTributeChoices()}
                         </Form.Control>
                     </Form.Group></div>
                 </Form.Row>
@@ -165,7 +273,8 @@ class PurchaseForm extends React.Component{
                             value={this.state.category}
                             onChange={this.handleCategory}
                             as="select"
-                        >
+                        >   
+                            <option value="">Please select a Category...</option>
                             <option value="item">Item</option>
                             <option value="resource">Resource</option>
                             <option value="life">Life</option>
@@ -175,33 +284,17 @@ class PurchaseForm extends React.Component{
                     </Form.Group></div>
                 </Form.Row>
                 {this.renderItemMenu(this.state.category)}
-                {/* {this.renderQuantityChoices(this.state.category)} */}
-                
+                {this.renderQuantityChoices(this.state.category)}
             </Form>
         )
     }
 
-    renderPayerChoices = () => {
+    renderTributeChoices = () => {
         return(
             <>
                 <option value="">Please select a Tribute...</option>
                 {this.props.tributes.map(tribute => {
-                    return(
-                        <option key={tribute.id} value={tribute.email}>
-                            {tribute.first_name} {tribute.last_name} || {tribute.email}
-                        </option>
-                    );
-                })}
-            </>
-        );
-    }
-
-    renderReceiverChoices = () => {
-        return(
-            <>
-                <option value="">Please select a Tribute...</option>
-                {this.props.tributes.map(tribute => {
-                    if(tribute.email === this.state.payer_email){
+                    if(tribute.mentor_email !== this.props.userEmail){
                         return null;
                     }
                     return(
@@ -248,7 +341,7 @@ class PurchaseForm extends React.Component{
                     <option value="">Please choose an item...</option>
                     {this.props.items.map(item => {
                     return(
-                        <option key={item.id} value={item.id}>{item.item_name}: "{item.description}" (${item.cost} each) </option>
+                        <option key={item.id} value={`${item.item_name}|${item.id}`}>{item.item_name}: "{item.description}" (${item.tier1_cost} each) </option>
                     );
                     })}
                 </>
@@ -268,45 +361,59 @@ class PurchaseForm extends React.Component{
         }
     }
 
-    // renderQuantityChoices(category){
-    //     if(category === 'item' && this.state.item !== ''){
-    //         const choices = [];
-    //         for(let i = 1; i <= this.props.selectedItem.quantity; i++){
-    //             choices.push(i);
-    //         }
-    //         return (
-    //             <Form.Row>
-    //                 <div className="col-4"><Form.Group controlId="quantity">
-    //                     <Form.Label>How Many?</Form.Label>
-    //                     <Form.Control
-    //                         value={this.state.quantity}
-    //                         onChange={this.handleQuantity}
-    //                         as="select"
-    //                     >
-    //                        {choices.map(choice => {
-    //                           return <option key={choice} value={choice}>{choice}</option>;
-    //                         })} 
-    //                     </Form.Control>
-    //                 </Form.Group></div>
-    //             </Form.Row>
-    //         );
-    //     }
-    // }
+    renderQuantityChoices(category){
+        // The third check ensures that selectedItem is loaded
+        if(category !== 'item' || this.state.item === '' || Object.keys(this.props.selectedItem).length === 0){
+            return null;
+        }
+        const choices = [];
+        for(let i = 1; i <= this.props.selectedItem.quantity; i++){
+            choices.push(i);
+        }
+        return (
+            <Form.Row>
+                <div className="col-4"><Form.Group controlId="quantity">
+                    <Form.Label>How Many?</Form.Label>
+                    <Form.Control
+                        value={this.state.quantity}
+                        onChange={this.handleQuantity}
+                        as="select"
+                    >
+                        {choices.map(choice => {
+                            return <option key={choice} value={choice}>{choice}</option>;
+                        })} 
+                    </Form.Control>
+                </Form.Group></div>
+            </Form.Row>
+        );
+    }
 
     renderModalFooter = () => {
         if(this.state.submitted){
             return null;
+        } else if(this.state.firstConfirm){
+            return(
+                <>
+                    <Button onClick={this.handleSubmit} variant="info">
+                        Send Request
+                    </Button>
+                    <Button onClick={() => this.setState({ firstConfirm: false })} variant="danger">
+                        Go Back
+                    </Button>
+                </>
+            );
+        } else {
+            return(
+                <>
+                <Button onClick={() => this.setState({ firstConfirm: true })} variant="info">
+                    Confirm
+                </Button>
+                <Button onClick={this.handleClose} variant="danger">
+                    Cancel
+                </Button>
+                </>
+            );
         }
-        return(
-            <>
-            <Button onClick={this.handleSubmit} variant="info">
-                Confirm
-            </Button>
-            <Button onClick={this.handleClose} variant="danger">
-                Cancel
-            </Button>
-            </>
-        );
     }
 
     render = () => {
@@ -337,15 +444,19 @@ const mapStateToProps = state => {
     return {
         purchase: state.selectedPurchase,
         items: Object.values(state.items),
-        item: state.selectedItem
+        selectedItem: state.selectedItem,
+        userEmail: state.auth.userEmail
     };
 }
 
 export default connect(mapStateToProps, 
-    { 
+    {
+        createPurchaseRequest,
+        updatePurchaseRequest,
         fetchPurchaseRequest,
         purchaseUpdateStatus,
         purchaseUpdateFunds,
+        purchaseUpdateItemQuantity,
         fetchAllItems,
         fetchItem
     })(PurchaseForm);

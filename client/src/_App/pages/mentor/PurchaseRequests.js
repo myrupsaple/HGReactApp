@@ -72,6 +72,7 @@ class PurchaseRequests extends React.Component {
         }
 
         const userPerms = this.props.userPerms;
+        console.log(userPerms);
         for (let group of allowedGroups){
             if(userPerms === group){
                 return null;
@@ -105,8 +106,11 @@ class PurchaseRequests extends React.Component {
     // Render modal header (Create/refresh list buttons)
     renderButtons(){
         const switchModes = (
-            <Button onClick={() => this.setState({ displayMode: this.state.displayMode === 'pending' ? 'processed' : 'pending' })}
-                    variant="secondary"
+            <Button onClick={() => { 
+                    this.setState({ displayMode: this.state.displayMode === 'pending' ? 'processed' : 'pending' });
+                    this.props.fetchAllPurchaseRequests();
+                }}
+                variant="secondary"
             >
                 {this.state.displayMode === 'pending' ? 'Show Processed Requests' : 'Show Pending Requests'}
             </Button>
@@ -144,7 +148,6 @@ class PurchaseRequests extends React.Component {
         } else {
             purchases = purchases.filter(purchase => purchase.status !== 'pending');
         }
-        console.log(purchases);
         if(Object.keys(purchases).length === 0){
             if(!this.state.queried) {
                 return(
@@ -183,8 +186,9 @@ class PurchaseRequests extends React.Component {
                             <li className="list-group-item" key={purchase.id}>
                                 <div className="row">
                                     <div className="col">{this.getMentorName(purchase.mentor_email)}</div>
-                                    <div className="col">{purchase.item}</div>
+                                    <div className="col">{purchase.item_name}</div>
                                     <div className="col">{purchase.quantity}</div>
+                                    <div className="col">${purchase.cost}</div>
                                     <div className="col">{this.getTributeName(purchase.payer_email)}</div>
                                     <div className="col">{this.getTributeName(purchase.receiver_email)}</div>
                                     <div className="col">{this.renderAdmin(purchase)}</div>
@@ -206,8 +210,8 @@ class PurchaseRequests extends React.Component {
                             <li className="list-group-item" key={purchase.id}>
                                 <div className="row">
                                     <div className="col">{this.getMentorName(purchase.mentor_email)}</div>
-                                    <div className="col">{purchase}</div>
-                                    <div className="col">{purchase.item}</div>
+                                    <div className="col">{purchase.status}</div>
+                                    <div className="col">{purchase.item_name}</div>
                                     <div className="col">{this.getTributeName(purchase.payer_email)}</div>
                                     <div className="col">{this.getTributeName(purchase.receiver_email)}</div>
                                     <div className="col">{this.renderAdmin(purchase)}</div>
@@ -229,6 +233,7 @@ class PurchaseRequests extends React.Component {
                 <div className="col">Requested By</div>
                 <div className="col">Item</div>
                 <div className="col">Quantity</div>
+                <div className="col">Total</div>
                 <div className="col">Payer</div>
                 <div className="col">Receiver</div>
                 <div className="col">Actions</div>
@@ -316,6 +321,7 @@ class PurchaseRequests extends React.Component {
                 return `${mentor.first_name} ${mentor.last_name}`;
             }
         }
+        return 'Unknown User';
     }
 
     onSubmitCallback = () => {

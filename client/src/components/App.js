@@ -4,6 +4,7 @@ import history from '../history';
 import "react-datepicker/dist/react-datepicker.css";
 
 import RenderNav from './RenderNav';
+import DevSignIn from './DevSignIn';
 
 // Website Imports
 import Home from '../_Website/pages/_Home';
@@ -56,6 +57,7 @@ class App extends React.Component {
             <>
             <RenderNav />
             <div className="ui-container">
+            <DevSignIn />
             <Router history={history}>
                 <Switch>
 

@@ -14,6 +14,7 @@ class ApprovalForm extends React.Component{
         super(props);
         this.state = {
             showModal: true,
+            status: 'pending',
             submitted: false
         }
     }
@@ -32,7 +33,14 @@ class ApprovalForm extends React.Component{
 
     renderModalBody = () => {
         if(this.state.submitted){
-            return <h3>The purchase request was denied and the tribute's funds were returned.</h3>;
+            switch(this.state.status){
+                case ('approved'):
+                    return <h3>The purchase request was approved</h3>;
+                case ('denied'):
+                    return <h3>The purchase request was denied and the tribute's funds were returned.</h3>;
+                default:
+                    return null;                
+            }
         }
         const purchase = this.props.purchase;
         return(
@@ -41,10 +49,10 @@ class ApprovalForm extends React.Component{
                 <div className="row"><span className="font-weight-bold">Receiving Tribute:</span><span>&nbsp;{this.getTributeName(purchase.receiver_email)}</span></div>
                 <div className="row"><span className="font-weight-bold">District:</span><span>&nbsp;{this.getMentorName(purchase.mentor_email)}</span></div>
                 <div className="row"><span className="font-weight-bold">Time of Request:</span><span>&nbsp;{this.formatTimeFromInt(purchase.time)}</span></div>
-                <div className="row"><span className="font-weight-bold">Type:</span><span>&nbsp;{purchase.type}</span></div>
-                <div className="row"><span className="font-weight-bold">Description:</span><span>&nbsp;{purchase.secondary_description}</span></div>
-                <div className="row"><span className="font-weight-bold">Cost:</span><span>&nbsp;${purchase.cost}</span></div>
+                <div className="row"><span className="font-weight-bold">Category:</span><span>&nbsp;{purchase.category}</span></div>
+                <div className="row"><span className="font-weight-bold">Item:</span><span>&nbsp;{purchase.item_name}</span></div>
                 <div className="row"><span className="font-weight-bold">Quantity:</span><span>&nbsp;{purchase.quantity}</span></div>
+                <div className="row"><span className="font-weight-bold">Total Cost:</span><span>&nbsp;${purchase.cost}</span></div>
             </div>
         );
     }
@@ -74,7 +82,14 @@ class ApprovalForm extends React.Component{
     }
 
     approveRequest = () => {
+        if(this._isMounted){
+            this.setState({ submitted: true, status: 'approved' });
+        }
+
         const purchase = this.props.purchase;
+
+        this.props.purchaseUpdateStatus(purchase.id, 'approved');
+
         if(purchase.type === 'item'){
             // update item
             return 1;
@@ -97,8 +112,9 @@ class ApprovalForm extends React.Component{
 
     denyRequest = () => {
         if(this._isMounted){
-            this.setState({ submitted: true })
+            this.setState({ submitted: true, status: 'denied' });
         }
+
         this.props.purchaseUpdateStatus(this.props.purchase.id, 'denied');
         const amount = this.props.purchase.cost * this.props.purchase.quantity * -1;
         console.log(amount);

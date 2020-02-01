@@ -15,7 +15,9 @@ export default (state = {}, action) => {
                 mentor_email: purchase.mentor_email,
                 payer_email: purchase.payer_email,
                 receiver_email: purchase.receiver_email,
-                item: purchase.item,
+                item: `{}`,
+                item_name: purchase.item_name,
+                item_id: purchase.item_id,
                 category: purchase.category,
                 cost: purchase.cost,
                 quantity: purchase.quantity

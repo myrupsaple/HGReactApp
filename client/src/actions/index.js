@@ -4,6 +4,7 @@ import {
     SET_NAVBAR,
     SIGN_IN,
     SIGN_OUT,
+    DEV_SIGN_IN,
     FETCH_USER,
     FETCH_USERS,
     FETCH_ALL_USERS,
@@ -105,6 +106,17 @@ export const signOut = () => (dispatch) => {
         type: SIGN_OUT
     });
 };
+
+export const devSignIn = (email, userPerms) => async (dispatch) => {
+    console.log('Actions: Dev sign in initiated');
+    dispatch({
+        type: DEV_SIGN_IN,
+        payload: {
+            email,
+            userPerms
+        }
+    })
+}
 
 //########################### (1) USER MANAGEMENT ############################//
 
@@ -842,12 +854,13 @@ export const createPurchaseRequest = (purchase) => async dispatch => {
         mentor_email, 
         payer_email, 
         receiver_email, 
-        type, 
-        item, 
+        category, 
+        item_name,
+        item_id, 
         cost, 
         quantity
     } = purchase;
-    await app.post(`/purchases/post/${time}/${status}/${mentor_email}/${payer_email}/${receiver_email}/${type}/${item}/${cost}/${quantity}`)
+    await app.post(`/purchases/post/${time}/${status}/${mentor_email}/${payer_email}/${receiver_email}/${category}/${item_name}/${item_id}/${cost}/${quantity}`)
         .then(res => {
             console.log('Successfully created purchase request');
         })
@@ -870,12 +883,13 @@ export const updatePurchaseRequest = (purchase) => async dispatch => {
         mentor_email, 
         payer_email, 
         receiver_email, 
-        type, 
-        item, 
+        category, 
+        item_name,
+        item_id, 
         cost, 
         quantity
     } = purchase;
-    await app.post(`/purchases/put/${id}/${time}/${status}/${mentor_email}/${payer_email}/${receiver_email}/${type}/${item}/${cost}/${quantity}`)
+    await app.put(`/purchases/put/${id}/${time}/${status}/${mentor_email}/${payer_email}/${receiver_email}/${category}/${item_name}/${item_id}/${cost}/${quantity}`)
         .then(res => {
             console.log('Successfully updated purchase request');
         })
@@ -932,9 +946,9 @@ export const purchaseUpdateFunds = (email, amount) => async dispatch => {
         });
 }
 
-export const purchaseUpdateItemQuantity = (name, quantity) => async dispatch => {
+export const purchaseUpdateItemQuantity = (id, quantity) => async dispatch => {
     console.log(`Actions: Purchases: Update Item Quantity`);
-    await app.put(`/purchases/items/put/${name}/${quantity}`)
+    await app.put(`/purchases/items/put/${id}/${quantity}`)
         .then(res => {
             console.log('Successfully updated item quantity');
         })

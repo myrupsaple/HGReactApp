@@ -1,4 +1,4 @@
-import { SIGN_IN, SIGN_OUT } from '../actions/types';
+import { SIGN_IN, SIGN_OUT, DEV_SIGN_IN } from '../actions/types';
 
 const INITIAL_STATE = {
     loaded: false,
@@ -35,6 +35,13 @@ export default (state = INITIAL_STATE, action) => {
                 userLastName: null,
                 userEmail: null,
                 userPerms: null
+            };
+        case DEV_SIGN_IN:
+            console.log(`Dev Mode: Signed in as ${action.payload.email}`);
+            return {
+                ...state,
+                userEmail: action.payload.email,
+                userPerms: action.payload.userPerms,
             };
         default:
             return state;
