@@ -368,13 +368,34 @@ class ManageFunds extends React.Component {
                 </>
             );
         }
+
+        const donations = this.props.donations;
+        donations.sort((a, b) => {
+            const monthsA = a.date.split('-')[1];
+            const monthsB = b.date.split('-')[1];
+            const daysA = a.date.split('-')[2].split('T')[0];
+            const daysB = b.date.split('-')[2].split('T')[0];
+            if(monthsA < monthsB){
+                return 1;
+            } else if(monthsA > monthsB) {
+                return -1;
+            }
+            if(daysA < daysB){
+                return 1;
+            } else if(daysA > daysB) {
+                return -1;
+            } else {
+                return 0;
+            }
+        });
+
         return(
             <>
             <h5>Unassigned Funds: ${this.sumUnassignedFunds()}</h5>
             <h3>Donations found:</h3>
             <ul className="list-group">
                 {this.renderTableHeader()}
-                {this.props.donations.map(donation => {
+                {donations.map(donation => {
                     var [year, month, day] = donation.date.split('-');
                     day = day.split('T')[0];
                     return(

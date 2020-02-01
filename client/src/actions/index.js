@@ -725,10 +725,10 @@ export const fetchItem = id => async dispatch => {
     }
 }
 
-export const fetchItems = (type, query) => async dispatch => {
-    console.log(`Actions: Get Item List initiated: ${type} with query ${query}`);
+export const fetchItems = (query) => async dispatch => {
+    console.log(`Actions: Get Item List initiatedwith query ${query}`);
     var response = null;
-    await app.get(`/item-list/get/list/${type}/${query}`)
+    await app.get(`/item-list/get/list/${query}`)
         .then(res => {
             response = res;
             console.log('Successfully Fetched Items');

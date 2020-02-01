@@ -180,6 +180,16 @@ connection.connect(async (err) => {
             tier4_cost INT
         )`;
 
+        const createSpecialItems = `INSERT INTO item_list 
+        (id, item_name, description, quantity, tier1_cost, tier2_cost, tier3_cost, tier4_cost) 
+        VALUES 
+        (1000, 'life', 'life', 1, 45, 70, 100, 150),
+        (2000, 'immunity', 'immunity', 1, 300, 300, 300, 300),
+        (3000, 'golden_resource', 'golden resource', 1, 300, 300, 300, 300),
+        (3001, 'food_resource', 'food resource', 1, 80, 100, 100, 100),
+        (3002, 'water_resource', 'water resource', 1, 100, 100, 120, 120),
+        (3003, 'medicine_resource', 'medicine resource', 1, 75, 100, 125, 125)`
+
         const createPurchases = `CREATE TABLE purchases(
             id INT PRIMARY KEY AUTO_INCREMENT,
             time INT,
@@ -188,7 +198,8 @@ connection.connect(async (err) => {
             payer_email VARCHAR(40),
             receiver_email VARCHAR(40),
             category VARCHAR(10),
-            item VARCHAR(25),
+            item_name VARCHAR(25),
+            item_id INT,
             cost INT,
             quantity TINYINT
         )`;
@@ -249,6 +260,11 @@ connection.connect(async (err) => {
         }
         if(!tableList.item_list){
             connection.query(createItemList, (err, results, fields) => {
+                if(err){
+                    console.log(err.message);
+                }
+            });
+            connection.query(createSpecialItems, (err, results, fields) => {
                 if(err){
                     console.log(err.message);
                 }
@@ -1071,9 +1087,9 @@ app.get(`/item-list/get/single/:id`, (req, res) => {
 })
 
 // FETCH_ITEMS
-app.get(`/item-list/get/list/:type/:query`, (req, res) => {
-    const { type, query } = req.params;
-    const queryStringGetItems = `SELECT * FROM item_list WHERE ${type} = '${query}'`;
+app.get(`/item-list/get/list/:query`, (req, res) => {
+    const query = req.params.query;
+    const queryStringGetItems = `SELECT * FROM item_list WHERE item_name LIKE '%${query}%'`;
     console.log(queryStringGetItems);
     connection.query(queryStringGetItems, (err, rows, fields) => {
         if(err){

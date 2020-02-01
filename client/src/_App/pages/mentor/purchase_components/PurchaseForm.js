@@ -336,10 +336,13 @@ class PurchaseForm extends React.Component{
     
     renderItemChoices = (category) => {
         if(category === 'item'){
+            const items = this.props.items;
             return (
                 <>
                     <option value="">Please choose an item...</option>
-                    {this.props.items.map(item => {
+                    {items.map(item => {
+                        // ID >= 1000 reserved for special items (lives, resources, etc.)
+                        if(item.id >= 1000){ return null; }
                     return(
                         <option key={item.id} value={`${item.item_name}|${item.id}`}>{item.item_name}: "{item.description}" (${item.tier1_cost} each) </option>
                     );
@@ -350,12 +353,10 @@ class PurchaseForm extends React.Component{
             return(
                 <>
                     <option value="">Please choose a resource...</option>
-                    <option value="food">Food</option>
-                    <option value="water">Water</option>
-                    <option value="medicine">Medicine</option>
-                    <option value="roulette">Roulette</option>
-                    <option value="life">Life</option>
-                    <option value="golden">Golden</option>
+                    <option value="food_resource">Food</option>
+                    <option value="water_resource">Water</option>
+                    <option value="medicine_resource">Medicine</option>
+                    <option value="golden_resource">Golden</option>
                 </>
             );
         }

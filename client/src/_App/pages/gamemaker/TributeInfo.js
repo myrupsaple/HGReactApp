@@ -117,12 +117,16 @@ class TributeAccountInfo extends React.Component {
                 </>
             );
         }
+        
+        const tributes = this.props.tributes;
+        tributes.sort((a, b) => a.district - b.district);
+
         return(
             <>
             <h3>Tributes found:</h3>
             <ul className="list-group">
                 {this.renderTableHeader()}
-                {this.props.tributes.map(tribute => {
+                {tributes.map(tribute => {
                     return(
                         <li className="list-group-item" key={tribute.id}>
                             <div className="row">

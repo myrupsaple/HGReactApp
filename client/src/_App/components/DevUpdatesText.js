@@ -5,6 +5,15 @@ const DevUpdatesText = () =>{
         <>
         <h1>Development Updates and Things to Look Out For</h1>
         <h5>Remember, if you run into any errors, please notify me by sending a screenshot and a description of how you got to the error. Thanks!</h5>
+        <h4>January 31</h4>
+        <ol>
+            <li>Purchase Requests are almost fully functional. Item purchases deduce tribute funds and item quantity appropriately.</li>
+            <li>Began testing and debugging all other features.</li>
+        </ol>
+        <h4>January 30</h4>
+        <ol>
+            <li>Continued implementing purchase request features</li>
+        </ol>
         <h4>January 29</h4>
         <ol>
             <li>Started implementing purchase request features</li>

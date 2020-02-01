@@ -98,7 +98,7 @@ class ManageItems extends React.Component {
         event.preventDefault();
 
         this.setState({ queried: true });
-        this.props.fetchItems(this.state.serachTerm);
+        this.props.fetchItems(this.state.searchTerm);
     }
 
     renderItems(){

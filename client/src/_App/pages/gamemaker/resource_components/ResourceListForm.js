@@ -55,7 +55,7 @@ class ResourceListForm extends React.Component {
         this.setState({ type: event.target.value });
     }
     handleMaxUses(event){
-        this.setState({ method: event.target.value });
+        this.setState({ maxUses: event.target.value });
     }
     handleNotes(event){
         this.setState({ notes: event.target.value });
@@ -73,12 +73,12 @@ class ResourceListForm extends React.Component {
         }
 
         const resourceItem = {
-            code: this.state.code,
+            code: this.state.code.toLowerCase(),
             type: this.state.type,
             timesUsed: this.state.timesUsed,
             maxUses: this.state.maxUses,
             usedBy: this.state.usedBy,
-            notes: this.state.notes
+            notes: this.state.notes.replace(/'/g, '')
         };
         if (!resourceItem.notes.replace(/\s/g, '').length) {
             resourceItem.notes = 'none';

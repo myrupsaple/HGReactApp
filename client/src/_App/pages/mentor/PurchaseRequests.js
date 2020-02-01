@@ -14,7 +14,7 @@ import {
 import ViewDetails from './purchase_components/ViewDetails';
 import PurchaseForm from './purchase_components/PurchaseForm';
 import ApprovalForm from './purchase_components/ApprovalForm';
-import DeleteModal from '../gamemaker/shared_components/DeleteModal';
+import DeleteRequest from './purchase_components/DeleteRequest';
 
 
 class PurchaseRequests extends React.Component {
@@ -115,7 +115,7 @@ class PurchaseRequests extends React.Component {
                 {this.state.displayMode === 'pending' ? 'Show Processed Requests' : 'Show Pending Requests'}
             </Button>
         );
-        if(this.props.userPerms !== 'mentor' && this.props.userPerms !== 'owner'){
+        if(this.props.userPerms !== 'mentor'){
             return(
                 <>
                     {switchModes}
@@ -362,9 +362,8 @@ class PurchaseRequests extends React.Component {
             );
         } else if(this.state.showDelete){
             return(
-                <DeleteModal 
-                    id={this.state.selectedId} actionType="Purchase Request" 
-                    onConfirm={this.props.deletePurchaseRequest}
+                <DeleteRequest 
+                    id={this.state.selectedId}
                     onSubmitCallback={this.onSubmitCallback} 
                 />
             );

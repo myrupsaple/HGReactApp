@@ -26,7 +26,7 @@ class ResourceList extends React.Component {
                 payload: null
             },
             queried: false,
-            searchType: 'Resource Code',
+            searchType: 'code',
             searchTerm: '',
             filterByUses: 'all',
             filterByType: 'all',
@@ -365,6 +365,17 @@ class ResourceList extends React.Component {
         if(filterType !== 'all'){
             resourceList = resourceList.filter(resource => resource.type === filterType);
         }
+
+        resourceList.sort((a, b) => {
+            if(a.code > b.code){
+                return 1;
+            } else if(a.code < b.code){
+                return -1;
+            } else {
+                return 0;
+            }
+        });
+
         return(
             <>
             <ul className="list-group">
