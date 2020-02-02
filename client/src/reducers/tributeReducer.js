@@ -12,6 +12,7 @@ export default (state = {}, action) => {
                 first_name: tribute.first_name,
                 last_name: tribute.last_name,
                 email: tribute.email,
+                phone: tribute.phone,
                 district: tribute.district,
                 districtPartner: tribute.districtPartner_email,
                 area: tribute.area,

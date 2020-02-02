@@ -25,20 +25,18 @@ class PurchaseForm extends React.Component{
             payer_email: '',
             receiver_email: '',
             category: '',
-            item: '',
             item_name: '',
             item_id: '',
-            originalCost: 0,
+            amountPaid: 0,
             cost: 100,
             quantity: 1,
-            maxQuantity: 1,
         }
 
         this.handlePayer = this.handlePayer.bind(this);
         this.handleReceiver = this.handleReceiver.bind(this);
-        this.handleCategory = this.handleCategory.bind(this);
-        this.handleItem = this.handleItem.bind(this);
+        this.handleCategoryItem = this.handleCategoryItem.bind(this);
         this.handleQuantity = this.handleQuantity.bind(this);
+        this.handleCost = this.handleCost.bind(this);
     }
 
     componentDidMount = async () => {
@@ -55,7 +53,7 @@ class PurchaseForm extends React.Component{
                     category: purchase.category,
                     item_name: purchase.item_name,
                     item_id: purchase.item_id,
-                    originalCost: purchase.cost,
+                    amountPaid: purchase.cost,
                     cost: purchase.cost,
                     quantity: purchase.quantity
                 })
@@ -78,10 +76,73 @@ class PurchaseForm extends React.Component{
     handleReceiver(event){
         this.setState({ receiver_email: event.target.value });
     }
-    handleCategory(event){
-        this.setState({ category: event.target.value, item: '' });
-    }
+    async handleCategoryItem(event){
+        const input = event.target.value;
+        
+        this.setState({ item_name: '', item_id: '', cost: 0 });
+        // This is here in case the user goes from a selected input to the default
+        // option. Prevents a fetch request with a blank query.
+        if(input === ''){
+            if(event.target.id === 'category'){
+                this.setState({ category: '' });
+            }
+            return;
+        }
 
+        if(input !== 'item'){
+            this.setState({ quantity: 1 });
+        }
+
+        if(input === 'transfer'){
+            this.setState({ category: input, item_name: input, item_id: 0 });
+            return;
+        }
+        
+        // Check whether input requires a secondary input or not ('item' input)
+        if(input === 'resource' || input === 'item'){
+            this.setState({ category: input });
+        } else {
+            // Parse item value if item category is already selected
+            var name = '';
+            var id = '';
+            if(this.state.category === 'item'){
+                [name, id] = input.split('|');
+                this.setState({ item_name: name, item_id: id });
+            } else if(input === 'life' || input === 'immunity'){
+                this.setState({ category: input, item_name: input});
+            } else {
+                this.setState({ item_name: input });
+            }
+
+            switch(input){
+                case 'life':
+                    id = 100;
+                    break;
+                case 'immunity':
+                    id = 200;
+                    break;
+                case 'golden':
+                    id = 300;
+                    break;
+                case 'food':
+                    id = 301;
+                    break;
+                case 'water':
+                    id = 302;
+                    break;
+                case 'medicine':
+                    id = 303;
+                    break;
+                default:
+                    break;
+            }
+            
+            await this.props.fetchItem(id);
+            const item = this.props.selectedItem;
+    
+            this.setState({ item_id: item.id, cost: this.fetchCurrentPrice(item) * this.state.quantity });
+        }
+    }
     // Will only ever be accessed for item and resource purchases
     async handleItem(event){
         const input = event.target.value;
@@ -92,17 +153,24 @@ class PurchaseForm extends React.Component{
                 await this.props.fetchItem(id);
                 this.setState({ item: input, item_name: name, item_id: id });
             } else if(this.state.catagory === 'resource'){
-                const name = '';
-                const id = '';
-                switch(input){
-                    case 'food_resource':
-                        await this.props.fectchItem()
-                }
+                this.handleSpecial(input, 'resource');
             }
         }
     }
     handleQuantity(event){
-        this.setState({ quantity: event.target.value });
+        const input = event.target.value;
+        const cost = (this.state.cost / this.state.quantity) * input ;
+
+        this.setState({ quantity: event.target.value, cost: cost });
+    }
+    // For transfers only
+    handleCost(event){
+        this.setState({ cost: event.target.value });
+    }
+
+    fetchCurrentPrice = (item) => {
+        // TODO: This should return the current cost based on the time
+        return item.tier1_cost;
     }
 
     handleClose = () => {
@@ -113,26 +181,22 @@ class PurchaseForm extends React.Component{
     }
 
     handleSubmit = async () => {
-        if(!this.state.payer_email || !this.state.receiver_email || !this.state.category){
-            return null;
+        console.log(this.state.item_name);
+        if(!this.state.payer_email || !this.state.receiver_email || !this.state.category
+        || !this.state.item_name || !this.state.item_id || !this.state.quantity){
+            alert('All fields are required');
+            return;
         }
-        if(this.state.category === 'item'){
-            if(!this.state.item || !this.state.quantity){
-                return null;
-            }
+
+        if(!this.state.firstConfirm){
+            this.setState({ firstConfirm: true });
+            return;
         }
 
         this.setState({ submitted: true });
 
         const now = new Date();
         const time = now.getHours() * 60 + now.getMinutes();
-
-        if(this.state.category !== 'item'){
-            this.setState({ item: this.state.item, quantity: 1, item_id: 9999 });
-        }
-
-        const [ name, id ] = this.state.item.split('|');
-        const totalCost = this.props.selectedItem.tier1_cost * this.state.quantity;
 
         const purchaseRequest = {
             time: time,
@@ -141,9 +205,9 @@ class PurchaseForm extends React.Component{
             payer_email: this.state.payer_email,
             receiver_email: this.state.receiver_email,
             category: this.state.category,
-            item_name: name,
-            item_id: id,
-            cost: totalCost,
+            item_name: this.state.item_name,
+            item_id: this.state.item_id,
+            cost: this.state.cost,
             quantity: this.state.quantity
         }
 
@@ -154,11 +218,12 @@ class PurchaseForm extends React.Component{
             await this.props.createPurchaseRequest(purchaseRequest);
         }
 
+        // No need to update the 'special items' quantity since they should never run out
         if(this.state.category === 'item'){
-            this.props.purchaseUpdateItemQuantity(this.state.item_id, this.state.quantity);
+            this.props.purchaseUpdateItemQuantity(this.state.item_id, this.state.quantity * -1);
         }
 
-        this.props.purchaseUpdateFunds(this.state.payer_email, totalCost - this.state.originalCost);
+        this.props.purchaseUpdateFunds(this.state.payer_email, (this.state.cost - this.state.amountPaid) * -1);
 
         setTimeout(() => this.handleClose(), 1000)
     }
@@ -182,8 +247,20 @@ class PurchaseForm extends React.Component{
             const message = this.props.mode === 'edit' ? 'edited' : 'created';
             return <h3>Purchase request {message} successfully!</h3>
         } else if(this.state.firstConfirm){
-            const totalCost = this.props.selectedItem.tier1_cost * this.state.quantity;
-            const diff = totalCost - this.state.originalCost;
+            if(this.state.category === 'transfer'){
+                const payingTribute = this.getTributeName(this.state.payer_email);
+                const receivingTribute = this.getTributeName(this.state.receiver_email);
+                return(
+                    <h5>
+                        ${this.state.cost} will be transferred from {payingTribute}
+                        &nbsp;to {receivingTribute} if the request is approved. {payingTribute}
+                        will be charged ${this.state.cost} to hold the request.
+                    </h5>
+                );
+            }
+
+            const totalCost = this.fetchCurrentPrice(this.props.selectedItem) * this.state.quantity;
+            const diff = totalCost - this.state.amountPaid;
             const purchasingTribute = this.getTributeName(this.state.payer_email);
 
             var message = '';
@@ -196,7 +273,7 @@ class PurchaseForm extends React.Component{
                 extraText = `${purchasingTribute} will not be charged again.`
             }
             if(this.props.mode === 'edit'){
-                message = `The request you are editing had a previous total of $${this.state.originalCost}.
+                message = `The request you are editing had a previous total of $${this.state.amountPaid}.
                 Your new request has a total of $${totalCost}. ${extraText}`;
             } else {
                 message = `${purchasingTribute} will be charged $${totalCost} for this transaction upon submit.
@@ -280,7 +357,7 @@ class PurchaseForm extends React.Component{
                         <Form.Label>Select a Category...</Form.Label>
                         <Form.Control
                             value={this.state.category}
-                            onChange={this.handleCategory}
+                            onChange={this.handleCategoryItem}
                             as="select"
                         >
                             {this.renderCategoryChoices()}
@@ -333,28 +410,41 @@ class PurchaseForm extends React.Component{
     renderItemMenu = (category) => {
         var message = null;
 
-        if(category === 'item'){
+        if(category === 'transfer'){
+            message = 'Enter Transfer Amount'
+        } else if(category === 'item'){
             message = 'Select Item'
         } else if(category === 'resource'){
-            message = 'Select Resource Category'
+            message = 'Select Resource Type'
         } else {
             return null;
         }
 
-        return(
-            <Form.Row>
-                <div className="col-12"><Form.Group controlId="item">
-                    <Form.Label>{message}</Form.Label>
-                    <Form.Control
-                        value={this.state.item}
-                        onChange={this.handleItem}
-                        as="select"
-                    >
-                        {this.renderItemChoices(category)}
-                    </Form.Control>
+        if(category === 'transfer'){
+            return(<Form.Row>
+                <div className="col-6"><Form.Group controlId="amount">
+                        <Form.Label>{message}</Form.Label>
+                        <Form.Control value={this.state.cost}
+                            onChange={this.handleCost}
+                        />
                 </Form.Group></div>
-            </Form.Row>
-        );
+            </Form.Row>)
+        } else {
+            return(
+                <Form.Row>
+                    <div className="col-12"><Form.Group controlId="item">
+                        <Form.Label>{message}</Form.Label>
+                        <Form.Control
+                            value={this.state.item}
+                            onChange={this.handleCategoryItem}
+                            as="select"
+                        >
+                            {this.renderItemChoices(category)}
+                        </Form.Control>
+                    </Form.Group></div>
+                </Form.Row>
+            );
+        }
     }
     
     renderItemChoices = (category) => {
@@ -365,10 +455,15 @@ class PurchaseForm extends React.Component{
                     <option value="">Please choose an item...</option>
                     {items.map(item => {
                         // ID >= 1000 reserved for special items (lives, resources, etc.)
-                        if(item.id < 1000){ return null; }
-                    return(
-                        <option key={item.id} value={`${item.item_name}|${item.id}`}>{item.item_name}: "{item.description}" (${item.tier1_cost} each) </option>
-                    );
+                        if(item.id < 1000) return null;
+                        else {
+                            return(
+                            <option key={item.id} 
+                                value={`${item.item_name}|${item.id}`}>
+                                {item.item_name}: "{item.description}" (${this.fetchCurrentPrice(item)} each)
+                            </option>
+                            );
+                        }
                     })}
                 </>
             );
@@ -376,10 +471,10 @@ class PurchaseForm extends React.Component{
             return(
                 <>
                     <option value="">Please choose a resource...</option>
-                    <option value="food_resource">Food</option>
-                    <option value="water_resource">Water</option>
-                    <option value="medicine_resource">Medicine</option>
-                    <option value="golden_resource">Golden</option>
+                    <option value="food">Food</option>
+                    <option value="water">Water</option>
+                    <option value="medicine">Medicine</option>
+                    <option value="golden">Golden</option>
                 </>
             );
         }
@@ -387,7 +482,7 @@ class PurchaseForm extends React.Component{
 
     renderQuantityChoices(category){
         // The third check ensures that selectedItem is loaded
-        if(category !== 'item' || this.state.item === '' || Object.keys(this.props.selectedItem).length === 0){
+        if(category !== 'item' || this.state.item_id === '' || Object.keys(this.props.selectedItem).length === 0){
             return null;
         }
         const choices = [];
@@ -429,7 +524,7 @@ class PurchaseForm extends React.Component{
         } else {
             return(
                 <>
-                <Button onClick={() => this.setState({ firstConfirm: true })} variant="info">
+                <Button onClick={this.handleSubmit} variant="info">
                     Confirm
                 </Button>
                 <Button onClick={this.handleClose} variant="danger">

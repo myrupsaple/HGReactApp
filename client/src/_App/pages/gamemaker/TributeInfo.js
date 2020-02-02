@@ -132,6 +132,7 @@ class TributeAccountInfo extends React.Component {
                             <div className="row">
                                 <div className="col">{tribute.first_name} {tribute.last_name}</div>
                                 <div className="col">{tribute.email}</div>
+                                <div className="col">{tribute.phone}</div>
                                 <div className="col">{tribute.district}</div>
                                 <div className="col">{this.formatArea(tribute.area)}</div>
                                 <div className="col">{this.renderAdmin(tribute)}</div>
@@ -180,6 +181,7 @@ class TributeAccountInfo extends React.Component {
         <h5 className="row">
             <div className="col">Tribute Name</div>
             <div className="col">Email</div>
+            <div className="col">Phone Number</div>
             <div className="col">District</div>
             <div className="col">Area</div>
             <div className="col"></div>

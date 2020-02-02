@@ -95,40 +95,46 @@ connection.connect(async (err) => {
 
         const createUsers = `CREATE TABLE users(
             id INT PRIMARY KEY AUTO_INCREMENT,
-            first_name VARCHAR(20) NOT NULL,
-            last_name VARCHAR(20) NOT NULL,
-            email VARCHAR(40) NOT NULL,
-            permissions VARCHAR(10) NOT NULL
+            first_name VARCHAR(20),
+            last_name VARCHAR(20),
+            email VARCHAR(40),
+            permissions VARCHAR(10)
         )`;
 
         const createTributes = `CREATE TABLE tributes(
             id INT PRIMARY KEY AUTO_INCREMENT,
-            first_name VARCHAR(20) NOT NULL,
-            last_name VARCHAR(20) NOT NULL,
-            email VARCHAR(40) NOT NULL,
-            district TINYINT NOT NULL,
+            first_name VARCHAR(20),
+            last_name VARCHAR(20),
+            email VARCHAR(40),
+            phone VARCHAR(12),
+            district TINYINT,
             districtPartner_email VARCHAR(40),
-            area VARCHAR(15) NOT NULL,
+            area VARCHAR(15),
             mentor_email VARCHAR(40),
             paid_registration TINYINT(1)
         )`;
 
         const createTributeStats = `CREATE TABLE tribute_stats(
             id INT PRIMARY KEY AUTO_INCREMENT,
-            first_name VARCHAR(20) NOT NULL,
-            last_name VARCHAR(20) NOT NULL,
-            email VARCHAR(40) NOT NULL,
-            funds_remaining INT NOT NULL,
-            lives_remaining TINYINT NOT NULL,
-            food_resources TINYINT NOT NULL,
-            water_resources TINYINT NOT NULL,
-            medicine_resources TINYINT NOT NULL,
-            roulette_resources TINYINT NOT NULL,
-            life_resources TINYINT NOT NULL,
-            lives_starting TINYINT NOT NULL,
-            lives_purchased TINYINT NOT NULL,
-            lives_lost TINYINT NOT NULL,
-            kill_count TINYINT NOT NULL
+            first_name VARCHAR(20),
+            last_name VARCHAR(20),
+            email VARCHAR(40),
+            funds_remaining INT DEFAULT 0,
+            total_donations INT DEFAULT 0,
+            total_purchases INT DEFAULT 0,
+            food_used TINYINT DEFAULT 0,
+            food_missed TINYINT DEFAULT 0,
+            water_used TINYINT DEFAULT 0,
+            water_missed TINYINT DEFAULT 0,
+            medicine_used TINYINT DEFAULT 0,
+            medicine_missed TINYINT DEFAULT 0,
+            roulette_used TINYINT DEFAULT 0,
+            lives_remaining TINYINT DEFAULT 1,
+            life_resources TINYINT DEFAULT 0,
+            lives_starting TINYINT DEFAULT 1,
+            lives_purchased TINYINT DEFAULT 0,
+            lives_lost TINYINT DEFAULT 0,
+            kill_count TINYINT DEFAULT 0
         )`;
 
         const createDonations = `CREATE TABLE donations(
@@ -455,14 +461,26 @@ app.get('/tribute/info/get/:email', (req, res) =>{
 })
 
 // CREATE_TRIBUTE
-app.post('/tribute/info/post/:firstname/:lastname/:email/:district/:partneremail/:area/:mentoremail/:paidreg', (req, res) => {
-    const { firstname, lastname, email, district, partneremail, area, mentoremail, paidreg } = req.params;
-    const queryStringCreateTribute = `INSERT INTO tributes (first_name, last_name, email, district,
+app.post('/tribute/info/post/:firstname/:lastname/:email/:phone/:district/:partneremail/:area/:mentoremail/:paidreg', (req, res) => {
+    const { firstname, lastname, email, phone, district, partneremail, area, mentoremail, paidreg } = req.params;
+    const queryStringCreateTribute = `INSERT INTO tributes (first_name, last_name, email, phone, district,
         districtPartner_email, area, mentor_email, paid_registration) VALUES ("${firstname}", 
-        "${lastname}", "${email}", "${district}", "${partneremail}", "${area}", 
+        "${lastname}", "${email}", "${phone}", "${district}", "${partneremail}", "${area}", 
         "${mentoremail}", "${paidreg}")`;
     console.log(queryStringCreateTribute);
     connection.query(queryStringCreateTribute, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for tributes: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+    });
+
+    const queryStringInsertTributeStats = `INSERT INTO tribute_stats (first_name, last_name,
+        email) VALUES ('${firstname}', '${lastname}', '${email}')`;
+    console.log(queryStringInsertTributeStats);
+    connection.query(queryStringInsertTributeStats, (err, rows, fields) => {
         if(err){
             console.log('Failed to query for tributes: ' + err);
             res.sendStatus(500);
@@ -477,14 +495,27 @@ app.post('/tribute/info/post/:firstname/:lastname/:email/:district/:partneremail
 })
 
 // UPDATE_TRIBUTE
-app.put('/tribute/info/put/:id/:firstname/:lastname/:email/:district/:partneremail/:area/:mentoremail/:paidreg', (req, res) => {
-    const { id, firstname, lastname, email, district, partneremail, area, mentoremail, paidreg } = req.params;
+app.put('/tribute/info/put/:id/:firstname/:lastname/:email/:phone/:district/:partneremail/:area/:mentoremail/:paidreg', (req, res) => {
+    const { id, firstname, lastname, email, phone, district, partneremail, area, mentoremail, paidreg } = req.params;
     const queryStringUpdateTribute = `UPDATE tributes SET first_name = "${firstname}",
-        last_name = "${lastname}", email = "${email}", district = "${district}",
+        last_name = "${lastname}", email = "${email}", phone = "${phone}", district = "${district}",
         districtPartner_email = "${partneremail}", area = "${area}", mentor_email ="${mentoremail}", 
         paid_registration = "${paidreg}" WHERE id = ${id}`;
     console.log(queryStringUpdateTribute);
     connection.query(queryStringUpdateTribute, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for tributes: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+    });
+
+
+    const queryStringUpdateTributeStats = `UPDATE tribute_stats SET first_name = "${firstname}",
+    last_name = "${lastname}", email = "${email}" WHERE id = ${id}`;
+    console.log(queryStringUpdateTributeStats);
+    connection.query(queryStringUpdateTributeStats, (err, rows, fields) => {
         if(err){
             console.log('Failed to query for tributes: ' + err);
             res.sendStatus(500);
@@ -641,6 +672,26 @@ app.put(`/donations/put/:id/:email/:donor/:method/:date/:amount/:tags`, (req, re
 app.delete(`/donations/delete/:id`, (req, res) => {
     const id = req.params.id;
     const queryStringUpdateDonation = `DELETE FROM donations WHERE id = ${id}`
+    console.log(queryStringUpdateDonation);
+    connection.query(queryStringUpdateDonation, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for donations: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// UPDATE_TRIBUTE_STATS_DONATION
+app.put(`/tribute-stats/donations/put/:email/:amount`, (req, res) => {
+    const { email, amount } = req.params;
+    const queryStringUpdateDonation = `UPDATE tribute_stats SET funds_remaining = funds_remaining + ${amount},
+    total_donations = total_donations + ${amount} WHERE email = '${email}'`;
     console.log(queryStringUpdateDonation);
     connection.query(queryStringUpdateDonation, (err, rows, fields) => {
         if(err){
@@ -1373,7 +1424,7 @@ app.put(`/purchases/tribute-stats/update-funds/put/:email/:amount`, (req, res) =
 // UPDATE_ITEM_QUANTITY
 app.put(`/purchases/items/put/:id/:quantity`, (req, res) => {
     const { id, quantity } = req.params;
-    const queryStringUpdateItemQuantity = `UPDATE item_list SET quantity = quantity - ${quantity} WHERE id = ${id}`;
+    const queryStringUpdateItemQuantity = `UPDATE item_list SET quantity = quantity + ${quantity} WHERE id = ${id}`;
     console.log(queryStringUpdateItemQuantity);
     connection.query(queryStringUpdateItemQuantity, (err, rows, fields) => {
         if(err){
@@ -1390,11 +1441,11 @@ app.put(`/purchases/items/put/:id/:quantity`, (req, res) => {
 })
 
 // INSERT_LIFE_EVENT
-app.post(`/purchases/life-events/post/:email/:type/:method/:time/:notes`, (req, res) => {
-    const { email, type, method, time, notes } = req.params;
+app.post(`/purchases/life-events/post/:email/:time`, (req, res) => {
+    const { email, time } = req.params;
     const queryStringInsertLifeEvent = `INSERT INTO life_events (tribute_email, type,
-        method, time, notes) VALUES ('${email}', '${type}', '${method}', 
-        ${time}, '${notes}')`;
+        method, time, notes) VALUES ('${email}', 'gained', 'purchased', 
+        ${time}, 'Purchased life')`;
     console.log(queryStringInsertLifeEvent);
     connection.query(queryStringInsertLifeEvent, (err, rows, fields) => {
         if(err){
@@ -1431,12 +1482,11 @@ app.put(`/purchases/tribute-stats/lives/put/:email`, (req, res) => {
 })
 
 // INSERT_RESOURCE_EVENT
-app.post(`/purchases/resources/post/:email/:type/:time/:notes`, (req, res) => {
-    const { email, type, time, notes } = req.params;
-    const method = 'purchased';
+app.post(`/purchases/resources/post/:email/:type/:time`, (req, res) => {
+    const { email, type, time } = req.params;
     const queryStringInsertResourceEvent = `INSERT INTO resource_events (tribute_email, type,
-        method, time, notes) VALUES ('${email}', '${type}', '${method}', 
-        ${time}, '${notes}')`;
+        method, time, notes) VALUES ('${email}', '${type}', 'purchased', 
+        ${time}, 'Purchased ${type} resource')`;
     console.log(queryStringInsertResourceEvent);
     connection.query(queryStringInsertResourceEvent, (err, rows, fields) => {
         if(err){

@@ -5,7 +5,10 @@ import { Button, Modal } from 'react-bootstrap';
 import {
     fetchPurchaseRequest,
     purchaseUpdateStatus,
-    purchaseUpdateFunds
+    purchaseUpdateFunds,
+    purchaseUpdateItemQuantity,
+    purchaseCreateResourceEvent,
+    purchaseCreateLifeEvent
 } from '../../../../actions';
 
 class ApprovalForm extends React.Component{
@@ -90,23 +93,19 @@ class ApprovalForm extends React.Component{
 
         this.props.purchaseUpdateStatus(purchase.id, 'approved');
 
-        if(purchase.type === 'item'){
-            // update item
-            return 1;
-        } else if(purchase.type === 'life'){
-            // update life
-            return 2;
-        } else if(purchase.type === 'resource'){
-            // format secondary
-            // update resources
-            return 3;
-        } else if(purchase.type === 'immunity'){
+        if(purchase.category === 'item'){
+            // Item and funds have already been handled. 
+            return;
+        } else if(purchase.category === 'resource'){
+            this.props.purchaseCreateResourceEvent(purchase.receiver_email, purchase.item_name, purchase.time);
+        } else if(purchase.category === 'life'){
+            // TODO: Later on, update tribute_stats appropriately
+            this.props.purchaseCreateLifeEvent(purchase.receiver_email, purchase.time);
+        } else if(purchase.category === 'immunity'){
             // update immunity
             return 4;
-        } else if(purchase.type === 'transfer'){
-            // add funds
-            // remove funds
-            return 5;
+        } else if(purchase.category === 'transfer'){
+            this.props.purchaseUpdateFunds(purchase.receiver_email, purchase.cost);
         }
     }
 
@@ -115,8 +114,12 @@ class ApprovalForm extends React.Component{
             this.setState({ submitted: true, status: 'denied' });
         }
 
-        this.props.purchaseUpdateStatus(this.props.purchase.id, 'denied');
-        const amount = this.props.purchase.cost * this.props.purchase.quantity * -1;
+        if(this.props.purchase.category === 'item'){
+            this.props.purchaseUpdateItemQuantity(this.props.purchase.item_id, this.props.purchase.quantity)
+        } 
+
+        this.props.purchaseUpdateStatus(this.props.id, 'denied');
+        const amount = this.props.purchase.cost * this.props.purchase.quantity;
         console.log(amount);
         this.props.purchaseUpdateFunds(this.props.purchase.payer_email, amount);
         setTimeout(() => this.handleClose(), 1000);
@@ -171,5 +174,8 @@ export default connect(mapStateToProps,
     { 
         fetchPurchaseRequest,
         purchaseUpdateStatus,
-        purchaseUpdateFunds
+        purchaseUpdateFunds,
+        purchaseUpdateItemQuantity,
+        purchaseCreateResourceEvent,
+        purchaseCreateLifeEvent
     })(ApprovalForm);

@@ -3,7 +3,12 @@ import { connect } from 'react-redux';
 import { Form, Button, Modal } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 
-import { fetchDonation, createDonation, updateDonation } from '../../../../actions';
+import { 
+    fetchDonation, 
+    createDonation, 
+    updateDonation,
+    donationUpdateTributeStats
+} from '../../../../actions';
 
 class DonationForm extends React.Component {
     _isMounted = false;
@@ -21,6 +26,7 @@ class DonationForm extends React.Component {
             method: '',
             date: `${year}-${month}-${day}`,
             dateFormatted: `${month}-${day}-${year}`,
+            originalAmount: '',
             amount: '',
             tags: '',
             showModal: true,
@@ -39,18 +45,21 @@ class DonationForm extends React.Component {
         this._isMounted = true;
         if(this.props.mode === 'edit'){
             await this.props.fetchDonation(this.props.id);
+
+            const donation = this.props.donation;
             
-            var [year, month, day] = this.props.donation.date.split('-');
+            var [year, month, day] = donation.date.split('-');
             day = day.split('T')[0];
             if(this._isMounted){
                 this.setState({
-                    tribute_email: this.props.donation.tribute_email,
-                    donor_name: this.props.donation.donor_name,
+                    tribute_email: donation.tribute_email,
+                    donor_name: donation.donor_name,
                     date: `${year}-${month}-${day}`,
                     dateFormatted: `${month}-${day}-${year}`,
-                    method: this.props.donation.method,
-                    amount: this.props.donation.amount,
-                    tags: this.props.donation.tags
+                    method: donation.method,
+                    originalAmount: donation.amount,
+                    amount: donation.amount,
+                    tags: donation.tags
                 })
             }
         }
@@ -109,6 +118,9 @@ class DonationForm extends React.Component {
         } else if(this.props.mode === 'create'){
             this.props.createDonation(donationObject);
         }
+
+        this.props.donationUpdateTributeStats(this.state.tribute_email, this.state.amount - this.state.originalAmount);
+
         setTimeout(() => this.handleClose(), 1000);
     }
 
@@ -263,5 +275,8 @@ const mapStateToProps = state => {
 }
 
 export default connect(mapStateToProps, { 
-    fetchDonation, createDonation, updateDonation 
+    fetchDonation, 
+    createDonation, 
+    updateDonation,
+    donationUpdateTributeStats
 })(DonationForm);

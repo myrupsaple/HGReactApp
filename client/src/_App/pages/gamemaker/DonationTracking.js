@@ -8,15 +8,15 @@ import { setNavBar } from '../../../actions';
 import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components/AuthMessages';
 import Wait from '../../../components/Wait';
 import { 
+    fetchDonation,
     fetchDonations, 
     fetchAllDonations,
     fetchDonationsRange,
-    deleteDonation,
     fetchTributes,
     clearDonationsList
 } from '../../../actions';
-import DonationForm from './donations_components/DonationForm';
-import DeleteModal from './shared_components/DeleteModal';
+import DonationForm from './donation_components/DonationForm';
+import DeleteDonation from './donation_components/DeleteDonation';
 
 class ManageFunds extends React.Component {
     _isMounted = false;
@@ -453,8 +453,7 @@ class ManageFunds extends React.Component {
         } else if(this.state.showEdit) {
             return <DonationForm tributes={this.props.tributes} id={this.state.selectedId} mode="edit" onSubmitCallback={this.onSubmitCallback}/>;
         } else if(this.state.showDelete){
-            return <DeleteModal id={this.state.selectedId} actionType="Donation" 
-            onConfirm={this.props.deleteDonation}
+            return <DeleteDonation id={this.state.selectedId} actionType="Donation" 
             onSubmitCallback={this.onSubmitCallback} />
         }
     }
@@ -499,7 +498,6 @@ const mapStateToProps = state => {
         authLoaded: state.auth.loaded,
         isSignedIn: state.auth.isSignedIn,
         userPerms: state.auth.userPerms,
-        donation: state.selectedDonation,
         donations: Object.values(state.donations),
         tributes: Object.values(state.tributes)
     }
@@ -508,10 +506,10 @@ const mapStateToProps = state => {
 export default connect(mapStateToProps, 
     { 
         setNavBar,
+        fetchDonation,
         fetchDonations, 
         fetchAllDonations,
         fetchDonationsRange,
-        deleteDonation,
         fetchTributes,
         clearDonationsList
     })(ManageFunds);

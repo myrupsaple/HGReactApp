@@ -216,7 +216,7 @@ class ResourceEventForm extends React.Component {
             <option value="">Please Select a Tribute...</option>
             {this.props.tributes.map(tribute => {
                 return (
-                <option key={tribute.id} value={`{tribute.first_name} {tribute.last_name} || {tribute.email}`}>
+                <option key={tribute.id} value={`${tribute.first_name} ${tribute.last_name} || ${tribute.email}`}>
                     {tribute.first_name} {tribute.last_name} || {tribute.email}
                 </option>
                 );
@@ -244,7 +244,8 @@ class ResourceEventForm extends React.Component {
         }
     }
 
-    render(){
+    render = () => {
+        console.log(this.state);
         return(
             <Modal show={this.state.showModal} onHide={this.handleClose}>
                 <Modal.Header>

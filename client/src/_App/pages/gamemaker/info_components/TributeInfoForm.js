@@ -14,6 +14,7 @@ class TributeInfoForm extends React.Component {
             first_name: '',
             last_name: '',
             email: '',
+            phone: '',
             district: 1,
             districtPartner: '',
             area: 'dank_denykstra',
@@ -26,6 +27,7 @@ class TributeInfoForm extends React.Component {
         this.handleFirstName = this.handleFirstName.bind(this);
         this.handleLastName = this.handleLastName.bind(this);
         this.handleEmail = this.handleEmail.bind(this);
+        this.handlePhone = this.handlePhone.bind(this);
         this.handleDistrict = this.handleDistrict.bind(this);
         this.handleDistrictPartner = this.handleDistrictPartner.bind(this);
         this.handleArea = this.handleArea.bind(this);
@@ -45,6 +47,7 @@ class TributeInfoForm extends React.Component {
                 first_name: this.props.payload.first_name,
                 last_name: this.props.payload.last_name,
                 email: this.props.payload.email,
+                phone: this.props.payload.phone,
                 district: this.props.payload.district,
                 districtPartner: this.props.payload.districtPartner,
                 area: this.props.payload.area,
@@ -61,19 +64,22 @@ class TributeInfoForm extends React.Component {
         this.setState({ last_name: event.target.value });
     }
     handleEmail(event) {
-        this.setState({ email: event.target.value });
+        this.setState({ email: event.target.value.toLowerCase() });
+    }
+    handlePhone(event) {
+        this.setState({ phone: event.target.value.replace(/\D/g,'') });
     }
     handleDistrict(event) {
         this.setState({ district: event.target.value });
     }
     handleDistrictPartner(event) {
-        this.setState({ districtPartner: event.target.value });
+        this.setState({ districtPartner: event.target.value.toLowerCase() });
     }
     handleArea(event) {
         this.setState({ area: event.target.value });
     }
     handleMentor(event) {
-        this.setState({ mentor: event.target.value });
+        this.setState({ mentor: event.target.value.toLowerCase() });
     }
     handlePaidRegistration(event) {
         this.setState({ paidRegistration: event.target.value });
@@ -107,8 +113,17 @@ class TributeInfoForm extends React.Component {
                 <Form.Row>
                     <div className="col-12"><Form.Group controlId="email">
                         <Form.Label>Email</Form.Label>
-                        <Form.Control value={this.state.email}
+                        <Form.Control defaultValue={this.state.email}
                             onChange={this.handleEmail}
+                            autoComplete="off"
+                        />
+                    </Form.Group></div>
+                </Form.Row>
+                <Form.Row>
+                    <div className="col-12"><Form.Group controlId="phone">
+                        <Form.Label>Phone Number</Form.Label>
+                        <Form.Control defaultValue={this.state.phone}
+                            onChange={this.handlePhone}
                             autoComplete="off"
                         />
                     </Form.Group></div>
@@ -116,7 +131,7 @@ class TributeInfoForm extends React.Component {
                 <Form.Row>
                     <div className="col-12"><Form.Group controlId="partner-email">
                         <Form.Label>District Partner Email</Form.Label>
-                        <Form.Control value={this.state.districtPartner}
+                        <Form.Control defaultValue={this.state.districtPartner}
                             onChange={this.handleDistrictPartner}
                             autoComplete="off"
                         />
@@ -125,7 +140,7 @@ class TributeInfoForm extends React.Component {
                 <Form.Row>
                     <div className="col-12"><Form.Group controlId="mentor-email">
                         <Form.Label>Mentor Email</Form.Label>
-                        <Form.Control value={this.state.mentor}
+                        <Form.Control defaultValue={this.state.mentor}
                             onChange={this.handleMentor}
                             autoComplete="off"
                         />
@@ -196,8 +211,8 @@ class TributeInfoForm extends React.Component {
 
     handleFormSubmit = () => {
         const validated = (this.state.first_name && this.state.last_name && this.state.email && 
-            this.state.district && this.state.districtPartner && this.state.area && 
-            this.state.mentor);
+            this.state.phone && this.state.district && this.state.districtPartner && 
+            this.state.area && this.state.mentor);
         if(!validated){
             alert('All fields must be filled in');
             return;
@@ -209,6 +224,7 @@ class TributeInfoForm extends React.Component {
             first_name: this.state.first_name,
             last_name: this.state.last_name,
             email: this.state.email,
+            phone: this.state.phone,
             district: this.state.district,
             districtPartner: this.state.districtPartner,
             area: this.state.area,

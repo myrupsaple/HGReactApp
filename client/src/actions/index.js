@@ -244,7 +244,7 @@ export const fetchTributes = () => async dispatch => {
 
 export const createTribute = tribute => async dispatch => {
     console.log('Actions: Create tribute initiated');
-    await app.post(`/tribute/info/post/${tribute.first_name}/${tribute.last_name}/${tribute.email}/${tribute.district}/${tribute.districtPartner}/${tribute.area}/${tribute.mentor}/${tribute.paidRegistration}`)
+    await app.post(`/tribute/info/post/${tribute.first_name}/${tribute.last_name}/${tribute.email}/${tribute.phone}/${tribute.district}/${tribute.districtPartner}/${tribute.area}/${tribute.mentor}/${tribute.paidRegistration}`)
         .then(res => {
             console.log(`Successfully created tribute ${tribute.email}`);
         })
@@ -255,7 +255,7 @@ export const createTribute = tribute => async dispatch => {
 
 export const updateTribute = tribute => async dispatch => {
     console.log('Actions: Update tribute initiated');
-    await app.put(`/tribute/info/put/${tribute.id}/${tribute.first_name}/${tribute.last_name}/${tribute.email}/${tribute.district}/${tribute.districtPartner}/${tribute.area}/${tribute.mentor}/${tribute.paidRegistration}`)
+    await app.put(`/tribute/info/put/${tribute.id}/${tribute.first_name}/${tribute.last_name}/${tribute.email}/${tribute.phone}/${tribute.district}/${tribute.districtPartner}/${tribute.area}/${tribute.mentor}/${tribute.paidRegistration}`)
         .then(res => {
             console.log(`Successfully updated tribute ${tribute.email}`);
         })
@@ -382,6 +382,17 @@ export const deleteDonation = id => async dispatch => {
 
 export const clearDonationsList = () => async dispatch => {
     dispatch({ type: CLEAR_DONATIONS_QUEUE });
+}
+
+export const donationUpdateTributeStats = (email, amount) => async dispatch => {
+    console.log('Actions: Donations: Update tribute stats');
+    await app.put(`/tribute-stats/donations/put/${email}/${amount}`)
+        .then(res => {
+            console.log(`Successfully updated tribute stats with donation`);
+        })
+        .catch(err => {
+            console.log(err);
+        });
 }
 
 //############################ (4a) Resource List ############################//
@@ -957,11 +968,9 @@ export const purchaseUpdateItemQuantity = (id, quantity) => async dispatch => {
         });
 }
 
-export const purchaseCreateLifeEvent = (email, time, notes) => async dispatch => {
+export const purchaseCreateLifeEvent = (email, time) => async dispatch => {
     console.log(`Actions: Purchases: Create Life Event`);
-    const type = 'gained';
-    const method = 'purchased';
-    await app.post(`/purchases/life-events/post/${email}/${type}/${method}/${time}/${notes}`)
+    await app.post(`/purchases/life-events/post/${email}/${time}`)
         .then(res => {
             console.log('Successfully created life event');
         })
@@ -981,10 +990,10 @@ export const purchaseUpdateTributeLives = (email) => async dispatch => {
         });
 }
 
-export const purchaseCreateResourceEvent = (email, type, time, notes) => async dispatch => {
+export const purchaseCreateResourceEvent = (email, type, time) => async dispatch => {
     console.log(`Actions: Purchases: Create resource event`);
 
-    await app.post(`/purchases/resources/post/${email}/${type}/${time}/${notes}`)
+    await app.post(`/purchases/resources/post/${email}/${type}/${time}`)
         .then(res => {
             console.log('Successfully created resource event');
         })

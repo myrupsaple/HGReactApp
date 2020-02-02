@@ -23,6 +23,7 @@ class TributeDetails extends React.Component {
                 first_name: this.props.tribute.first_name,
                 last_name: this.props.tribute.last_name,
                 email: this.props.email,
+                phone: this.props.tribute.phone,
                 district: this.props.tribute.district,
                 districtPartner: this.props.tribute.districtPartner,
                 area: this.props.tribute.area,
@@ -51,6 +52,7 @@ class TributeDetails extends React.Component {
             <div style={{ marginLeft: "20px" }}>
                 <div className="row"><span className="font-weight-bold">Name:</span><span>&nbsp;{this.state.first_name} {this.state.last_name}</span></div>
                 <div className="row"><span className="font-weight-bold">Email:</span><span>&nbsp;{this.state.email}</span></div>
+                <div className="row"><span className="font-weight-bold">Phone Number:</span><span>&nbsp;{this.state.phone}</span></div>
                 <div className="row"><span className="font-weight-bold">District:</span><span>&nbsp;{this.state.district}</span></div>
                 <div className="row"><span className="font-weight-bold">District Partner:</span><span>&nbsp;{this.state.districtPartner}</span></div>
                 <div className="row"><span className="font-weight-bold">Area:</span><span>&nbsp;{this.formatArea(this.state.area)}</span></div>
@@ -110,6 +112,7 @@ class TributeDetails extends React.Component {
                 first_name: this.state.first_name,
                 last_name: this.state.last_name,
                 email: this.state.email,
+                phone: this.state.phone,
                 district: this.state.district,
                 districtPartner: this.state.districtPartner,
                 area: this.state.area,
