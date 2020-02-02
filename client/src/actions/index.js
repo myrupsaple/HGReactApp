@@ -385,7 +385,7 @@ export const clearDonationsList = () => async dispatch => {
 }
 
 export const donationUpdateTributeStats = (email, amount) => async dispatch => {
-    console.log('Actions: Donations: Update tribute stats');
+    console.log('Actions: Donations: Update tribute stats for donations');
     await app.put(`/tribute-stats/donations/put/${email}/${amount}`)
         .then(res => {
             console.log(`Successfully updated tribute stats with donation`);
@@ -715,6 +715,28 @@ export const deleteLifeEvent = (id) => async dispatch => {
 
 export const clearLifeEventsList = () => async dispatch => {
     dispatch({ type: CLEAR_LIFE_EVENTS_QUEUE });
+}
+
+export const lifeEventUpdateTributeStatsLives = (email, type, method, mode) => async dispatch => {
+    console.log('Actions: Donations: Update tribute stats for life events');
+    await app.put(`/tribute-stats/life-events/lives/put/${email}/${type}/${method}/${mode}`)
+        .then(res => {
+            console.log(`Successfully updated tribute stats with life event`);
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const lifeEventUpdateTributeStatsKills = (email, mode) => async dispatch => {
+    console.log('Actions: Donations: Update tribute stats for kill count');
+    await app.put(`/tribute-stats/life-events/kills/put/${email}/${mode}`)
+        .then(res => {
+            console.log(`Successfully updated tribute stats with kill count`);
+        })
+        .catch(err => {
+            console.log(err);
+        });
 }
 
 //############################## (6) Item List ###############################//

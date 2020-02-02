@@ -3,12 +3,13 @@ import { connect } from 'react-redux';
 import { Modal, Button } from 'react-bootstrap';
 
 import { 
-    fetchDonation,
-    deleteDonation, 
-    donationUpdateTributeStats 
+    fetchLifeEvent,
+    deleteLifeEvent, 
+    lifeEventUpdateTributeStatsLives,
+    lifeEventUpdateTributeStatsKills
 } from '../../../../actions';
 
-class DeleteDonation extends React.Component {
+class DeleteLifeEvent extends React.Component {
     // PARAMS: id, description, actionType, onConfirm, onSubmitCallback
     _isMounted = false;
     
@@ -32,11 +33,17 @@ class DeleteDonation extends React.Component {
     }
 
     onConfirm = async () => {
-        await this.props.fetchDonation(this.props.id);
-        const donation = this.props.donation;
+        await this.props.fetchLifeEvent(this.props.id);
+        const lifeEvent = this.props.lifeEvent;
         
-        this.props.donationUpdateTributeStats(donation.tribute_email, donation.amount * -1);
-        this.props.deleteDonation(this.props.id);
+        if(lifeEvent.type === 'combat'){
+            this.props.lifeEventUpdateTributeStatsKills(lifeEvent.tribute_email, 'delete');
+        } else {
+            this.props.lifeEventUpdateTributeStatsLives(
+                lifeEvent.tribute_email, lifeEvent.type, lifeEvent.method, 'delete');
+        }
+
+        this.props.deleteLifeEvent(this.props.id);
 
         if(this._isMounted){
             this.setState({ confirmed: true });
@@ -73,7 +80,7 @@ class DeleteDonation extends React.Component {
         return(
             <Modal show={this.state.showModal} onHide={this.handleClose}>
                 <Modal.Header>
-                    <Modal.Title>Delete Donation</Modal.Title>
+                    <Modal.Title>Delete Life Event</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {this.renderBody()}
@@ -92,13 +99,14 @@ class DeleteDonation extends React.Component {
 
 const mapStateToProps = state => {
     return {
-        donation: state.selectedDonation
+        lifeEvent: state.selectedLifeEvent
     };
 }
 
 export default connect(mapStateToProps, 
     { 
-        fetchDonation,
-        deleteDonation, 
-        donationUpdateTributeStats
-    })(DeleteDonation);
+        fetchLifeEvent,
+        deleteLifeEvent, 
+        lifeEventUpdateTributeStatsLives,
+        lifeEventUpdateTributeStatsKills
+    })(DeleteLifeEvent);

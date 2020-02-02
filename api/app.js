@@ -131,7 +131,7 @@ connection.connect(async (err) => {
             roulette_used TINYINT DEFAULT 0,
             lives_remaining TINYINT DEFAULT 1,
             life_resources TINYINT DEFAULT 0,
-            lives_starting TINYINT DEFAULT 1,
+            lives_exempt TINYINT DEFAULT 1,
             lives_purchased TINYINT DEFAULT 0,
             lives_lost TINYINT DEFAULT 0,
             kill_count TINYINT DEFAULT 0
@@ -1111,6 +1111,91 @@ app.delete(`/life-events/delete/:id/`, (req, res) => {
     const queryStringDeleteLifeEvent = `DELETE FROM life_events WHERE id = ${id}`;
     console.log(queryStringDeleteLifeEvent);
     connection.query(queryStringDeleteLifeEvent, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// UPDATE_TRIBUTE_STATS_LIFE_EVENT
+app.put(`/tribute-stats/life-events/lives/put/:email/:type/:method/:mode`, (req, res) => {
+    const { email, type, method, mode } = req.params;
+    var queryStringUpdateTributeStatsLives = '';
+    if(mode === 'create'){
+        if(type === 'gained'){
+            if(method === 'purchased'){
+                queryStringUpdateTributeStatsLives = `UPDATE tribute_stats SET lives_purchased =
+                lives_purchased + 1, lives_remaining = lives_remaining + 1 WHERE email = '${email}'`;
+    
+            } else if (method === 'life resource') {
+                queryStringUpdateTributeStatsLives = `UPDATE tribute_stats SET life_resources =
+                life_resources + 1, lives_exempt = lives_exempt + 1, 
+                lives_remaining = lives_remaining + 1 WHERE email = '${email}'`;
+            } else {
+                queryStringUpdateTributeStatsLives = `UPDATE tribute_stats SET lives_exempt =
+                lives_exempt + 1, lives_remaining = lives_remaining + 1 WHERE email = '${email}'`;
+            }
+        } else if(type === 'lost'){
+            queryStringUpdateTributeStatsLives = `UPDATE tribute_stats SET lives_remaining =
+            lives_remaining - 1, lives_lost = lives_lost + 1 WHERE email = '${email}'`;
+        }
+    } else if(mode === 'delete'){
+        // These basically all do the opposite of the above.
+        if(type === 'gained'){
+            if(method === 'purchased'){
+                queryStringUpdateTributeStatsLives = `UPDATE tribute_stats SET lives_purchased =
+                lives_purchased - 1, lives_remaining = lives_remaining - 1 WHERE email = '${email}'`;
+    
+            } else if (method === 'life resource') {
+                queryStringUpdateTributeStatsLives = `UPDATE tribute_stats SET life_resources =
+                life_resources - 1, lives_exempt = lives_exempt - 1, 
+                lives_remaining = lives_remaining - 1 WHERE email = '${email}'`;
+            } else {
+                queryStringUpdateTributeStatsLives = `UPDATE tribute_stats SET lives_exempt =
+                lives_exempt - 1, lives_remaining = lives_remaining - 1 WHERE email = '${email}'`;
+            }
+        } else if(type === 'lost'){
+            queryStringUpdateTributeStatsLives = `UPDATE tribute_stats SET lives_remaining =
+            lives_remaining + 1, lives_lost = lives_lost - 1 WHERE email = '${email}'`;
+        }
+    }
+    console.log(queryStringUpdateTributeStatsLives);
+    connection.query(queryStringUpdateTributeStatsLives, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// UPDATE_TRIBUTE_STATS_KILL_COUNT
+app.put(`/tribute-stats/life-events/kills/put/:email/:mode`, (req, res) => {
+    const { email, mode } = req.params;
+    var queryStringUpdateTributeStatsKills = '';
+
+    if(mode === 'create'){
+        queryStringUpdateTributeStatsKills = `UPDATE tribute_stats SET kill_count = 
+        kill_count + 1 WHERE email = '${email}'`;
+    } else if(mode === 'delete'){
+        queryStringUpdateTributeStatsKills = `UPDATE tribute_stats SET kill_count = 
+        kill_count - 1 WHERE email = '${email}'`;
+    }
+
+    console.log(queryStringUpdateTributeStatsKills);
+    connection.query(queryStringUpdateTributeStatsKills, (err, rows, fields) => {
         if(err){
             console.log('Failed to query for life events: ' + err);
             res.sendStatus(500);

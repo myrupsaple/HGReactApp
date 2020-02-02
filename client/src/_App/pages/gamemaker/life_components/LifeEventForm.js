@@ -6,7 +6,9 @@ import DatePicker from 'react-datepicker';
 import { 
     fetchLifeEvent, 
     createLifeEvent,
-    updateLifeEvent
+    updateLifeEvent,
+    lifeEventUpdateTributeStatsLives,
+    lifeEventUpdateTributeStatsKills
 } from '../../../../actions';
 
 class LifeEventForm extends React.Component {
@@ -27,7 +29,7 @@ class LifeEventForm extends React.Component {
             secondaryInput: '',
             secondaryInputName: '',
             type: 'gained',
-            method: '',
+            method: 'purchased',
             time: time,
             // Used to display the selected time in the time selector input
             timeFormatted: `${hours}:${minutes}`,
@@ -53,15 +55,26 @@ class LifeEventForm extends React.Component {
             const time = this.props.lifeEvent.time;
             const hours = Math.floor(time/60).toLocaleString(undefined, { minimumIntegerDigits: 2 });
             const minutes = (time % 60).toLocaleString(undefined, { minimumIntegerDigits: 2 });;
+
+            const lifeEvent = this.props.lifeEvent;
+            console.log(lifeEvent);
             if(this._isMounted){
                 this.setState({
-                    tribute_email: this.props.lifeEvent.tribute_email,
-                    type: this.props.lifeEvent.type,
-                    method: this.props.lifeEvent.method,
+                    tribute_email: lifeEvent.tribute_email,
+                    originalEmail: lifeEvent.tribute_email,
+                    type: lifeEvent.type,
+                    originalType: lifeEvent.type,
+                    method: lifeEvent.method,
+                    originalMethod: lifeEvent.method,
                     time: time,
                     timeFormatted: `${hours}:${minutes}`,
-                    notes: this.props.lifeEvent.notes
+                    notes: lifeEvent.notes
                 })
+                // if(lifeEvent.method === 'combat'){
+                //     this.setState({
+
+                //     })
+                // }
             }
         }
     }
@@ -103,8 +116,10 @@ class LifeEventForm extends React.Component {
         };
     }
     handleMethod(event){
-        this.setState({ method: event.target.value });
-        if(this.state.method !== 'combat'){
+        const input = event.target.value;
+
+        this.setState({ method: input });
+        if(input === 'combat'){
             const object = { target: { value: ' || ' }};
             this.handleSecondary(object);
             this.setState({ 
@@ -112,7 +127,6 @@ class LifeEventForm extends React.Component {
                 allowNotes: false });
         } else {
             this.setState({ 
-                method: 'purchased',
                 notes: 'None',
                 allowNotes: true
             });
@@ -144,7 +158,7 @@ class LifeEventForm extends React.Component {
         }
 
         // Object to be passed to create action handler
-        const lifeEventObject = {
+        const lifeEvent = {
             email: this.state.tribute_email,
             type: this.state.type,
             method: this.state.method,
@@ -154,36 +168,50 @@ class LifeEventForm extends React.Component {
 
         // Pass an additional object if the method is 'combat' since we want to
         // create a secondary 'combat' type event to track each tribute's kills
-        var lifeEventObjectSecondary = {};
-        if(lifeEventObject.method === 'combat'){
+        var lifeEventSecondary = {};
+        if(lifeEvent.method === 'combat'){
             // Automatically set notes for both objects if the method is 'combat'
-            lifeEventObject.notes = `${this.state.tributeName} was slain by ${this.state.secondaryInputName}`;
-            lifeEventObjectSecondary = {
+            lifeEvent.notes = `${this.state.tributeName} was slain by ${this.state.secondaryInputName}`;
+            lifeEventSecondary = {
                 email: this.state.secondaryInput,
                 type: 'combat',
                 method: 'NA',
                 time: this.state.time,
                 notes: `${this.state.secondaryInputName} slaid ${this.state.tributeName}`
             }
-        } else if (!lifeEventObject.notes.replace(/\s/g, '').length) {
+        } else if (!lifeEvent.notes.replace(/\s/g, '').length) {
             // If not combat, and notes are full of whitespaces, change to 'none'
-            lifeEventObject.notes = 'none';
+            lifeEvent.notes = 'none';
         }
 
         // Dispatch actions
         if(this.props.mode === 'edit'){
-            lifeEventObject.id = this.props.id;
-            await this.props.updateLifeEvent(lifeEventObject);
+            lifeEvent.id = this.props.id;
+            await this.props.updateLifeEvent(lifeEvent);
+
+            await this.props.lifeEventUpdateTributeStatsLives(
+                this.state.originalEmail, this.state.originalType, this.state.originalMethod, 'delete');
+            await this.props.lifeEventUpdateTributeStatsLives(
+                lifeEvent.email, lifeEvent.type, lifeEvent.method, 'create');
 
             if(this.state.method === 'combat'){
-                lifeEventObjectSecondary.id = this.props.id + 1;
-                this.props.updateLifeEvent(lifeEventObjectSecondary);
+                lifeEventSecondary.id = this.props.id + 1;
+                this.props.updateLifeEvent(lifeEventSecondary);
+
+                await this.props.lifeEventUpdateTributeStatsKills(
+                    lifeEventSecondary.email, 'create');
             }
         } else if(this.props.mode === 'create'){
-            await this.props.createLifeEvent(lifeEventObject);
+            await this.props.createLifeEvent(lifeEvent);
+
+            await this.props.lifeEventUpdateTributeStatsLives(
+                lifeEvent.email, lifeEvent.type, lifeEvent.method, 'create');
 
             if(this.state.method === 'combat'){
-                this.props.createLifeEvent(lifeEventObjectSecondary);
+                this.props.createLifeEvent(lifeEventSecondary);
+
+                await this.props.lifeEventUpdateTributeStatsKills(
+                    lifeEventSecondary.email, 'create');
             }
         }
         setTimeout(() => this.handleClose(), 1000);
@@ -273,10 +301,16 @@ class LifeEventForm extends React.Component {
     }
 
     renderNameChoices(){
+        const tributes = this.props.tributes;
+        tributes.sort((a, b) => {
+            if(a.first_name > b.first_name) return 1;
+            else if(a.first_name < b.first_name) return -1;
+            else return 0;
+        })
         return (
         <>
             <option value="">Please Select a Tribute...</option>
-            {this.props.tributes.map(tribute => {
+            {tributes.map(tribute => {
                 return (
                 // Name is needed for automated notes logging for combat events
                 <option key={tribute.id} value={`${tribute.first_name} ${tribute.last_name} || ${tribute.email}`}>
@@ -292,7 +326,7 @@ class LifeEventForm extends React.Component {
         if(this.state.type === 'gained'){
             return(
                 <Form.Control 
-                    defaultValue="purchased"
+                    defaultValue={this.state.method}
                     onChange={this.handleMethod}
                     as="select"
                 >
@@ -305,7 +339,7 @@ class LifeEventForm extends React.Component {
         } else if (this.state.type === 'lost'){
             return(
                 <Form.Control 
-                    defaultValue="combat"
+                    defaultValue={this.state.method}
                     onChange={this.handleMethod}
                     as="select"
                 >
@@ -371,6 +405,7 @@ class LifeEventForm extends React.Component {
     }
 
     render = () => {
+        console.log(this.state);
         return(
             <Modal show={this.state.showModal} onHide={this.handleClose}>
                 <Modal.Header>
@@ -401,5 +436,7 @@ export default connect(mapStateToProps,
 { 
     fetchLifeEvent,
     createLifeEvent,
-    updateLifeEvent
+    updateLifeEvent,
+    lifeEventUpdateTributeStatsLives,
+    lifeEventUpdateTributeStatsKills
 })(LifeEventForm);

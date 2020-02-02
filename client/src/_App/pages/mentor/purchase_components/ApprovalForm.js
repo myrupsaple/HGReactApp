@@ -97,6 +97,7 @@ class ApprovalForm extends React.Component{
             // Item and funds have already been handled. 
             return;
         } else if(purchase.category === 'resource'){
+            // TODO: Later on, update tribute_stats appropriately
             this.props.purchaseCreateResourceEvent(purchase.receiver_email, purchase.item_name, purchase.time);
         } else if(purchase.category === 'life'){
             // TODO: Later on, update tribute_stats appropriately

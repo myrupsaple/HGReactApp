@@ -16,7 +16,7 @@ import {
     clearLifeEventsList
 } from '../../../actions';
 import LifeEventForm from './life_components/LifeEventForm';
-import DeleteModal from './shared_components/DeleteModal';
+import DeleteLifeEvent from './life_components/DeleteLifeEvent';
 
 class ManageFunds extends React.Component {
     _isMounted = false;
@@ -611,8 +611,7 @@ class ManageFunds extends React.Component {
         } else if(this.state.showEdit) {
             return <LifeEventForm tributes={this.props.tributes} id={this.state.selectedId} mode="edit" onSubmitCallback={this.onSubmitCallback}/>;
         } else if(this.state.showDelete){
-            return <DeleteModal id={this.state.selectedId} actionType="Life Event" 
-            onConfirm={this.props.deleteLifeEvent}
+            return <DeleteLifeEvent id={this.state.selectedId}
             onSubmitCallback={this.onSubmitCallback} />
         }
     }
@@ -641,7 +640,6 @@ class ManageFunds extends React.Component {
     }
 
     render = () => {
-        console.log(this.state);
         return(
             <>
                 {this.renderContent()}
