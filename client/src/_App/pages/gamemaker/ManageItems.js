@@ -153,22 +153,35 @@ class ManageItems extends React.Component {
     }
 
     renderAdmin = (item) => {
-        return(
-            <div className="row">
-                <Button 
-                variant="info"
-                onClick={() => this.setState({ showEdit: true, selectedId: item.id })}
-                >
-                    Edit
-                </Button>
-                <Button
-                variant="danger"
-                onClick={() => this.setState({ showDelete: true, selectedId: item.id })}
-                >
-                    Delete
-                </Button>
-            </div>
-        );
+        if(item.id < 1000){
+            return(
+                <div className="row">
+                    <Button 
+                    variant="info"
+                    onClick={() => this.setState({ showEdit: true, selectedId: item.id })}
+                    >
+                        Edit
+                    </Button>
+                </div>
+            );
+        } else {
+            return(
+                <div className="row">
+                    <Button 
+                    variant="info"
+                    onClick={() => this.setState({ showEdit: true, selectedId: item.id })}
+                    >
+                        Edit
+                    </Button>
+                    <Button
+                    variant="danger"
+                    onClick={() => this.setState({ showDelete: true, selectedId: item.id })}
+                    >
+                        Delete
+                    </Button>
+                </div>
+            );
+        }
     }
 
     renderSearchForm() {

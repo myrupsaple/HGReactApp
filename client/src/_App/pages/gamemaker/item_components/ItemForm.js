@@ -107,11 +107,17 @@ class ItemForm extends React.Component {
         return (
             <Form>
                 <Form.Row>
+                    <div className="coolor-text-red-darken-1">
+                        {this.renderSpecialText()}
+                    </div>
+                </Form.Row>
+                <Form.Row>
                     <div className="col-8"><Form.Group controlId="name">
                         <Form.Label>Item name</Form.Label>
                         <Form.Control value={this.state.name}
                             onChange={this.handleName}
                             autoComplete="off"
+                            disabled={this.props.id < 1000 ? true : false}
                         />
                     </Form.Group></div>
                     <div className="col-4"><Form.Group controlId="quantity">
@@ -119,6 +125,7 @@ class ItemForm extends React.Component {
                         <Form.Control value={this.state.quantity}
                             onChange={this.handleQuantity}
                             autoComplete="off"
+                            disabled={this.props.id < 1000 ? true : false}
                         />
                     </Form.Group></div>
                 </Form.Row>
@@ -128,6 +135,7 @@ class ItemForm extends React.Component {
                         <Form.Control value={this.state.description}
                             onChange={this.handleDescription}
                             autoComplete="off"
+                            disabled={this.props.id < 1000 ? true : false}
                         />
                     </Form.Group></div>
                 </Form.Row>
@@ -163,6 +171,14 @@ class ItemForm extends React.Component {
                 </Form.Row>
             </Form>
         );
+    }
+
+    renderSpecialText(){
+        if(this.props.id < 1000){
+            return 'The name, description, and quantity of this item cannot be edited.';
+        } else {
+            return null;
+        }
     }
 
     renderModalFooter(){

@@ -26,6 +26,8 @@ class PurchaseForm extends React.Component{
             receiver_email: '',
             category: '',
             item: '',
+            item_name: '',
+            item_id: '',
             originalCost: 0,
             cost: 100,
             quantity: 1,
@@ -80,16 +82,23 @@ class PurchaseForm extends React.Component{
         this.setState({ category: event.target.value, item: '' });
     }
 
-    // Will only ever be accessed for item purchases
+    // Will only ever be accessed for item and resource purchases
     async handleItem(event){
         const input = event.target.value;
 
         if(input !== ''){
-            const [ name, id ] = input.split('|');
-            await this.props.fetchItem(id);
-            this.setState({ item: input, item_name: name, item_id: id });
-        } else {
-            this.setState({ item: input, item_name: '', item_id: '' });
+            if(this.state.category === 'item'){
+                const [ name, id ] = input.split('|');
+                await this.props.fetchItem(id);
+                this.setState({ item: input, item_name: name, item_id: id });
+            } else if(this.state.catagory === 'resource'){
+                const name = '';
+                const id = '';
+                switch(input){
+                    case 'food_resource':
+                        await this.props.fectchItem()
+                }
+            }
         }
     }
     handleQuantity(event){
@@ -273,13 +282,8 @@ class PurchaseForm extends React.Component{
                             value={this.state.category}
                             onChange={this.handleCategory}
                             as="select"
-                        >   
-                            <option value="">Please select a Category...</option>
-                            <option value="item">Item</option>
-                            <option value="resource">Resource</option>
-                            <option value="life">Life</option>
-                            <option value="immunity">Immunity</option>
-                            <option value="transfer">Transfer Funds</option>
+                        >
+                            {this.renderCategoryChoices()}
                         </Form.Control>
                     </Form.Group></div>
                 </Form.Row>
@@ -287,6 +291,25 @@ class PurchaseForm extends React.Component{
                 {this.renderQuantityChoices(this.state.category)}
             </Form>
         )
+    }
+
+    renderCategoryChoices = () => {
+        if(this.state.payer_email !== '' && this.state.receiver_email !== ''){
+            return(
+                <>
+                <option value="">Please select a Category...</option>
+                <option value="item">Item</option>
+                <option value="resource">Resource</option>
+                <option value="life">Life</option>
+                <option value="immunity">Immunity</option>
+                <option value="transfer">Transfer Funds</option>
+                </>
+            );
+        } else {
+            return(
+                <option value="">Please Select Tributes...</option>
+            );
+        }
     }
 
     renderTributeChoices = () => {
@@ -342,7 +365,7 @@ class PurchaseForm extends React.Component{
                     <option value="">Please choose an item...</option>
                     {items.map(item => {
                         // ID >= 1000 reserved for special items (lives, resources, etc.)
-                        if(item.id >= 1000){ return null; }
+                        if(item.id < 1000){ return null; }
                     return(
                         <option key={item.id} value={`${item.item_name}|${item.id}`}>{item.item_name}: "{item.description}" (${item.tier1_cost} each) </option>
                     );
