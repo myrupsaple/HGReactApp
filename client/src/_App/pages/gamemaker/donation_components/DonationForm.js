@@ -214,10 +214,16 @@ class DonationForm extends React.Component {
     }
 
     renderNameChoices(){
+        const tributes = this.props.tributes;
+        tributes.sort((a, b) => {
+            if(a.first_name > b.first_name) return 1;
+            else if(a.first_name < b.first_name) return -1;
+            else return 0;
+        })
         return (
         <>
             <option value="No Assignment">No Assignment</option>
-            {this.props.tributes.map(tribute => {
+            {tributes.map(tribute => {
                 return (
                 <option key={tribute.id} value={tribute.email}>
                     {tribute.first_name} {tribute.last_name} || {tribute.email}
