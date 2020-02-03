@@ -129,6 +129,7 @@ connection.connect(async (err) => {
             medicine_used TINYINT DEFAULT 0,
             medicine_missed TINYINT DEFAULT 0,
             roulette_used TINYINT DEFAULT 0,
+            golden_used TINYINT DEFAULT 0,
             lives_remaining TINYINT DEFAULT 1,
             life_resources TINYINT DEFAULT 0,
             lives_exempt TINYINT DEFAULT 1,
@@ -160,7 +161,7 @@ connection.connect(async (err) => {
         const createResourceEvents = `CREATE TABLE resource_events(
             id INT PRIMARY KEY AUTO_INCREMENT,
             tribute_email VARCHAR(40),
-            type VARCHAR(10),
+            type VARCHAR(15),
             method VARCHAR(10),
             time INT,
             notes VARCHAR(75)
@@ -187,15 +188,15 @@ connection.connect(async (err) => {
         )`;
 
         const createSpecialItems = `INSERT INTO item_list 
-        (id, item_name, description, quantity, tier1_cost, tier2_cost, tier3_cost, tier4_cost) 
-        VALUES 
-        (100, 'life', 'life', 1, 45, 70, 100, 150),
-        (200, 'immunity', 'immunity', 1, 300, 300, 300, 300),
-        (300, 'golden_resource', 'golden resource', 1, 300, 300, 300, 300),
-        (301, 'food_resource', 'food resource', 1, 80, 100, 100, 100),
-        (302, 'water_resource', 'water resource', 1, 100, 100, 120, 120),
-        (303, 'medicine_resource', 'medicine resource', 1, 75, 100, 125, 125),
-        (1000, 'id_shifter', 'none', 0, 0, 0, 0, 0)`;
+            (id, item_name, description, quantity, tier1_cost, tier2_cost, tier3_cost, tier4_cost) 
+            VALUES 
+            (100, 'life', 'life', 1, 45, 70, 100, 150),
+            (200, 'immunity', 'immunity', 1, 300, 300, 300, 300),
+            (300, 'golden_resource', 'golden resource', 1, 300, 300, 300, 300),
+            (301, 'food_resource', 'food resource', 1, 80, 100, 100, 100),
+            (302, 'water_resource', 'water resource', 1, 100, 100, 120, 120),
+            (303, 'medicine_resource', 'medicine resource', 1, 75, 100, 125, 125),
+            (1000, 'id_shifter', 'none', 0, 0, 0, 0, 0)`;
 
         const deleteIdShifter = `DELETE FROM item_list WHERE id = 1000`;
 
@@ -974,6 +975,108 @@ app.delete(`/resource/events/delete/:id`, (req, res) => {
     connection.query(queryStringDeleteResEventItem, (err, rows, fields) => {
         if(err){
             console.log('Failed to query for resource events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// UPDATE_TRIBUTE_STATS_RESOURCE_EVENT
+app.put(`/tribute-stats/resource-events/put/:email/:type/:mode`, (req, res) => {
+    const { email, type, mode } = req.params;
+    var queryStringUpdateTributeStatsResources = ``;
+    if(['food', 'water', 'medicine', 'roulette'].includes(type)){
+        if(mode === 'create'){
+            queryStringUpdateTributeStatsResources = `UPDATE tribute_stats SET
+            ${type}_used = ${type}_used + 1 WHERE email = '${email}'`;
+        } else if(mode === 'delete'){
+            queryStringUpdateTributeStatsResources = `UPDATE tribute_stats SET
+            ${type}_used = ${type}_used - 1 WHERE email = '${email}'`;
+        }
+    } else if(type === 'life'){
+        if(mode === 'create'){
+            queryStringUpdateTributeStatsResources = `UPDATE tribute_stats SET
+            life_resources = life_resources + 1, lives_exempt = lives_exempt + 1,
+            lives_remaining = lives_remaining + 1 WHERE email = '${email}'`;
+        } else if(mode === 'delete'){
+            queryStringUpdateTributeStatsResources = `UPDATE tribute_stats SET
+            life_resources = life_resources - 1, lives_exempt = lives_exempt - 1,
+            lives_remaining = lives_remaining - 1 WHERE email = '${email}'`;
+        }
+        
+    } else if(type.split('-')[0] === 'golden'){
+        const trueType = type.split('-')[1];
+        if(mode === 'create'){
+            queryStringUpdateTributeStatsResources = `UPDATE tribute_stats SET
+            ${trueType}_used = ${trueType}_used + 1, golden_used = golden_used + 1 WHERE email = '${email}'`;
+        } else if(mode === 'delete'){
+            queryStringUpdateTributeStatsResources = `UPDATE tribute_stats SET
+            ${trueType}_used = ${trueType}_used - 1, golden_used = golden_used - 1 WHERE email = '${email}'`;
+        }
+    }
+
+    console.log(queryStringUpdateTributeStatsResources);
+    connection.query(queryStringUpdateTributeStatsResources, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for resource events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// CREATE_LIFE_EVENT_RESOURCE_EVENTS
+app.put(`/resource-events/life-events/put/:email/:time/:mode`, (req, res) => {
+    const { email, time, mode } = req.params;
+    var queryStringUpdateLifeEventsResources = '';
+    if(mode === 'create'){
+        queryStringUpdateLifeEventsResources = `INSERT INTO life_events (tribute_email,
+        type, method, time, notes) VALUES ('${email}', 'gained', 'resource', ${time}, 'used life resource')`;
+    } else if(mode === 'delete'){
+        // TODO
+        // const queryStringUpdateLifeEventsResources = `INSERT INTO life_events VALUES (tribute_email,
+        // type, method, time, notes) VALUES ('${email}', 'gained', 'resource', ${time}, 'used life resource')`;
+    }
+    console.log(queryStringUpdateLifeEventsResources);
+    connection.query(queryStringUpdateLifeEventsResources, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// UPDATE_RESOURCE_LIST_RESOURCE_EVENTS
+app.put(`/resource-events/resource-list/put/:name/:code/:mode`, (req, res) => {
+    const { name, code, mode }= req.params;
+    var queryStringUpdateResourcesListResources = '';
+    if(mode === 'create'){
+        queryStringUpdateResourcesListResources = `UPDATE resource_list SET times_used = 
+        times_used + 1, used_by = CONCAT(used_by, ' ${name}', ',') WHERE code = '${code}'`;
+    } else if(mode === 'delete'){
+        queryStringUpdateResourcesListResources = `UPDATE resource_list SET times_used = 
+        times_used - 1, used_by = '' WHERE code = '${code}'`;
+    }
+    console.log(queryStringUpdateResourcesListResources);
+    connection.query(queryStringUpdateResourcesListResources, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
             res.sendStatus(500);
             res.end();
             return;

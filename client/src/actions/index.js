@@ -610,6 +610,39 @@ export const clearResourceEvents = () => async dispatch => {
     dispatch({ type: CLEAR_RESOURCE_EVENT_QUEUE });
 }
 
+export const resourceEventUpdateTributeStats = (email, type, mode) => async dispatch => {
+    console.log(`Actions: Update tribute stats with ${type} resource`);
+    await app.put(`/tribute-stats/resource-events/put/${email}/${type}/${mode}`)
+        .then(res => {
+            console.log(`Successfully updated tribute stats with ${type} resource`);
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const resourceEventUpdateLifeEvents = (email, time, mode) => async dispatch => {
+    console.log(`Actions: Update life events with life resource`);
+    await app.put(`/resource-events/life-events/put/${email}/${time}/${mode}`)
+        .then(res => {
+            console.log(`Successfully updated life events with life resource`);
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
+export const resourceEventUpdateResourceList = (code, name, mode) => async dispatch => {
+    console.log(`Actions: Update resource list with resource event`);
+    await app.put(`/resource-events/resource-list/put/${name}/${code}/${mode}`)
+        .then(res => {
+            console.log(`Successfully updated resource list with resource event`);
+        })
+        .catch(err => {
+            console.log(err);
+        });
+}
+
 //########################### (5) Life Management ############################//
 
 export const fetchLifeEvent = id => async dispatch => {

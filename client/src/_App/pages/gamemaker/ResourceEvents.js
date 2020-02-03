@@ -16,7 +16,7 @@ import {
     clearResourceEvents
 } from '../../../actions';
 import ResourceEventForm from './resource_components/ResourceEventForm';
-import DeleteModal from './shared_components/DeleteModal';
+import DeleteResourceEvent from './resource_components/DeleteResourceEvent';
 
 class ManageFunds extends React.Component {
     _isMounted = false;
@@ -548,7 +548,7 @@ class ManageFunds extends React.Component {
         var lifeCode = 0;
         var goldenCode = 0;
         for (let event of resourceEvents) {
-            if(event.type === food){
+            if(event.type === 'food'){
                 food += 1;
                 if(event.method === 'code'){
                     foodCode += 1;
@@ -556,13 +556,13 @@ class ManageFunds extends React.Component {
                 } else {
                     nonCode += 1;
                 }
-            } else if(event.type === water){
+            } else if(event.type === 'water'){
                 water += 1;
                 if(event.method === 'code'){
                     waterCode += 1;
                     code += 1;
                 }
-            } else if(event.type === medicine){
+            } else if(event.type === 'medicine'){
                 medicine += 1;
                 if(event.method === 'code'){
                     medicineCode += 1;
@@ -570,7 +570,7 @@ class ManageFunds extends React.Component {
                 } else {
                     nonCode += 1;
                 }
-            } else if(event.type === roulette){
+            } else if(event.type === 'roulette'){
                 roulette += 1;
                 if(event.method === 'code'){
                     rouletteCode += 1;
@@ -578,7 +578,7 @@ class ManageFunds extends React.Component {
                 } else {
                     nonCode += 1;
                 }
-            } else if(event.type === life){
+            } else if(event.type === 'life'){
                 life += 1;
                 if(event.method === 'code'){
                     lifeCode += 1;
@@ -586,7 +586,7 @@ class ManageFunds extends React.Component {
                 } else {
                     nonCode += 1;
                 }
-            } else if(event.type === golden){
+            } else if(event.type === 'golden'){
                 golden += 1;
                 if(event.method === 'code'){
                     goldenCode += 1;
@@ -601,9 +601,9 @@ class ManageFunds extends React.Component {
                 <h5>Total by Method:</h5>
                 <h6>Code: {code} || Non-Code: {nonCode}</h6>
                 <h5>Total Codes Used:</h5>
-                <h6> Food: {food} || Water: {water} || Medicine: {medicine} || Roulette: {roulette} || Life: {life} || Golden: {golden} ||</h6>
-                <h5>Total Non-Code Events:</h5>
                 <h6> Food: {foodCode} || Water: {waterCode} || Medicine: {medicineCode} || Roulette: {rouletteCode} || Life: {lifeCode} || Golden: {goldenCode} ||</h6>
+                <h5>Total Non-Code Events:</h5>
+                <h6> Food: {food - foodCode} || Water: {water - waterCode} || Medicine: {medicine - medicineCode} || Roulette: {roulette - rouletteCode} || Life: {life - lifeCode} || Golden: {golden - goldenCode} ||</h6>
             </>
         );
     }
@@ -632,8 +632,7 @@ class ManageFunds extends React.Component {
         } else if(this.state.showEdit) {
             return <ResourceEventForm tributes={this.props.tributes} id={this.state.selectedId} mode="edit" onSubmitCallback={this.onSubmitCallback}/>;
         } else if(this.state.showDelete){
-            return <DeleteModal id={this.state.selectedId} actionType="Resource Event" 
-            onConfirm={this.props.deleteResourceEvent}
+            return <DeleteResourceEvent id={this.state.selectedId}
             onSubmitCallback={this.onSubmitCallback} />
         }
     }

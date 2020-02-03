@@ -6,7 +6,11 @@ import DatePicker from 'react-datepicker';
 import { 
     fetchResourceEvent, 
     createResourceEvent,
-    updateResourceEvent
+    updateResourceEvent,
+    fetchTributes,
+    resourceEventUpdateTributeStats,
+    resourceEventUpdateLifeEvents,
+    resourceEventUpdateResourceList
 } from '../../../../actions';
 
 class ResourceEventForm extends React.Component {
@@ -24,7 +28,7 @@ class ResourceEventForm extends React.Component {
             // Used if a tribute is slain in combat. Specifies the killer
             tributeName: '',
             type: 'food',
-            method: 'purchased',
+            method: 'code',
             time: time,
             timeFormatted: `${hours}:${minutes}`,
             notes: 'None',
@@ -50,11 +54,14 @@ class ResourceEventForm extends React.Component {
             if(this._isMounted){
                 this.setState({
                     tribute_email: this.props.resourceEvent.tribute_email,
+                    originalEmail: this.props.resourceEvent.tribute_email,
                     type: this.props.resourceEvent.type,
+                    originalType: this.props.resourceEvent.type,
                     method: this.props.resourceEvent.method,
                     time: time,
                     timeFormatted: `${hours}:${minutes}`,
-                    notes: this.props.resourceEvent.notes
+                    notes: this.props.resourceEvent.notes,
+                    originalNotes: this.props.resourceEvent.notes
                 })
             }
         }
@@ -69,10 +76,20 @@ class ResourceEventForm extends React.Component {
         this.setState({ tribute_email: email, tributeName: name });
     }
     handleType(event){
-        this.setState({ type: event.target.value });
+        const input = event.target.value;
+        if(input === 'golden'){
+            this.setState({ type: `golden-food`, method: 'code' })
+        } else {
+            this.setState({ type: input });
+        }
     }
     handleMethod(event){
-        this.setState({ method: event.target.value });
+        const input = event.target.value;
+        if(this.state.type === 'golden'){
+            this.setState({ type: `golden-${input}` })
+        } else {
+            this.setState({ method: input });
+        }
     }
     handleTime(date){
         const now = new Date();
@@ -97,7 +114,7 @@ class ResourceEventForm extends React.Component {
 
         if(this._isMounted){
             this.setState({ submitted: true })
-        }
+        }        
 
         const resourceEventObject = {
             email: this.state.tribute_email,
@@ -106,6 +123,10 @@ class ResourceEventForm extends React.Component {
             time: this.state.time,
             notes: this.state.notes
         };
+        if(this.state.type.split('-')[0] === 'golden'){
+            resourceEventObject.notes = resourceEventObject.notes + ' (golden used)';
+        }
+
         if (!resourceEventObject.notes.replace(/\s/g, '').length) {
             resourceEventObject.notes = 'none';
         }
@@ -113,10 +134,59 @@ class ResourceEventForm extends React.Component {
         if(this.props.mode === 'edit'){
             resourceEventObject.id = this.props.id;
             await this.props.updateResourceEvent(resourceEventObject);
+            
+            // Tribute stats updating
+            await this.props.resourceEventUpdateTributeStats(this.state.originalEmail,
+                this.state.originalType, 'delete');
+            await this.props.resourceEventUpdateTributeStats(this.state.tribute_email,
+                this.state.type, 'create');
+            
+            // Life events updating
+            if(this.state.type === 'life'){
+                await this.props.resourceEventUpdateLifeEvents(this.state.tribute_email,
+                this.state.time, 'create');
+            }
+
+            // Resource list counts updating (will delete 'used_by' if updated)
+            if(this.state.method === 'code'){
+                await this.props.fetchTributes();
+                await this.props.resourceEventUpdateResourceList(
+                    this.state.originalNotes, 'NA', 'delete');
+                await this.props.resourceEventUpdateResourceList(
+                    this.state.notes.toLowerCase(), this.getTributeName(this.state.tribute_email), 'create');
+            }
         } else if(this.props.mode === 'create'){
             await this.props.createResourceEvent(resourceEventObject);
+
+            // Tribute stats updating
+            await this.props.resourceEventUpdateTributeStats(this.state.tribute_email,
+                this.state.type, 'create');
+
+            // Life events updating
+            if(this.state.type === 'life'){
+                await this.props.resourceEventUpdateLifeEvents(this.state.tribute_email,
+                this.state.time, 'create');
+            }
+            // Resource list counts updating (there is no undo for this action if edited)
+            if(this.state.method === 'code'){
+                await this.props.fetchTributes();
+                await this.props.resourceEventUpdateResourceList(
+                    this.state.notes.toLowerCase(), this.getTributeName(this.state.tribute_email), 'create');
+            }
         }
         setTimeout(() => this.handleClose(), 1000);
+    }
+
+    getTributeName = (email) => {
+        if(email === 'No Assignment'){
+            return 'No Assignment';
+        }
+        for (let tribute of this.props.tributes){
+            if(email === tribute.email){
+                return (tribute.first_name + ' ' + tribute.last_name);
+            }
+        }
+        return 'Unrecognized Tribute';
     }
 
     renderModalHeader(){
@@ -186,16 +256,7 @@ class ResourceEventForm extends React.Component {
                         </Form.Control>
                     </Form.Group></div>
                     <div className="col-6"><Form.Group controlId="method">
-                        <Form.Label>Method*</Form.Label>    
-                        <Form.Control 
-                            defaultValue="gained"
-                            onChange={this.handleMethod}
-                            as="select"
-                        >
-                            <option value="code">Code</option>
-                            <option value="purchased">Purchased</option>
-                            <option value="other">Other</option>
-                        </Form.Control>
+                        {this.renderMethodChoices(this.state.type)}
                     </Form.Group></div>
                     <div className="col-12"><Form.Group controlId="notes">
                         <Form.Label>Notes</Form.Label>    
@@ -223,6 +284,54 @@ class ResourceEventForm extends React.Component {
             })}
         </>
         );
+    }
+
+    renderMethodChoices(type){
+        if(type.split('-')[0] === 'golden'){
+            return(
+                <>
+                <Form.Label>Use As*</Form.Label>    
+                <Form.Control 
+                    defaultValue="gained"
+                    onChange={this.handleMethod}
+                    as="select"
+                >
+                    <option value="food">Food</option>
+                    <option value="water">Water</option>
+                    <option value="medicine">Medicine</option>
+                </Form.Control>
+                </>
+            );
+            
+        } else if(type !== 'life'){
+            return(
+                <>
+                <Form.Label>Method*</Form.Label>    
+                <Form.Control 
+                defaultValue="gained"
+                onChange={this.handleMethod}
+                as="select"
+                >
+                    <option value="code">Code</option>
+                    <option value="purchased">Purchased</option>
+                    <option value="other">Other</option>
+                </Form.Control>
+                </>
+            );
+        } else {
+            return (
+                <>
+                <Form.Label>Method*</Form.Label>    
+                <Form.Control 
+                defaultValue="gained"
+                onChange={this.handleMethod}
+                as="select"
+                >
+                    <option value="code">Code</option>
+                </Form.Control>
+                </>
+            );
+        }
     }
 
     renderModalFooter(){
@@ -274,7 +383,11 @@ const mapStateToProps = state => {
 
 export default connect(mapStateToProps, 
 { 
-    fetchResourceEvent, 
+    fetchResourceEvent,
+    fetchTributes,
     createResourceEvent,
-    updateResourceEvent
+    updateResourceEvent,
+    resourceEventUpdateTributeStats,
+    resourceEventUpdateLifeEvents,
+    resourceEventUpdateResourceList
 })(ResourceEventForm);

@@ -18,7 +18,7 @@ class ResourceListForm extends React.Component {
             type: 'food',
             timesUsed: 0,
             maxUses: 1,
-            usedBy: '{not used}',
+            usedBy: '',
             notes: 'None',
             showModal: true,
             submitted: false
