@@ -249,8 +249,8 @@ class DonationForm extends React.Component {
     handleClose = () => {
         if(this._isMounted){
             this.setState({ showModal: false });
+            this.props.onSubmitCallback();
         }
-        this.props.onSubmitCallback();
     }
 
     render = () => {

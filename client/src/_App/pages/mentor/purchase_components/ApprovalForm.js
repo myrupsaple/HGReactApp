@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Button, Modal } from 'react-bootstrap';
+import { Button, Modal, Form } from 'react-bootstrap';
 
 import {
     fetchPurchaseRequest,
@@ -8,7 +8,10 @@ import {
     purchaseUpdateFunds,
     purchaseUpdateItemQuantity,
     purchaseCreateResourceEvent,
-    purchaseCreateLifeEvent
+    purchaseCreateLifeEvent,
+    resourceEventUpdateLifeEvents,
+    lifeEventUpdateTributeStatsLives,
+    purchaseGiveImmunity
 } from '../../../../actions';
 
 class ApprovalForm extends React.Component{
@@ -18,13 +21,20 @@ class ApprovalForm extends React.Component{
         this.state = {
             showModal: true,
             status: 'pending',
-            submitted: false
+            submitted: false,
+            notes: ''
         }
+
+        this.handleNotes = this.handleNotes.bind(this);
     }
 
     componentDidMount = async () => {
         this._isMounted = true;
         await this.props.fetchPurchaseRequest(this.props.id);
+    }
+
+    handleNotes(event){
+        this.setState({ notes: event.target.value });
     }
 
     handleClose = () => {
@@ -52,12 +62,23 @@ class ApprovalForm extends React.Component{
                 <div className="row"><span className="font-weight-bold">Receiving Tribute:</span><span>&nbsp;{this.getTributeName(purchase.receiver_email)}</span></div>
                 <div className="row"><span className="font-weight-bold">District:</span><span>&nbsp;{this.getMentorName(purchase.mentor_email)}</span></div>
                 <div className="row"><span className="font-weight-bold">Time of Request:</span><span>&nbsp;{this.formatTimeFromInt(purchase.time)}</span></div>
-                <div className="row"><span className="font-weight-bold">Category:</span><span>&nbsp;{purchase.category}</span></div>
-                <div className="row"><span className="font-weight-bold">Item:</span><span>&nbsp;{purchase.item_name}</span></div>
+                <div className="row"><span className="font-weight-bold">Category:</span><span>&nbsp;{this.capitalizeFirst(purchase.category)}</span></div>
+                <div className="row"><span className="font-weight-bold">Item:</span><span>&nbsp;{this.capitalizeFirst(purchase.item_name)}</span></div>
                 <div className="row"><span className="font-weight-bold">Quantity:</span><span>&nbsp;{purchase.quantity}</span></div>
                 <div className="row"><span className="font-weight-bold">Total Cost:</span><span>&nbsp;${purchase.cost}</span></div>
+                <Form>
+                    <Form.Row>
+                        <Form.Label>Notes</Form.Label>
+                        <Form.Control value={this.state.notes} onChange={this.handleNotes}/>
+                    </Form.Row>
+                </Form>
             </div>
         );
+    }
+
+    capitalizeFirst(string){
+        console.log(string);
+        return string.slice(0, 1).toUpperCase() + string.slice(1, string.length).toLowerCase();
     }
 
     getTributeName = (email) => {
@@ -84,45 +105,53 @@ class ApprovalForm extends React.Component{
         return(`${hours}:${minutes}`);
     }
 
-    approveRequest = () => {
+    approveRequest = async () => {
         if(this._isMounted){
             this.setState({ submitted: true, status: 'approved' });
         }
 
+        if (!this.state.notes.replace(/\s/g, '').length) {
+            await this.setState({ notes: 'None' })
+        }
+
         const purchase = this.props.purchase;
 
-        this.props.purchaseUpdateStatus(purchase.id, 'approved');
+        this.props.purchaseUpdateStatus(purchase.id, 'approved', this.state.notes);
 
         if(purchase.category === 'item'){
             // Item and funds have already been handled. 
             return;
         } else if(purchase.category === 'resource'){
-            // TODO: Later on, update tribute_stats appropriately
-            this.props.purchaseCreateResourceEvent(purchase.receiver_email, purchase.item_name, purchase.time);
+            await this.props.purchaseCreateResourceEvent(purchase.receiver_email, purchase.item_name, purchase.time);
+            await this.props.resourceEventUpdateLifeEvents(purchase.receiver_email, purchase.time, 'create');
         } else if(purchase.category === 'life'){
-            // TODO: Later on, update tribute_stats appropriately
-            this.props.purchaseCreateLifeEvent(purchase.receiver_email, purchase.time);
+            await this.props.purchaseCreateLifeEvent(purchase.receiver_email, purchase.time);
+            await this.props.lifeEventUpdateTributeStatsLives(purchase.receiver_email, 'gained', 'purchased', 'create');
         } else if(purchase.category === 'immunity'){
-            // update immunity
-            return 4;
+            await this.props.purchaseGiveImmunity(purchase.receiver_email);
         } else if(purchase.category === 'transfer'){
-            this.props.purchaseUpdateFunds(purchase.receiver_email, purchase.cost);
+            // Only need to add here since the deduction was made during the request
+            await this.props.purchaseUpdateFunds(purchase.receiver_email, purchase.cost);
         }
     }
 
-    denyRequest = () => {
+    denyRequest = async () => {
+        if (!this.state.notes.replace(/\s/g, '').length) {
+            alert('Notes are required to deny a request');
+            return;
+        }
         if(this._isMounted){
             this.setState({ submitted: true, status: 'denied' });
         }
 
         if(this.props.purchase.category === 'item'){
-            this.props.purchaseUpdateItemQuantity(this.props.purchase.item_id, this.props.purchase.quantity)
+            await this.props.purchaseUpdateItemQuantity(this.props.purchase.item_id, this.props.purchase.quantity)
         } 
 
-        this.props.purchaseUpdateStatus(this.props.id, 'denied');
+        await this.props.purchaseUpdateStatus(this.props.id, 'denied', this.state.notes);
         const amount = this.props.purchase.cost * this.props.purchase.quantity;
         console.log(amount);
-        this.props.purchaseUpdateFunds(this.props.purchase.payer_email, amount);
+        await this.props.purchaseUpdateFunds(this.props.purchase.payer_email, amount);
         setTimeout(() => this.handleClose(), 1000);
     }
 
@@ -178,5 +207,8 @@ export default connect(mapStateToProps,
         purchaseUpdateFunds,
         purchaseUpdateItemQuantity,
         purchaseCreateResourceEvent,
-        purchaseCreateLifeEvent
+        purchaseCreateLifeEvent,
+        resourceEventUpdateLifeEvents,
+        lifeEventUpdateTributeStatsLives,
+        purchaseGiveImmunity
     })(ApprovalForm);

@@ -196,7 +196,7 @@ class LifeEventForm extends React.Component {
 
             if(this.state.method === 'combat'){
                 lifeEventSecondary.id = this.props.id + 1;
-                this.props.updateLifeEvent(lifeEventSecondary);
+                await this.props.updateLifeEvent(lifeEventSecondary);
 
                 await this.props.lifeEventUpdateTributeStatsKills(
                     lifeEventSecondary.email, 'create');
@@ -208,7 +208,7 @@ class LifeEventForm extends React.Component {
                 lifeEvent.email, lifeEvent.type, lifeEvent.method, 'create');
 
             if(this.state.method === 'combat'){
-                this.props.createLifeEvent(lifeEventSecondary);
+                await this.props.createLifeEvent(lifeEventSecondary);
 
                 await this.props.lifeEventUpdateTributeStatsKills(
                     lifeEventSecondary.email, 'create');
@@ -400,8 +400,8 @@ class LifeEventForm extends React.Component {
     handleClose = () => {
         if(this._isMounted){
             this.setState({ showModal: false });
+            this.props.onSubmitCallback();
         }
-        this.props.onSubmitCallback();
     }
 
     render = () => {

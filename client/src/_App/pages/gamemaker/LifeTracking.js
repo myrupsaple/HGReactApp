@@ -154,14 +154,7 @@ class ManageFunds extends React.Component {
         }
     }
     handleFilterEventType(event){
-        const button = event.target.id;
-        if(button === 'radio-show-all'){
-            this.setState({ filterEventType: 'all' });    
-        } else if(button === 'radio-show-gained'){
-            this.setState({ filterEventType: 'gained' });    
-        } else if(button === 'radio-show-lost'){
-            this.setState({ filterEventType: 'lost' });    
-        } 
+        this.setState({ filterEventType: event.target.id });
     }
     handlePairedCombat(event){
         this.setState({ showPairedCombat: event.target.checked });
@@ -380,21 +373,21 @@ class ManageFunds extends React.Component {
                             type="radio"
                             name="filter-event-radios"
                             label="All"
-                            id="radio-show-all"
+                            id="all"
                             onChange={this.handleFilterEventType}
                         />
                         <Form.Check
                             type="radio"
                             name="filter-event-radios"
                             label="Gained"
-                            id="radio-show-gained"
+                            id="gained"
                             onChange={this.handleFilterEventType}
                         />
                         <Form.Check
                             type="radio"
                             name="filter-event-radios"
                             label="Lost"
-                            id="radio-show-lost"
+                            id="lost"
                             onChange={this.handleFilterEventType}
                         />
                     </Form.Group>
@@ -466,6 +459,17 @@ class ManageFunds extends React.Component {
         } else if(eventTypeFilter !== 'all') {
             lifeEvents = lifeEvents.filter(lifeEvent => lifeEvent.type === eventTypeFilter);
         }
+
+        lifeEvents.sort((a, b) => {
+            if(a.time > b.time){
+                return -1;
+            } else if(a.time < b.time){
+                return 1;
+            } else {
+                return 0;
+            }
+        });
+
         return(
             <>
             <ul className="list-group">

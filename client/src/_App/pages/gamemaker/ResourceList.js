@@ -113,34 +113,10 @@ class ResourceList extends React.Component {
         this.setState({ searchTerm: event.target.value });
     }
     handleFilterItemUses(event){
-        const button = event.target.id;
-        if(button === 'radio-show-all'){
-            this.setState({ filterByUses: 'all' });    
-        } else if(button === 'radio-show-unused'){
-            this.setState({ filterByUses: 'unused'});
-        } else if(button === 'radio-show-used'){
-            this.setState({ filterByUses: 'used' });    
-        } else if(button === 'radio-show-no-uses-left'){
-            this.setState({ filterByUses: 'noUses' });    
-        }
+        this.setState({ filterByUses: event.target.id });
     }
     handleFilterItemType(event){
-        const button = event.target.id;
-        if(button === 'radio-show-all'){
-            this.setState({ filterByType: 'all' });    
-        } else if(button === 'radio-show-food'){
-            this.setState({ filterByType: 'food'});
-        } else if(button === 'radio-show-water'){
-            this.setState({ filterByType: 'water' });    
-        } else if(button === 'radio-show-medicine'){
-            this.setState({ filterByType: 'medicine' });    
-        } else if(button === 'radio-show-roulette'){
-            this.setState({ filterByType: 'roulette'});
-        } else if(button === 'radio-show-life'){
-            this.setState({ filterByType: 'life' });    
-        } else if(button === 'radio-show-golden'){
-            this.setState({ filterByType: 'golden' });    
-        }
+        this.setState({ filterByType: event.target.id });
     }
     handleShowDetails(event){
         this.setState({ showDetails: event.target.checked });
@@ -223,28 +199,28 @@ class ResourceList extends React.Component {
                             type="radio"
                             name="filter-by-uses"
                             label="All"
-                            id="radio-show-all"
+                            id="all"
                             onChange={this.handleFilterItemUses}
                         />
                         <Form.Check
                             type="radio"
                             name="filter-by-uses"
                             label="Unused"
-                            id="radio-show-unused"
+                            id="unused"
                             onChange={this.handleFilterItemUses}
                         />
                         <Form.Check
                             type="radio"
                             name="filter-by-uses"
                             label="Used At Least Once"
-                            id="radio-show-used"
+                            id="used"
                             onChange={this.handleFilterItemUses}
                         />
                         <Form.Check
                             type="radio"
                             name="filter-by-uses"
                             label="No Uses Left"
-                            id="radio-show-no-uses-left"
+                            id="no-uses-left"
                             onChange={this.handleFilterItemUses}
                         />
                     </Form.Group>
@@ -256,49 +232,49 @@ class ResourceList extends React.Component {
                             type="radio"
                             name="filter-by-type"
                             label="All"
-                            id="radio-show-all"
+                            id="all"
                             onChange={this.handleFilterItemType}
                         />
                         <Form.Check
                             type="radio"
                             name="filter-by-type"
                             label="Food"
-                            id="radio-show-food"
+                            id="food"
                             onChange={this.handleFilterItemType}
                         />
                         <Form.Check
                             type="radio"
                             name="filter-by-type"
                             label="Water"
-                            id="radio-show-water"
+                            id="water"
                             onChange={this.handleFilterItemType}
                         />
                         <Form.Check
                             type="radio"
                             name="filter-by-type"
                             label="Medicine"
-                            id="radio-show-medicine"
+                            id="medicine"
                             onChange={this.handleFilterItemType}
                         />
                         <Form.Check
                             type="radio"
                             name="filter-by-type"
                             label="Roulette"
-                            id="radio-show-roulette"
+                            id="roulette"
                             onChange={this.handleFilterItemType}
                         />
                         <Form.Check
                             type="radio"
                             name="filter-by-type"
                             label="Life"
-                            id="radio-show-life"
+                            id="life"
                             onChange={this.handleFilterItemType}
                         />
                         <Form.Check
                             type="radio"
                             name="filter-by-type"
                             label="Golden"
-                            id="radio-show-golden"
+                            id="golden"
                             onChange={this.handleFilterItemType}
                         />
                     </Form.Group>

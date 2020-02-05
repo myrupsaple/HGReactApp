@@ -70,6 +70,43 @@ class ItemForm extends React.Component {
         this.setState({ tier4_cost: event.target.value });
     }
 
+    handleFormSubmit = () => {
+        const validated = (this.state.name && this.state.description && this.state.quantity && 
+            this.state.tier1_cost && this.state.tier2_cost && this.state.tier3_cost && this.state.tier4_cost);
+        if(!validated){
+            alert('All fields must be filled in');
+            return;
+        }
+        if(this._isMounted){
+            this.setState({ submitted: true })
+        }
+        if(this.props.mode === 'edit'){
+            const itemObject = {
+                id: this.props.selectedItem.id,
+                name: this.state.name,
+                description: this.state.description,
+                quantity: this.state.quantity,
+                tier1_cost: this.state.tier1_cost,
+                tier2_cost: this.state.tier2_cost,
+                tier3_cost: this.state.tier3_cost,
+                tier4_cost: this.state.tier4_cost
+            };
+            this.props.updateItem(itemObject);
+        } else if(this.props.mode === 'create') {
+            const itemObject = {
+                name: this.state.name,
+                description: this.state.description,
+                quantity: this.state.quantity,
+                tier1_cost: this.state.tier1_cost,
+                tier2_cost: this.state.tier2_cost,
+                tier3_cost: this.state.tier3_cost,
+                tier4_cost: this.state.tier4_cost
+            };
+            this.props.createItem(itemObject);
+        }
+        setTimeout(() => this.handleClose(), 1000);
+    }
+
     renderModalHeader(){
         if(this.props.mode === 'edit'){
             return 'Edit Item';
@@ -191,43 +228,6 @@ class ItemForm extends React.Component {
                 <Button variant="info" onClick={this.handleFormSubmit}>Confirm</Button>
             </Form.Row>
         );
-    }
-
-    handleFormSubmit = () => {
-        const validated = (this.state.name && this.state.description && this.state.quantity && 
-            this.state.tier1_cost && this.state.tier2_cost && this.state.tier3_cost && this.state.tier4_cost);
-        if(!validated){
-            alert('All fields must be filled in');
-            return;
-        }
-        if(this._isMounted){
-            this.setState({ submitted: true })
-        }
-        if(this.props.mode === 'edit'){
-            const itemObject = {
-                id: this.props.selectedItem.id,
-                name: this.state.name,
-                description: this.state.description,
-                quantity: this.state.quantity,
-                tier1_cost: this.state.tier1_cost,
-                tier2_cost: this.state.tier2_cost,
-                tier3_cost: this.state.tier3_cost,
-                tier4_cost: this.state.tier4_cost
-            };
-            this.props.updateItem(itemObject);
-        } else if(this.props.mode === 'create') {
-            const itemObject = {
-                name: this.state.name,
-                description: this.state.description,
-                quantity: this.state.quantity,
-                tier1_cost: this.state.tier1_cost,
-                tier2_cost: this.state.tier2_cost,
-                tier3_cost: this.state.tier3_cost,
-                tier4_cost: this.state.tier4_cost
-            };
-            this.props.createItem(itemObject);
-        }
-        setTimeout(() => this.handleClose(), 1000);
     }
 
     // GOOD EXAMPLE OF PASSING DATA FROM CHILD TO PARENT

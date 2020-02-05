@@ -117,12 +117,27 @@ class ManageItems extends React.Component {
                 </>
             );
         }
+
+        const items = this.props.items;
+        items.sort((a, b) => {
+            if(['life', 'immunity', 'golden_resource', 'food_resource', 'water_resource', 'medicine_resource'].includes(a.item_name) ||
+            ['life', 'immunity', 'golden_resource', 'food_resource', 'water_resource', 'medicine_resource'].includes(b.item_name)){
+                return 1;
+            } else if(a.item_name > b.item_name){
+                return 1;
+            } else if(a.item_name < b.item_name){
+                return -1;
+            } else {
+                return 0;
+            }
+        });
+
         return(
             <>
             <h3>Items found:</h3>
             <ul className="list-group">
                 {this.renderTableHeader()}
-                {this.props.items.map(item => {
+                {items.map(item => {
                     return(
                         <li className="list-group-item" key={item.id}>
                             <div className="row">

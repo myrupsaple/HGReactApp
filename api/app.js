@@ -211,7 +211,8 @@ connection.connect(async (err) => {
             item_name VARCHAR(25),
             item_id INT,
             cost INT,
-            quantity TINYINT
+            quantity TINYINT,
+            notes VARCHAR(50)
         )`;
 
         const createGameState = `CREATE TABLE game_state(
@@ -1312,6 +1313,91 @@ app.put(`/tribute-stats/life-events/kills/put/:email/:mode`, (req, res) => {
     });
 })
 
+// UPDATE_TRIBUTE_STATS_LIFE_EVENT
+app.put(`/tribute-stats/life-events/lives/put/:email/:type/:method/:mode`, (req, res) => {
+    const { email, type, method, mode } = req.params;
+    var queryStringUpdateTributeStatsLives = '';
+    if(mode === 'create'){
+        if(type === 'gained'){
+            if(method === 'purchased'){
+                queryStringUpdateTributeStatsLives = `UPDATE tribute_stats SET lives_purchased =
+                lives_purchased + 1, lives_remaining = lives_remaining + 1 WHERE email = '${email}'`;
+    
+            } else if (method === 'life resource') {
+                queryStringUpdateTributeStatsLives = `UPDATE tribute_stats SET life_resources =
+                life_resources + 1, lives_exempt = lives_exempt + 1, 
+                lives_remaining = lives_remaining + 1 WHERE email = '${email}'`;
+            } else {
+                queryStringUpdateTributeStatsLives = `UPDATE tribute_stats SET lives_exempt =
+                lives_exempt + 1, lives_remaining = lives_remaining + 1 WHERE email = '${email}'`;
+            }
+        } else if(type === 'lost'){
+            queryStringUpdateTributeStatsLives = `UPDATE tribute_stats SET lives_remaining =
+            lives_remaining - 1, lives_lost = lives_lost + 1 WHERE email = '${email}'`;
+        }
+    } else if(mode === 'delete'){
+        // These basically all do the opposite of the above.
+        if(type === 'gained'){
+            if(method === 'purchased'){
+                queryStringUpdateTributeStatsLives = `UPDATE tribute_stats SET lives_purchased =
+                lives_purchased - 1, lives_remaining = lives_remaining - 1 WHERE email = '${email}'`;
+    
+            } else if (method === 'life resource') {
+                queryStringUpdateTributeStatsLives = `UPDATE tribute_stats SET life_resources =
+                life_resources - 1, lives_exempt = lives_exempt - 1, 
+                lives_remaining = lives_remaining - 1 WHERE email = '${email}'`;
+            } else {
+                queryStringUpdateTributeStatsLives = `UPDATE tribute_stats SET lives_exempt =
+                lives_exempt - 1, lives_remaining = lives_remaining - 1 WHERE email = '${email}'`;
+            }
+        } else if(type === 'lost'){
+            queryStringUpdateTributeStatsLives = `UPDATE tribute_stats SET lives_remaining =
+            lives_remaining + 1, lives_lost = lives_lost - 1 WHERE email = '${email}'`;
+        }
+    }
+    console.log(queryStringUpdateTributeStatsLives);
+    connection.query(queryStringUpdateTributeStatsLives, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// UPDATE_RESOURCE_EVENTS_LIFE_EVENT
+app.put(`/resource-events/life-events/put/:email/:mode`, (req, res) => {
+    const { email, mode } = req.params;
+    var queryStringUpdateTributeStatsKills = '';
+
+    if(mode === 'create'){
+        queryStringUpdateTributeStatsKills = `UPDATE tribute_stats SET kill_count = 
+        kill_count + 1 WHERE email = '${email}'`;
+    } else if(mode === 'delete'){
+        queryStringUpdateTributeStatsKills = `UPDATE tribute_stats SET kill_count = 
+        kill_count - 1 WHERE email = '${email}'`;
+    }
+
+    console.log(queryStringUpdateTributeStatsKills);
+    connection.query(queryStringUpdateTributeStatsKills, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for life events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
 //############################## (6) Item List ###############################//
 
 // FETCH_ITEM
@@ -1489,12 +1575,12 @@ app.get(`/purchases/get/all`, (req, res) => {
 })
 
 // CREATE_PURCHASE_REQUEST
-app.post(`/purchases/post/:time/:status/:mentorEmail/:payerEmail/:receiverEmail/:category/:item_name/:item_id/:cost/:quantity`, (req, res) => {
-    const { time, status, mentorEmail, payerEmail, receiverEmail, category, item_name, item_id, cost, quantity } = req.params;
+app.post(`/purchases/post/:time/:status/:mentorEmail/:payerEmail/:receiverEmail/:category/:item_name/:item_id/:cost/:quantity/:notes`, (req, res) => {
+    const { time, status, mentorEmail, payerEmail, receiverEmail, category, item_name, item_id, cost, quantity, notes } = req.params;
     const queryStringCreatePurchaseRequest = `INSERT INTO purchases (time, status,
         mentor_email, payer_email, receiver_email, category, item_name, item_id,
-        cost, quantity) VALUES (${time}, '${status}', '${mentorEmail}', '${payerEmail}',
-        '${receiverEmail}', '${category}', '${item_name}', ${item_id}, ${cost}, ${quantity})`;
+        cost, quantity, notes) VALUES (${time}, '${status}', '${mentorEmail}', '${payerEmail}',
+        '${receiverEmail}', '${category}', '${item_name}', ${item_id}, ${cost}, ${quantity}, '${notes}')`;
     console.log(queryStringCreatePurchaseRequest);
     connection.query(queryStringCreatePurchaseRequest, (err, rows, fields) => {
         if(err){
@@ -1511,11 +1597,12 @@ app.post(`/purchases/post/:time/:status/:mentorEmail/:payerEmail/:receiverEmail/
 })
 
 // UPDATE_PURCHASE_REQUEST
-app.put(`/purchases/put/:id/:time/:status/:mentorEmail/:payerEmail/:receiverEmail/:category/:item_name/:item_id/:cost/:quantity`, (req, res) => {
-    const { id, time, status, mentorEmail, payerEmail, receiverEmail, category, item_name, item_id, cost, quantity } = req.params;
+app.put(`/purchases/put/:id/:time/:status/:mentorEmail/:payerEmail/:receiverEmail/:category/:item_name/:item_id/:cost/:quantity/:notes`, (req, res) => {
+    const { id, time, status, mentorEmail, payerEmail, receiverEmail, category, item_name, item_id, cost, quantity, notes } = req.params;
     const queryStringUpdatePurchaseRequest = `UPDATE purchases SET time = ${time}, status = '${status}',
     mentor_email = '${mentorEmail}', payer_email = '${payerEmail}', receiver_email = '${receiverEmail}',
-    category = '${category}', item_name = '${item_name}', item_id = ${item_id}, cost = ${cost}, quantity = ${quantity} WHERE id = ${id}`;
+    category = '${category}', item_name = '${item_name}', item_id = ${item_id}, cost = ${cost}, 
+    notes = '${notes}', quantity = ${quantity} WHERE id = ${id}`;
     console.log(queryStringUpdatePurchaseRequest);
     connection.query(queryStringUpdatePurchaseRequest, (err, rows, fields) => {
         if(err){
@@ -1532,9 +1619,10 @@ app.put(`/purchases/put/:id/:time/:status/:mentorEmail/:payerEmail/:receiverEmai
 })
 
 // UPDATE_PURCHASE_STATUS
-app.put(`/purchases/status/put/:id/:status`, (req, res) => {
-    const { id, status } = req.params;
-    const queryStringUpdatePurchaseStatus = `UPDATE purchases SET status = '${status}' WHERE id = ${id}`
+app.put(`/purchases/status/put/:id/:status/:notes`, (req, res) => {
+    const { id, status, notes } = req.params;
+    const queryStringUpdatePurchaseStatus = `UPDATE purchases SET status = '${status}',
+    notes = '${notes}' WHERE id = ${id}`;
     console.log(queryStringUpdatePurchaseStatus);
     connection.query(queryStringUpdatePurchaseStatus, (err, rows, fields) => {
         if(err){

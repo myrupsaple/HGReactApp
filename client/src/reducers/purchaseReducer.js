@@ -20,7 +20,8 @@ export default (state = {}, action) => {
                 item_id: purchase.item_id,
                 category: purchase.category,
                 cost: purchase.cost,
-                quantity: purchase.quantity
+                quantity: purchase.quantity,
+                notes: purchase.notes
             };
         default:
             return state;

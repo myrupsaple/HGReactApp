@@ -136,34 +136,10 @@ class ManageFunds extends React.Component {
         }
     }
     handleFilterEventType(event){
-        const button = event.target.id;
-        if(button === 'radio-show-all'){
-            this.setState({ filterByType: 'all' });    
-        } else if(button === 'radio-show-food'){
-            this.setState({ filterByType: 'food'});
-        } else if(button === 'radio-show-water'){
-            this.setState({ filterByType: 'water' });    
-        } else if(button === 'radio-show-medicine'){
-            this.setState({ filterByType: 'medicine' });    
-        } else if(button === 'radio-show-roulette'){
-            this.setState({ filterByType: 'roulette'});
-        } else if(button === 'radio-show-life'){
-            this.setState({ filterByType: 'life' });    
-        } else if(button === 'radio-show-golden'){
-            this.setState({ filterByType: 'golden' });    
-        }
+        this.setState({ filterByType: event.target.id });
     }
     handleFilterUsageMethod(event){
-        const button = event.target.id;
-        if(button === 'radio-show-all'){
-            this.setState({ filterByMethod: 'all' });    
-        } else if(button === 'radio-show-code'){
-            this.setState({ filterByMethod: 'code'});
-        } else if(button === 'radio-show-purchased'){
-            this.setState({ filterByMethod: 'purchased' });    
-        } else if(button === 'radio-show-other'){
-            this.setState({ filterByMethod: 'other' });    
-        }
+        this.setState({ filterByMethod: event.target.id });
     }
     handleShowDetails(event){
         this.setState({ showDetails: event.target.checked });
@@ -282,28 +258,28 @@ class ManageFunds extends React.Component {
                             type="radio"
                             name="filter-by-method"
                             label="All"
-                            id="radio-show-all"
+                            id="all"
                             onChange={this.handleFilterItemUses}
                         />
                         <Form.Check
                             type="radio"
                             name="filter-by-method"
                             label="Code"
-                            id="radio-show-code"
+                            id="code"
                             onChange={this.handleFilterItemUses}
                         />
                         <Form.Check
                             type="radio"
                             name="filter-by-method"
                             label="Purchased"
-                            id="radio-show-purchased"
+                            id="purchased"
                             onChange={this.handleFilterItemUses}
                         />
                         <Form.Check
                             type="radio"
                             name="filter-by-uses"
                             label="Other"
-                            id="radio-show-other"
+                            id="other"
                             onChange={this.handleFilterItemUses}
                         />
                     </Form.Group>
@@ -315,49 +291,49 @@ class ManageFunds extends React.Component {
                             type="radio"
                             name="filter-by-type"
                             label="All"
-                            id="radio-show-all"
+                            id="all"
                             onChange={this.handleFilterItemType}
                         />
                         <Form.Check
                             type="radio"
                             name="filter-by-type"
                             label="Food"
-                            id="radio-show-food"
+                            id="food"
                             onChange={this.handleFilterItemType}
                         />
                         <Form.Check
                             type="radio"
                             name="filter-by-type"
                             label="Water"
-                            id="radio-show-water"
+                            id="water"
                             onChange={this.handleFilterItemType}
                         />
                         <Form.Check
                             type="radio"
                             name="filter-by-type"
                             label="Medicine"
-                            id="radio-show-medicine"
+                            id="medicine"
                             onChange={this.handleFilterItemType}
                         />
                         <Form.Check
                             type="radio"
                             name="filter-by-type"
                             label="Roulette"
-                            id="radio-show-roulette"
+                            id="roulette"
                             onChange={this.handleFilterItemType}
                         />
                         <Form.Check
                             type="radio"
                             name="filter-by-type"
                             label="Life"
-                            id="radio-show-life"
+                            id="life"
                             onChange={this.handleFilterItemType}
                         />
                         <Form.Check
                             type="radio"
                             name="filter-by-type"
                             label="Golden"
-                            id="radio-show-golden"
+                            id="golden"
                             onChange={this.handleFilterItemType}
                         />
                     </Form.Group>
@@ -472,6 +448,16 @@ class ManageFunds extends React.Component {
         } else if(eventTypeFilter === 'other') {
             resourceEvents = resourceEvents.filter(resourceEvent => resourceEvent.method === 'other');
         }
+
+        resourceEvents.sort((a, b) => {
+            if(a.time > b.time){
+                return -1;
+            } else if(a.time < b.time){
+                return 1;
+            } else {
+                return 0;
+            }
+        });
 
         return(
             <>

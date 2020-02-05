@@ -36,12 +36,11 @@ import SubmitResource from '../_App/pages/tribute/SubmitResource';
 // Helper Tools
 import ViewLocations from '../_App/pages/helper/ViewLocations';
 // Mentor Tools
-import RequestItems from '../_App/pages/mentor/RequestItems';
+import PurchaseReqests from '../_App/pages/mentor/PurchaseRequests';
 // Gamemaker Tools
 import ManageGame from '../_App/pages/gamemaker/ManageGame';
 import TributeInfo from '../_App/pages/gamemaker/TributeInfo';
 import DonationTracking from '../_App/pages/gamemaker/DonationTracking';
-import PurchaseReqests from '../_App/pages/mentor/PurchaseRequests';
 import LifeTracking from '../_App/pages/gamemaker/LifeTracking';
 import ResourceList from '../_App/pages/gamemaker/ResourceList';
 import ResourceEvents from '../_App/pages/gamemaker/ResourceEvents';
@@ -93,7 +92,6 @@ class App extends React.Component {
                     {/* Helper Tools */}
                     <Route path="/App/helper/locations" exact component={ViewLocations} />
                     {/* Mentor Tools */}
-                    <Route path="/App/mentor/request" exact component={RequestItems} />
                     <Route path="/App/mentor/purchase-requests" exact component={PurchaseReqests} />
                     {/* Gamemaker Tools */}
                     <Route path="/App/gamemaker/manage-game" exact component={ManageGame} />

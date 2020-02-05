@@ -173,7 +173,7 @@ export const fetchAllUsers = () => async (dispatch) => {
     }
 };
 
-export const updateUser = user => async dispatch => {
+export const updateUser = user => async () => {
     console.log('Actions: Update user initiated');
     await app.put(`/user/put/${user.id}/${user.first_name}/${user.last_name}/${user.email}/${user.permissions}`)
         .then(res => {
@@ -184,7 +184,7 @@ export const updateUser = user => async dispatch => {
         });
 }
 
-export const createUser = user => async dispatch => {
+export const createUser = user => async () => {
     console.log('Actions: Create user initiated');
     await app.post(`/user/post/${user.first_name}/${user.last_name}/${user.email}/${user.permissions}`)
         .then(res => {
@@ -195,7 +195,7 @@ export const createUser = user => async dispatch => {
         })
 }
 
-export const deleteUser = id => async dispatch => {
+export const deleteUser = id => async () => {
     console.log(`Actions: DELETE user initiated with id ${id}`);
     await app.delete(`/user/delete/${id}`)
         .then(res => {
@@ -208,7 +208,7 @@ export const deleteUser = id => async dispatch => {
 
 //######################### (2) TRIBUTE MANAGEMENT ###########################//
 
-export const fetchTribute = (email, id) => async dispatch => {
+export const fetchTribute = (email, id) => async (dispatch) => {
     console.log(`Actions: Fetch tributes initiated`);
     var response = null;
     await app.get(`/tribute/info/get/${email}`)
@@ -226,7 +226,7 @@ export const fetchTribute = (email, id) => async dispatch => {
     }
 }
 
-export const fetchTributes = () => async dispatch => {
+export const fetchTributes = () => async (dispatch) => {
     console.log(`Actions: Fetch all tributes initiated`);
     var response = null;
     await app.get(`/tributes/info/get`)
@@ -242,7 +242,7 @@ export const fetchTributes = () => async dispatch => {
     }
 }
 
-export const createTribute = tribute => async dispatch => {
+export const createTribute = tribute => async () => {
     console.log('Actions: Create tribute initiated');
     await app.post(`/tribute/info/post/${tribute.first_name}/${tribute.last_name}/${tribute.email}/${tribute.phone}/${tribute.district}/${tribute.districtPartner}/${tribute.area}/${tribute.mentor}/${tribute.paidRegistration}`)
         .then(res => {
@@ -253,7 +253,7 @@ export const createTribute = tribute => async dispatch => {
         })
 }
 
-export const updateTribute = tribute => async dispatch => {
+export const updateTribute = tribute => async () => {
     console.log('Actions: Update tribute initiated');
     await app.put(`/tribute/info/put/${tribute.id}/${tribute.first_name}/${tribute.last_name}/${tribute.email}/${tribute.phone}/${tribute.district}/${tribute.districtPartner}/${tribute.area}/${tribute.mentor}/${tribute.paidRegistration}`)
         .then(res => {
@@ -264,7 +264,7 @@ export const updateTribute = tribute => async dispatch => {
         });
 }
 
-export const deleteTribute = id => async dispatch => {
+export const deleteTribute = id => async () => {
     console.log(`Actions: DELETE tribute initiated with id ${id}`);
     await app.delete(`/tribute/info/delete/${id}`)
         .then(res => {
@@ -347,7 +347,7 @@ export const fetchAllDonations = () => async (dispatch) => {
     }
 };
 
-export const createDonation = donation => async dispatch => {
+export const createDonation = donation => async () => {
     console.log('Actions: Create donation initiated');
     await app.post(`/donations/post/${donation.email}/${donation.donor}/${donation.method}/${donation.date}/${donation.amount}/${donation.tags}`)
         .then(res => {
@@ -358,7 +358,7 @@ export const createDonation = donation => async dispatch => {
         });
 }
 
-export const updateDonation = donation => async dispatch => {
+export const updateDonation = donation => async () => {
     console.log('Actions: Update donation initiated');
     await app.put(`/donations/put/${donation.id}/${donation.email}/${donation.donor}/${donation.method}/${donation.date}/${donation.amount}/${donation.tags}`)
         .then(res => {
@@ -369,7 +369,7 @@ export const updateDonation = donation => async dispatch => {
         });
 }
 
-export const deleteDonation = id => async dispatch => {
+export const deleteDonation = id => async () => {
     console.log(`Actions: DELETE donation initiated with id ${id}`);
     await app.delete(`/donations/delete/${id}`)
         .then(res => {
@@ -380,11 +380,11 @@ export const deleteDonation = id => async dispatch => {
         });
 }
 
-export const clearDonationsList = () => async dispatch => {
+export const clearDonationsList = () => async (dispatch) => {
     dispatch({ type: CLEAR_DONATIONS_QUEUE });
 }
 
-export const donationUpdateTributeStats = (email, amount) => async dispatch => {
+export const donationUpdateTributeStats = (email, amount) => async () => {
     console.log('Actions: Donations: Update tribute stats for donations');
     await app.put(`/tribute-stats/donations/put/${email}/${amount}`)
         .then(res => {
@@ -465,7 +465,7 @@ export const fetchAllResourceListItems = () => async (dispatch) => {
     }
 };
 
-export const createResourceListItem = item => async dispatch => {
+export const createResourceListItem = item => async () => {
     console.log('Actions: Create resource list item initiated');
     await app.post(`/resource/list/post/${item.code}/${item.type}/${item.timesUsed}/${item.maxUses}/${item.usedBy}/${item.notes}`)
         .then(res => {
@@ -476,7 +476,7 @@ export const createResourceListItem = item => async dispatch => {
         });
 }
 
-export const updateResourceListItem = item => async dispatch => {
+export const updateResourceListItem = item => async () => {
     console.log('Actions: Update resource list item initiated');
     await app.put(`/resource/list/put/${item.id}/${item.code}/${item.type}/${item.timesUsed}/${item.maxUses}/${item.usedBy}/${item.notes}`)
         .then(res => {
@@ -487,7 +487,7 @@ export const updateResourceListItem = item => async dispatch => {
         });
 }
 
-export const deleteResourceListItem = id => async dispatch => {
+export const deleteResourceListItem = id => async () => {
     console.log(`Actions: DELETE resource list item initiated with id ${id}`);
     await app.delete(`/resource/list/delete/${id}`)
         .then(res => {
@@ -498,7 +498,7 @@ export const deleteResourceListItem = id => async dispatch => {
         });
 }
 
-export const clearResourceList = () => async dispatch => {
+export const clearResourceList = () => async (dispatch) => {
     dispatch({ type: CLEAR_RESOURCE_LIST_QUEUE });
 }
 
@@ -573,7 +573,7 @@ export const fetchAllResourceEvents = () => async (dispatch) => {
     }
 };
 
-export const createResourceEvent = item => async dispatch => {
+export const createResourceEvent = item => async () => {
     console.log('Actions: Create resource event initiated');
     await app.post(`/resource/events/post/${item.email}/${item.type}/${item.method}/${item.time}/${item.notes}`)
         .then(res => {
@@ -584,7 +584,7 @@ export const createResourceEvent = item => async dispatch => {
         });
 }
 
-export const updateResourceEvent = item => async dispatch => {
+export const updateResourceEvent = item => async () => {
     console.log('Actions: Update resource event initiated');
     await app.put(`/resource/events/put/${item.id}/${item.email}/${item.type}/${item.method}/${item.time}/${item.notes}`)
         .then(res => {
@@ -595,7 +595,7 @@ export const updateResourceEvent = item => async dispatch => {
         });
 }
 
-export const deleteResourceEvent = id => async dispatch => {
+export const deleteResourceEvent = id => async () => {
     console.log(`Actions: DELETE resource event initiated with id ${id}`);
     await app.delete(`/resource/events/delete/${id}`)
         .then(res => {
@@ -606,11 +606,11 @@ export const deleteResourceEvent = id => async dispatch => {
         });
 }
 
-export const clearResourceEvents = () => async dispatch => {
+export const clearResourceEvents = () => async (dispatch) => {
     dispatch({ type: CLEAR_RESOURCE_EVENT_QUEUE });
 }
 
-export const resourceEventUpdateTributeStats = (email, type, mode) => async dispatch => {
+export const resourceEventUpdateTributeStats = (email, type, mode) => async () => {
     console.log(`Actions: Update tribute stats with ${type} resource`);
     await app.put(`/tribute-stats/resource-events/put/${email}/${type}/${mode}`)
         .then(res => {
@@ -621,7 +621,7 @@ export const resourceEventUpdateTributeStats = (email, type, mode) => async disp
         });
 }
 
-export const resourceEventUpdateLifeEvents = (email, time, mode) => async dispatch => {
+export const resourceEventUpdateLifeEvents = (email, time, mode) => async () => {
     console.log(`Actions: Update life events with life resource`);
     await app.put(`/resource-events/life-events/put/${email}/${time}/${mode}`)
         .then(res => {
@@ -632,7 +632,7 @@ export const resourceEventUpdateLifeEvents = (email, time, mode) => async dispat
         });
 }
 
-export const resourceEventUpdateResourceList = (code, name, mode) => async dispatch => {
+export const resourceEventUpdateResourceList = (code, name, mode) => async () => {
     console.log(`Actions: Update resource list with resource event`);
     await app.put(`/resource-events/resource-list/put/${name}/${code}/${mode}`)
         .then(res => {
@@ -645,7 +645,7 @@ export const resourceEventUpdateResourceList = (code, name, mode) => async dispa
 
 //########################### (5) Life Management ############################//
 
-export const fetchLifeEvent = id => async dispatch => {
+export const fetchLifeEvent = id => async (dispatch) => {
     console.log(`Actions: Get Life Event initiated with id ${id}`);
     var response = null;
     await app.get(`/life-events/get/single/${id}`)
@@ -662,7 +662,7 @@ export const fetchLifeEvent = id => async dispatch => {
     }
 }
 
-export const fetchLifeEvents = (type, query) => async dispatch => {
+export const fetchLifeEvents = (type, query) => async (dispatch) => {
     console.log(`Actions: Get Life Event List initiated: ${type} with query ${query}`);
     var response = null;
     await app.get(`/life-events/get/list/${type}/${query}`)
@@ -679,7 +679,7 @@ export const fetchLifeEvents = (type, query) => async dispatch => {
     }
 }
 
-export const fetchLifeEventsRange = (type, queryLower, queryUpper) => async dispatch => {
+export const fetchLifeEventsRange = (type, queryLower, queryUpper) => async (dispatch) => {
     console.log(`Actions: Get Life Event Range: ${type} from ${queryLower} to ${queryUpper}`);
     var response = null;
     await app.get(`/life-events/get/range/${type}/${queryLower}/${queryUpper}`)
@@ -696,7 +696,7 @@ export const fetchLifeEventsRange = (type, queryLower, queryUpper) => async disp
     }
 }
 
-export const fetchAllLifeEvents = () => async dispatch => {
+export const fetchAllLifeEvents = () => async (dispatch) => {
     console.log(`Actions: Get All Life Events`);
     var response = null;
     await app.get(`/life-events/get/all`)
@@ -713,7 +713,7 @@ export const fetchAllLifeEvents = () => async dispatch => {
     }
 }
 
-export const createLifeEvent = (lifeEvent) => async dispatch => {
+export const createLifeEvent = (lifeEvent) => async () => {
     console.log(`Actions: Create Life Event`);
     await app.post(`/life-events/post/${lifeEvent.email}/${lifeEvent.type}/${lifeEvent.method}/${lifeEvent.time}/${lifeEvent.notes}`)
         .then(res => {
@@ -724,7 +724,7 @@ export const createLifeEvent = (lifeEvent) => async dispatch => {
         });
 }
 
-export const updateLifeEvent = (lifeEvent) => async dispatch => {
+export const updateLifeEvent = (lifeEvent) => async () => {
     console.log(`Actions: Update Life Event`);
     await app.put(`/life-events/put/${lifeEvent.id}/${lifeEvent.email}/${lifeEvent.type}/${lifeEvent.method}/${lifeEvent.time}/${lifeEvent.notes}`)
         .then(res => {
@@ -735,7 +735,7 @@ export const updateLifeEvent = (lifeEvent) => async dispatch => {
         });
 }
 
-export const deleteLifeEvent = (id) => async dispatch => {
+export const deleteLifeEvent = (id) => async () => {
     console.log(`Actions: DELETE Life Event with id ${id}`);
     await app.delete(`/life-events/delete/${id}`)
         .then(res => {
@@ -746,11 +746,11 @@ export const deleteLifeEvent = (id) => async dispatch => {
         });
 }
 
-export const clearLifeEventsList = () => async dispatch => {
+export const clearLifeEventsList = () => async (dispatch) => {
     dispatch({ type: CLEAR_LIFE_EVENTS_QUEUE });
 }
 
-export const lifeEventUpdateTributeStatsLives = (email, type, method, mode) => async dispatch => {
+export const lifeEventUpdateTributeStatsLives = (email, type, method, mode) => async () => {
     console.log('Actions: Donations: Update tribute stats for life events');
     await app.put(`/tribute-stats/life-events/lives/put/${email}/${type}/${method}/${mode}`)
         .then(res => {
@@ -761,7 +761,7 @@ export const lifeEventUpdateTributeStatsLives = (email, type, method, mode) => a
         });
 }
 
-export const lifeEventUpdateTributeStatsKills = (email, mode) => async dispatch => {
+export const lifeEventUpdateTributeStatsKills = (email, mode) => async () => {
     console.log('Actions: Donations: Update tribute stats for kill count');
     await app.put(`/tribute-stats/life-events/kills/put/${email}/${mode}`)
         .then(res => {
@@ -774,7 +774,7 @@ export const lifeEventUpdateTributeStatsKills = (email, mode) => async dispatch 
 
 //############################## (6) Item List ###############################//
 
-export const fetchItem = id => async dispatch => {
+export const fetchItem = id => async (dispatch) => {
     console.log(`Actions: Get Item initiated with id ${id}`);
     var response = null;
     await app.get(`/item-list/get/single/${id}`)
@@ -791,7 +791,7 @@ export const fetchItem = id => async dispatch => {
     }
 }
 
-export const fetchItems = (query) => async dispatch => {
+export const fetchItems = (query) => async (dispatch) => {
     console.log(`Actions: Get Item List initiatedwith query ${query}`);
     var response = null;
     await app.get(`/item-list/get/list/${query}`)
@@ -808,7 +808,7 @@ export const fetchItems = (query) => async dispatch => {
     }
 }
 
-export const fetchAllItems = () => async dispatch => {
+export const fetchAllItems = () => async (dispatch) => {
     console.log(`Actions: Get All Items`);
     var response = null;
     await app.get(`/item-list/get/all`)
@@ -825,7 +825,7 @@ export const fetchAllItems = () => async dispatch => {
     }
 }
 
-export const createItem = (item) => async dispatch => {
+export const createItem = (item) => async () => {
     console.log(`Actions: Create Item`);
     await app.post(`/item-list/post/${item.name}/${item.description}/${item.quantity}/${item.tier1_cost}/${item.tier2_cost}/${item.tier3_cost}/${item.tier4_cost}`)
         .then(res => {
@@ -836,7 +836,7 @@ export const createItem = (item) => async dispatch => {
         });
 }
 
-export const updateItem = (item) => async dispatch => {
+export const updateItem = (item) => async () => {
     console.log(`Actions: Update Item`);
     await app.put(`/item-list/put/${item.id}/${item.name}/${item.description}/${item.quantity}/${item.tier1_cost}/${item.tier2_cost}/${item.tier3_cost}/${item.tier4_cost}`)
         .then(res => {
@@ -847,7 +847,7 @@ export const updateItem = (item) => async dispatch => {
         });
 }
 
-export const deleteItem = (id) => async dispatch => {
+export const deleteItem = (id) => async () => {
     console.log(`Actions: DELETE Item with id ${id}`);
     await app.delete(`/item-list/delete/${id}`)
         .then(res => {
@@ -860,7 +860,7 @@ export const deleteItem = (id) => async dispatch => {
 
 //############################## (7) Purchases ###############################//
 
-export const fetchMentors = () => async dispatch => {
+export const fetchMentors = () => async (dispatch) => {
     console.log(`Actions: Fetch mentors list`);
     var response = null;
     await app.get(`/purchases/get/mentors`)
@@ -877,7 +877,7 @@ export const fetchMentors = () => async dispatch => {
     }
 }
 
-export const fetchPurchaseRequest = (id) => async dispatch => {
+export const fetchPurchaseRequest = (id) => async (dispatch) => {
     console.log(`Actions: Fetch purchase request with id ${id}`);
     var response = null;
     await app.get(`/purchases/get/single/${id}`)
@@ -894,7 +894,7 @@ export const fetchPurchaseRequest = (id) => async dispatch => {
     }
 }
 
-export const fetchAllPurchaseRequests = () => async dispatch => {
+export const fetchAllPurchaseRequests = () => async (dispatch) => {
     console.log(`Actions: Fetch all purchase requests`);
     var response = null;
     await app.get(`/purchases/get/all`)
@@ -911,7 +911,7 @@ export const fetchAllPurchaseRequests = () => async dispatch => {
     }
 }
 
-export const createPurchaseRequest = (purchase) => async dispatch => {
+export const createPurchaseRequest = (purchase) => async (dispatch) => {
     console.log(`Actions: Create purchase request`);
     var response = null;
     const { 
@@ -924,9 +924,10 @@ export const createPurchaseRequest = (purchase) => async dispatch => {
         item_name,
         item_id, 
         cost, 
-        quantity
+        quantity,
+        notes
     } = purchase;
-    await app.post(`/purchases/post/${time}/${status}/${mentor_email}/${payer_email}/${receiver_email}/${category}/${item_name}/${item_id}/${cost}/${quantity}`)
+    await app.post(`/purchases/post/${time}/${status}/${mentor_email}/${payer_email}/${receiver_email}/${category}/${item_name}/${item_id}/${cost}/${quantity}/${notes}`)
         .then(res => {
             console.log('Successfully created purchase request');
         })
@@ -939,7 +940,7 @@ export const createPurchaseRequest = (purchase) => async dispatch => {
     }
 }
 
-export const updatePurchaseRequest = (purchase) => async dispatch => {
+export const updatePurchaseRequest = (purchase) => async (dispatch) => {
     console.log(`Actions: Update purchase request`);
     var response = null;
     const { 
@@ -953,9 +954,10 @@ export const updatePurchaseRequest = (purchase) => async dispatch => {
         item_name,
         item_id, 
         cost, 
-        quantity
+        quantity,
+        notes
     } = purchase;
-    await app.put(`/purchases/put/${id}/${time}/${status}/${mentor_email}/${payer_email}/${receiver_email}/${category}/${item_name}/${item_id}/${cost}/${quantity}`)
+    await app.put(`/purchases/put/${id}/${time}/${status}/${mentor_email}/${payer_email}/${receiver_email}/${category}/${item_name}/${item_id}/${cost}/${quantity}/${notes}`)
         .then(res => {
             console.log('Successfully updated purchase request');
         })
@@ -968,9 +970,9 @@ export const updatePurchaseRequest = (purchase) => async dispatch => {
     }
 }
 
-export const purchaseUpdateStatus = (id, status) => async dispatch => {
+export const purchaseUpdateStatus = (id, status, notes) => async () => {
     console.log(`Actions: Update purchase request status`);
-    await app.put(`/purchases/status/put/${id}/${status}`)
+    await app.put(`/purchases/status/put/${id}/${status}/${notes}`)
         .then(res => {
             console.log('Successfully updated purchase request status');
         })
@@ -979,7 +981,7 @@ export const purchaseUpdateStatus = (id, status) => async dispatch => {
         });
 }
 
-export const deletePurchaseRequest = (id) => async dispatch => {
+export const deletePurchaseRequest = (id) => async () => {
     console.log(`Actions: DELETE purchase request with id ${id}`);
     await app.delete(`/purchases/delete/${id}`)
         .then(res => {
@@ -990,7 +992,7 @@ export const deletePurchaseRequest = (id) => async dispatch => {
         });
 }
 
-export const purchaseCheckFunds = email => async dispatch => {
+export const purchaseCheckFunds = email => async () => {
     console.log(`Actions: Purchases: Check Funds`);
     await app.get(`/purchases/tribute-stats/check-funds/get/${email}`)
         .then(res => {
@@ -1001,7 +1003,7 @@ export const purchaseCheckFunds = email => async dispatch => {
         });
 }
 
-export const purchaseUpdateFunds = (email, amount) => async dispatch => {
+export const purchaseUpdateFunds = (email, amount) => async () => {
     console.log(`Actions: Purchases: Update Funds`);
     await app.put(`/purchases/tribute-stats/update-funds/put/${email}/${amount}`)
         .then(res => {
@@ -1012,7 +1014,7 @@ export const purchaseUpdateFunds = (email, amount) => async dispatch => {
         });
 }
 
-export const purchaseUpdateItemQuantity = (id, quantity) => async dispatch => {
+export const purchaseUpdateItemQuantity = (id, quantity) => async () => {
     console.log(`Actions: Purchases: Update Item Quantity`);
     await app.put(`/purchases/items/put/${id}/${quantity}`)
         .then(res => {
@@ -1023,7 +1025,7 @@ export const purchaseUpdateItemQuantity = (id, quantity) => async dispatch => {
         });
 }
 
-export const purchaseCreateLifeEvent = (email, time) => async dispatch => {
+export const purchaseCreateLifeEvent = (email, time) => async () => {
     console.log(`Actions: Purchases: Create Life Event`);
     await app.post(`/purchases/life-events/post/${email}/${time}`)
         .then(res => {
@@ -1034,7 +1036,7 @@ export const purchaseCreateLifeEvent = (email, time) => async dispatch => {
         });
 }
 
-export const purchaseUpdateTributeLives = (email) => async dispatch => {
+export const purchaseUpdateTributeLives = (email) => async () => {
     console.log(`Actions: Purchases: Update Tribute Life Count`);
     await app.put(`/purchases/tribute-stats/lives/put/${email}`)
         .then(res => {
@@ -1045,7 +1047,7 @@ export const purchaseUpdateTributeLives = (email) => async dispatch => {
         });
 }
 
-export const purchaseCreateResourceEvent = (email, type, time) => async dispatch => {
+export const purchaseCreateResourceEvent = (email, type, time) => async () => {
     console.log(`Actions: Purchases: Create resource event`);
 
     await app.post(`/purchases/resources/post/${email}/${type}/${time}`)
@@ -1057,7 +1059,7 @@ export const purchaseCreateResourceEvent = (email, type, time) => async dispatch
         });
 }
 
-export const purchaseUpdateTributeResources = (email, formattedType) => async dispatch => {
+export const purchaseUpdateTributeResources = (email, formattedType) => async () => {
     console.log(`Actions: Purchases: Update tribute resource count`);
     await app.put(`/purchases/tribute-stats/resources/put/${email}/${formattedType}`)
         .then(res => {
@@ -1068,7 +1070,7 @@ export const purchaseUpdateTributeResources = (email, formattedType) => async di
         });
 }
 
-export const purchaseGiveImmunity = email => async dispatch => {
+export const purchaseGiveImmunity = email => async () => {
     console.log(`Actions: Purchases: Give tribute immunity`);
     await app.put(`/purchases/tribute-stats/immunity/put/${email}`)
         .then(res => {
@@ -1079,7 +1081,7 @@ export const purchaseGiveImmunity = email => async dispatch => {
         });
 }
 
-export const transferFunds = (emailFrom, emailTo, amount) => async dispatch => {
+export const transferFunds = (emailFrom, emailTo, amount) => async () => {
     console.log(`Actions: Purchases: Transfer tribute balance`);
     await app.put(`/purchases/tribute-stats/funds-transfer/put/${emailFrom}/${emailTo}/${amount}`)
         .then(res => {
@@ -1092,7 +1094,7 @@ export const transferFunds = (emailFrom, emailTo, amount) => async dispatch => {
 
 //######################## (8) Game State Management #########################//
 
-export const getGameState = () => async dispatch => {
+export const getGameState = () => async (dispatch) => {
     console.log(`Actions: Get Game State initiated`);
     var response = null;
     await app.get(`/game-state/get`)
@@ -1109,7 +1111,7 @@ export const getGameState = () => async dispatch => {
     }
 }
 
-export const setGameStartTime = time => async dispatch => {
+export const setGameStartTime = time => async () => {
     console.log(`Actions: Set Game Time initiated with value ${time}`);
     await app.put(`/game-state/put/game-time/${time}`)
         .then(res => {

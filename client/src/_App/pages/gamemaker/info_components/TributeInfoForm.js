@@ -85,6 +85,38 @@ class TributeInfoForm extends React.Component {
         this.setState({ paidRegistration: event.target.value });
     }    
 
+
+    handleFormSubmit = () => {
+        const validated = (this.state.first_name && this.state.last_name && this.state.email && 
+            this.state.phone && this.state.district && this.state.districtPartner && 
+            this.state.area && this.state.mentor);
+        if(!validated){
+            alert('All fields must be filled in');
+            return;
+        }
+        if(this._isMounted){
+            this.setState({ submitted: true });
+        }
+        const sendUser = {
+            first_name: this.state.first_name,
+            last_name: this.state.last_name,
+            email: this.state.email,
+            phone: this.state.phone,
+            district: this.state.district,
+            districtPartner: this.state.districtPartner,
+            area: this.state.area,
+            mentor: this.state.mentor,
+            paidRegistration: this.state.paidRegistration
+        }
+        if(this.props.mode === 'edit'){
+            sendUser.id = this.state.id;
+            this.props.updateTribute(sendUser);
+        } else if(this.props.mode === 'create') {
+            this.props.createTribute(sendUser);
+        }
+        setTimeout(() => this.handleClose(), 1000);
+    }
+
     renderForm = () => {
         if(this.state.submitted) {
             const message = this.props.mode === 'edit' ? 'Updated' : 'Created';
@@ -209,42 +241,11 @@ class TributeInfoForm extends React.Component {
         }
     }
 
-    handleFormSubmit = () => {
-        const validated = (this.state.first_name && this.state.last_name && this.state.email && 
-            this.state.phone && this.state.district && this.state.districtPartner && 
-            this.state.area && this.state.mentor);
-        if(!validated){
-            alert('All fields must be filled in');
-            return;
-        }
-        if(this._isMounted){
-            this.setState({ submitted: true });
-        }
-        const sendUser = {
-            first_name: this.state.first_name,
-            last_name: this.state.last_name,
-            email: this.state.email,
-            phone: this.state.phone,
-            district: this.state.district,
-            districtPartner: this.state.districtPartner,
-            area: this.state.area,
-            mentor: this.state.mentor,
-            paidRegistration: this.state.paidRegistration
-        }
-        if(this.props.mode === 'edit'){
-            sendUser.id = this.state.id;
-            this.props.updateTribute(sendUser);
-        } else if(this.props.mode === 'create') {
-            this.props.createTribute(sendUser);
-        }
-        setTimeout(() => this.handleClose(), 1000);
-    }
-
     handleClose = () => {
         if(this._isMounted){
             this.setState({ showModal: false });
-            this.props.onSubmitCallback();
         }
+        this.props.onSubmitCallback();
     }
 
     renderModalHeader(){
