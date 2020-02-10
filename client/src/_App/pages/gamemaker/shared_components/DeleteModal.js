@@ -9,7 +9,8 @@ class DeleteModal extends React.Component {
         super(props);
         this.state = {
             showModal: true,
-            confirmed: false
+            confirmed: false,
+            apiError: false
         }
     }
 
@@ -24,8 +25,13 @@ class DeleteModal extends React.Component {
         }
     }
 
-    onConfirm = () => {
-        this.props.onConfirm(this.props.id);
+    onConfirm = async () => {
+        const response = await this.props.onConfirm(this.props.id);
+        if(!response){
+            this.setState({ apiError: true });
+            return null;
+        }
+
         if(this._isMounted){
             this.setState({ confirmed: true });
         }
@@ -35,6 +41,8 @@ class DeleteModal extends React.Component {
     renderBody = () => {
         if(this.state.confirmed){
             return 'Entry deleted successfully';
+        } else if(this.state.apiError){
+            return 'An error occurred during deletion. Please try again later';
         } else {
             return(
                 <>
@@ -45,13 +53,19 @@ class DeleteModal extends React.Component {
     }
 
     renderFooter = () => {
-        if(this.state.confirmed){
+        if(this.state.apiError) {
+            return(
+                <>
+                    <Button variant="secondary" onClick={this.handleClose}>Close</Button>
+                </>
+            );
+        } else if(this.state.confirmed){
             return null;
         } else {
             return(
                 <>
                     <Button variant="danger" onClick={this.onConfirm}>Confirm</Button>
-                    <Button variant="info" onClick={this.handleClose}>Cancel</Button>
+                    <Button variant="secondary" onClick={this.handleClose}>Cancel</Button>
                 </>
             );
         }

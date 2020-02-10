@@ -6,9 +6,7 @@ import { setNavBar } from '../../../actions';
 import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components/AuthMessages';
 import Wait from '../../../components/Wait';
 import {
-    fetchTributes,
     fetchResourceListItems,
-    fetchResourceListItemRange,
     fetchAllResourceListItems,
     deleteResourceListItem,
     clearResourceList
@@ -35,7 +33,9 @@ class ResourceList extends React.Component {
             showEdit: false,
             showDelete: false,
             // Neded to access individual resource list item data
-            selectedId: null
+            selectedId: null,
+            // API error handling
+            apiError: false
         };
 
         this.handleSearchType = this.handleSearchType.bind(this);
@@ -51,7 +51,7 @@ class ResourceList extends React.Component {
         const allowedGroups = ['owner', 'admin', 'gamemaker'];
         var timeoutCounter = 0;
         while(!this.props.authLoaded){
-            await Wait(500);
+            await Wait(1000);
             timeoutCounter ++;
             console.log('waiting on authLoaded')
             if (timeoutCounter > 5){
@@ -99,7 +99,6 @@ class ResourceList extends React.Component {
                 }
             })
         }
-        await this.props.fetchTributes();
     }
 
     handleSearchType(event) {
@@ -133,7 +132,12 @@ class ResourceList extends React.Component {
         const searchType = this.state.searchType;
         const searchTerm = this.state.searchTerm.toLowerCase();
 
-        this.props.fetchResourceListItems(searchType, searchTerm.toLowerCase());
+        const response = await this.props.fetchResourceListItems(searchType, searchTerm.toLowerCase());
+        if(!response){
+            this.setState({ apiError: true });
+        } else {
+            this.setState({ apiError: false });
+        }
     }
 
     renderSearchForm = () =>{
@@ -293,9 +297,14 @@ class ResourceList extends React.Component {
         );
     }
 
-    searchForAllResourceItems = () => {
+    searchForAllResourceItems = async () => {
         this.setState({ searchTerm: '', queried: true});
-        this.props.fetchAllResourceListItems();
+        const response = await this.props.fetchAllResourceListItems();
+        if(!response){
+            this.setState({ apiError: true });
+        } else {
+            this.setState({ apiError: false });
+        }
     }
 
     renderTableHeader(){
@@ -312,6 +321,13 @@ class ResourceList extends React.Component {
     }
 
     renderResourceList(){
+        if(this.state.apiError) {
+            return(
+                <h5>
+                    An error occurred while loading data. Please try again.
+                </h5>
+            );
+        }
         if(Object.keys(this.props.resourceList).length === 0){
             // Return different message before and after first search is sent
             if(!this.state.queried) {
@@ -462,7 +478,7 @@ class ResourceList extends React.Component {
         );
     }
 
-    onSubmitCallback = () => {
+    onSubmitCallback = async () => {
         if(this.state.showCreate){
             this.setState({ showCreate: false })
         } else if(this.state.showEdit){
@@ -474,17 +490,23 @@ class ResourceList extends React.Component {
             return;
         }
         if(this.state.searchTerm === ''){
-            this.props.fetchAllResourceListItems();
+            const response = await this.props.fetchAllResourceListItems();
+            if(!response){
+                this.setState({ apiError: true });
+            }
         } else {
-            this.props.fetchResourceListItems(this.state.searchType, this.state.searchTerm);
+            const response = await this.props.fetchResourceListItems(this.state.searchType, this.state.searchTerm);
+            if(!response){
+                this.setState({ apiError: true });
+            }
         }
     }
 
     renderModal(){
         if(this.state.showCreate) {
-            return <ResourceListForm tributes={this.props.tributes} id={this.state.selectedId} mode="create" onSubmitCallback={this.onSubmitCallback}/>;
+            return <ResourceListForm id={this.state.selectedId} mode="create" onSubmitCallback={this.onSubmitCallback}/>;
         } else if(this.state.showEdit) {
-            return <ResourceListForm tributes={this.props.tributes} id={this.state.selectedId} mode="edit" onSubmitCallback={this.onSubmitCallback}/>;
+            return <ResourceListForm id={this.state.selectedId} mode="edit" onSubmitCallback={this.onSubmitCallback}/>;
         } else if(this.state.showDelete){
             return <DeleteModal id={this.state.selectedId} actionType="Resource List Item" 
             onConfirm={this.props.deleteResourceListItem}
@@ -533,7 +555,6 @@ const mapStateToProps = state => {
         authLoaded: state.auth.loaded,
         isSignedIn: state.auth.isSignedIn,
         userPerms: state.auth.userPerms,
-        tributes: Object.values(state.tributes),
         resourceList: Object.values(state.resourceList)
     }
 }
@@ -541,9 +562,7 @@ const mapStateToProps = state => {
 export default connect(mapStateToProps, 
     { 
         setNavBar,
-        fetchTributes,
         fetchResourceListItems,
-        fetchResourceListItemRange,
         fetchAllResourceListItems,
         deleteResourceListItem,
         clearResourceList

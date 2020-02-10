@@ -9,8 +9,8 @@ import {
     purchaseUpdateItemQuantity,
     purchaseCreateResourceEvent,
     purchaseCreateLifeEvent,
-    resourceEventUpdateLifeEvents,
-    lifeEventUpdateTributeStatsLives,
+    purchaseUpdateTributeResources,
+    purchaseUpdateTributeLives,
     purchaseGiveImmunity
 } from '../../../../actions';
 
@@ -22,7 +22,8 @@ class ApprovalForm extends React.Component{
             showModal: true,
             status: 'pending',
             submitted: false,
-            notes: ''
+            notes: '',
+            apiError: false
         }
 
         this.handleNotes = this.handleNotes.bind(this);
@@ -54,7 +55,9 @@ class ApprovalForm extends React.Component{
                 default:
                     return null;                
             }
-        }
+        } else if(!this.props.purchase.payer_email){
+            return <h3>An error occured while retrieving purchase data. Please try again.</h3> 
+        } 
         const purchase = this.props.purchase;
         return(
            <div style={{ marginLeft: "20px" }}>
@@ -106,33 +109,62 @@ class ApprovalForm extends React.Component{
     }
 
     approveRequest = async () => {
-        if(this._isMounted){
-            this.setState({ submitted: true, status: 'approved' });
-        }
-
         if (!this.state.notes.replace(/\s/g, '').length) {
             await this.setState({ notes: 'None' })
         }
 
         const purchase = this.props.purchase;
 
-        this.props.purchaseUpdateStatus(purchase.id, 'approved', this.state.notes);
+        const response = await this.props.purchaseUpdateStatus(purchase.id, 'approved', this.state.notes);
+        if(!response){
+            this.setState({ apiError: true });
+            return null;
+        }
 
         if(purchase.category === 'item'){
             // Item and funds have already been handled. 
-            return;
         } else if(purchase.category === 'resource'){
-            await this.props.purchaseCreateResourceEvent(purchase.receiver_email, purchase.item_name, purchase.time);
-            await this.props.resourceEventUpdateLifeEvents(purchase.receiver_email, purchase.time, 'create');
+            const response = await this.props.purchaseCreateResourceEvent(purchase.receiver_email, purchase.item_name, purchase.time);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
+            const response2 = await this.props.purchaseUpdateTributeResources(purchase.receiver_email, purchase.item_name);
+            if(!response2){
+                this.setState({ apiError: true });
+                return null;
+            }
         } else if(purchase.category === 'life'){
-            await this.props.purchaseCreateLifeEvent(purchase.receiver_email, purchase.time);
-            await this.props.lifeEventUpdateTributeStatsLives(purchase.receiver_email, 'gained', 'purchased', 'create');
+            const response = await this.props.purchaseCreateLifeEvent(purchase.receiver_email, purchase.time);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
+            const response2 = await this.props.purchaseUpdateTributeLives(purchase.receiver_email);
+            if(!response2){
+                this.setState({ apiError: true });
+                return null;
+            }
         } else if(purchase.category === 'immunity'){
-            await this.props.purchaseGiveImmunity(purchase.receiver_email);
+            const response = await this.props.purchaseGiveImmunity(purchase.receiver_email);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
         } else if(purchase.category === 'transfer'){
             // Only need to add here since the deduction was made during the request
-            await this.props.purchaseUpdateFunds(purchase.receiver_email, purchase.cost);
+            const response = await this.props.purchaseUpdateFunds(purchase.receiver_email, purchase.cost);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
         }
+
+        if(this._isMounted){
+            this.setState({ submitted: true, status: 'approved' });
+        }
+
+        setTimeout(() => this.handleClose(), 1000);
     }
 
     denyRequest = async () => {
@@ -140,35 +172,64 @@ class ApprovalForm extends React.Component{
             alert('Notes are required to deny a request');
             return;
         }
+
+        if(this.props.purchase.category === 'item'){
+            const response = await this.props.purchaseUpdateItemQuantity(this.props.purchase.item_id, this.props.purchase.quantity);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
+        } 
+
+        const response = await this.props.purchaseUpdateStatus(this.props.id, 'denied', this.state.notes);
+        if(!response){
+            this.setState({ apiError: true });
+            return null;
+        }
+        const amount = this.props.purchase.cost * this.props.purchase.quantity;
+        const response2 = await this.props.purchaseUpdateFunds(this.props.purchase.payer_email, amount);
+        if(!response2){
+            this.setState({ apiError: true });
+            return null;
+        }
+
         if(this._isMounted){
             this.setState({ submitted: true, status: 'denied' });
         }
 
-        if(this.props.purchase.category === 'item'){
-            await this.props.purchaseUpdateItemQuantity(this.props.purchase.item_id, this.props.purchase.quantity)
-        } 
-
-        await this.props.purchaseUpdateStatus(this.props.id, 'denied', this.state.notes);
-        const amount = this.props.purchase.cost * this.props.purchase.quantity;
-        console.log(amount);
-        await this.props.purchaseUpdateFunds(this.props.purchase.payer_email, amount);
         setTimeout(() => this.handleClose(), 1000);
     }
 
     renderModalFooter = () => {
         if(this.state.submitted){
             return null;
+        } else if(!this.props.purchase.payer_email){
+            return <Button onClick={this.handleClose} variant="secondary">Close</Button>;
+        } else {
+            return(
+                <>
+                {this.renderApiError()}
+                <Button onClick={this.approveRequest} variant="info">
+                    Approve
+                </Button>
+                <Button onClick={this.denyRequest} variant="danger">
+                    Deny
+                </Button>
+                </>
+            );
         }
-        return(
-            <>
-            <Button onClick={this.approveRequest} variant="info">
-                Approve
-            </Button>
-            <Button onClick={this.denyRequest} variant="danger">
-                Deny
-            </Button>
-            </>
-        );
+    }
+
+    renderApiError = () => {
+        if(this.state.apiError){
+            return (
+                <div className="row coolor-text-red">
+                    An error occurred. Please try again.
+                </div>
+            );
+        } else {
+            return null;
+        }
     }
 
     render = () => {
@@ -208,7 +269,7 @@ export default connect(mapStateToProps,
         purchaseUpdateItemQuantity,
         purchaseCreateResourceEvent,
         purchaseCreateLifeEvent,
-        resourceEventUpdateLifeEvents,
-        lifeEventUpdateTributeStatsLives,
+        purchaseUpdateTributeResources,
+        purchaseUpdateTributeLives,
         purchaseGiveImmunity
     })(ApprovalForm);

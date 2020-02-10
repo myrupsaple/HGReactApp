@@ -32,8 +32,14 @@ class ResourceEventForm extends React.Component {
             time: time,
             timeFormatted: `${hours}:${minutes}`,
             notes: 'None',
+            // Validation
+            emailValid: 1,
+            formValid: 1,
+            // Handle Modal
             showModal: true,
-            submitted: false
+            submitted: false,
+            // API error handling
+            apiError: false
         };
 
         this.handleTribute = this.handleTribute.bind(this);
@@ -46,7 +52,10 @@ class ResourceEventForm extends React.Component {
     async componentDidMount(){
         this._isMounted = true;
         if(this.props.mode === 'edit'){
-            await this.props.fetchResourceEvent(this.props.id);
+            const response = await this.props.fetchResourceEvent(this.props.id);
+            if(!response){
+                return null;
+            }
             
             const time = this.props.resourceEvent.time;
             const hours = Math.floor(time/60).toLocaleString(undefined, { minimumIntegerDigits: 2 });
@@ -61,19 +70,21 @@ class ResourceEventForm extends React.Component {
                     time: time,
                     timeFormatted: `${hours}:${minutes}`,
                     notes: this.props.resourceEvent.notes,
-                    originalNotes: this.props.resourceEvent.notes
+                    originalNotes: this.props.resourceEvent.notes,
+                    emailValid: 0
                 })
             }
         }
     }
 
     handleTribute(event){
-        if(event.target.value === 'Please Select a Tribute...'){
-            this.setState({ tribute_email: '' });
-            return;
+        if(event.target.value === ''){
+            this.setState({ tribute_email: '', emailValid: 2 });
+            return null;
+        } else {
+            const [name, email] = event.target.value.split(' || ');
+            this.setState({ tribute_email: email, tributeName: name, emailValid: 0 });
         }
-        const [name, email] = event.target.value.split(' || ');
-        this.setState({ tribute_email: email, tributeName: name });
     }
     handleType(event){
         const input = event.target.value;
@@ -106,22 +117,21 @@ class ResourceEventForm extends React.Component {
     }
 
     handleFormSubmit = async () => {
-        if(!this.state.time || !this.state.tribute_email || !this.state.type ||
-            !this.state.method){
-                alert('Please fill in the required fields');
-                return;
-            }
+        if(this.state.emailValid === 1){
+            this.setState({ emailValid: 2 });
+        }
 
-        if(this._isMounted){
-            this.setState({ submitted: true })
-        }        
+        if(this.state.emailValid !== 0){
+            this.setState({ formValid: 2 });
+            return null;
+        }       
 
         const resourceEventObject = {
             email: this.state.tribute_email,
             type: this.state.type,
             method: this.state.method,
             time: this.state.time,
-            notes: this.state.notes
+            notes: encodeURIComponent(this.state.notes)
         };
         if(this.state.type.split('-')[0] === 'golden'){
             resourceEventObject.notes = resourceEventObject.notes + ' (golden used)';
@@ -133,47 +143,100 @@ class ResourceEventForm extends React.Component {
 
         if(this.props.mode === 'edit'){
             resourceEventObject.id = this.props.id;
-            await this.props.updateResourceEvent(resourceEventObject);
+            const response = await this.props.updateResourceEvent(resourceEventObject);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
             
             // Tribute stats updating
-            await this.props.resourceEventUpdateTributeStats(this.state.originalEmail,
+            const response2 = await this.props.resourceEventUpdateTributeStats(this.state.originalEmail,
                 this.state.originalType, 'delete');
-            await this.props.resourceEventUpdateTributeStats(this.state.tribute_email,
+            if(!response2){
+                this.setState({ apiError: true });
+                return null;
+            }
+            const response3 = await this.props.resourceEventUpdateTributeStats(this.state.tribute_email,
                 this.state.type, 'create');
+            if(!response3){
+                this.setState({ apiError: true });
+                return null;
+            }
             
             // Life events updating
             if(this.state.type === 'life'){
-                await this.props.resourceEventUpdateLifeEvents(this.state.tribute_email,
+                const response = await this.props.resourceEventUpdateLifeEvents(this.state.tribute_email,
                 this.state.time, 'create');
+                if(!response){
+                    this.setState({ apiError: true });
+                    return null;
+                }
             }
 
             // Resource list counts updating (will delete 'used_by' if updated)
             if(this.state.method === 'code'){
-                await this.props.fetchTributes();
-                await this.props.resourceEventUpdateResourceList(
+                const response = await this.props.fetchTributes();
+                if(!response){
+                    this.setState({ apiError: true });
+                    return null;
+                }
+                const response2 = await this.props.resourceEventUpdateResourceList(
                     this.state.originalNotes, 'NA', 'delete');
-                await this.props.resourceEventUpdateResourceList(
+                if(!response2){
+                    this.setState({ apiError: true });
+                    return null;
+                }
+                const response3 = await this.props.resourceEventUpdateResourceList(
                     this.state.notes.toLowerCase(), this.getTributeName(this.state.tribute_email), 'create');
+                if(!response3){
+                    this.setState({ apiError: true });
+                    return null;
+                }
             }
         } else if(this.props.mode === 'create'){
-            await this.props.createResourceEvent(resourceEventObject);
+            const response = await this.props.createResourceEvent(resourceEventObject);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
 
             // Tribute stats updating
-            await this.props.resourceEventUpdateTributeStats(this.state.tribute_email,
+            const response2 = await this.props.resourceEventUpdateTributeStats(this.state.tribute_email,
                 this.state.type, 'create');
+            if(!response2){
+                this.setState({ apiError: true });
+                return null;
+            }
 
             // Life events updating
             if(this.state.type === 'life'){
-                await this.props.resourceEventUpdateLifeEvents(this.state.tribute_email,
+                const response = await this.props.resourceEventUpdateLifeEvents(this.state.tribute_email,
                 this.state.time, 'create');
+                if(!response){
+                    this.setState({ apiError: true });
+                    return null;
+                }
             }
             // Resource list counts updating (there is no undo for this action if edited)
             if(this.state.method === 'code'){
-                await this.props.fetchTributes();
-                await this.props.resourceEventUpdateResourceList(
+                const response = await this.props.fetchTributes();
+                if(!response){
+                    this.setState({ apiError: true });
+                    return null;
+                }
+                const response2 = await this.props.resourceEventUpdateResourceList(
                     this.state.notes.toLowerCase(), this.getTributeName(this.state.tribute_email), 'create');
+                if(!response2){
+                    this.setState({ apiError: true });
+                    return null;
+                }
             }
         }
+
+        if(this._isMounted){
+            this.setState({ submitted: true })
+        } 
+
         setTimeout(() => this.handleClose(), 1000);
     }
 
@@ -237,6 +300,7 @@ class ResourceEventForm extends React.Component {
                         >
                             {this.renderNameChoices()}
                         </Form.Control>
+                        {this.renderEmailValidation()}
                     </Form.Group></div>
                 </Form.Row>
                 <Form.Row>
@@ -269,6 +333,48 @@ class ResourceEventForm extends React.Component {
                 </Form.Row>
             </Form>
         );
+    }
+
+    renderEmailValidation = () => {
+        if(this.state.emailValid === 2){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Please select a tribute
+                </p>
+            );
+        } else if(this.state.emailValid === 0) {
+            return(
+                <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10003;</span> Tribute
+                </p>
+            );
+        } else {
+            return null;
+        }
+    }
+    renderFormValidation = () => {
+        if(this.state.submitted){
+            return null;
+        } else if(this.props.mode === 'edit' && !this.props.resourceEvent.tribute_email){
+            return null;
+        } 
+        if(this.state.emailValid === 0) {
+            return(
+                <p className="coolor-text-green" style={{ fontSize: "12pt" }}>
+                    <span role="img" aria-label="check/x">&#10003;</span> Ready to submit? 
+                </p>
+            );
+        } else if(this.state.formValid === 2){
+            return(
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                        <span role="img" aria-label="check/x">&#10071;</span> Please fix the indicated fields.
+                    </p>
+                </div>
+            );
+        } else {
+            return null;
+        }
     }
 
     renderNameChoices(){
@@ -339,11 +445,24 @@ class ResourceEventForm extends React.Component {
             return null;
         }
         return(
-            <Form.Row>
+            <>
+                {this.renderApiError()}
                 <Button variant="danger" onClick={this.handleClose}>Cancel</Button>
                 <Button variant="info" onClick={this.handleFormSubmit}>Submit</Button>
-            </Form.Row>
+            </>
         );
+    }
+
+    renderApiError = () => {
+        if(this.state.apiError){
+            return (
+                <div className="row coolor-text-red">
+                    An error occurred. Please try again.
+                </div>
+            );
+        } else {
+            return null;
+        }
     }
 
     handleClose = () => {
@@ -364,6 +483,7 @@ class ResourceEventForm extends React.Component {
                     {this.renderModalBody()}
                 </Modal.Body>
                 <Modal.Footer>
+                    {this.renderFormValidation()}
                     {this.renderModalFooter()}
                 </Modal.Footer>
             </Modal>

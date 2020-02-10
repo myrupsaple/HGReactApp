@@ -31,7 +31,8 @@ class ModifyUsers extends React.Component {
             showDelete: false,
             // Both are needed to access individual user data
             selectedId: null,
-            selectedEmail: null
+            selectedEmail: null,
+            apiError: false
         };
 
         this.handleSearchType = this.handleSearchType.bind(this);
@@ -44,7 +45,7 @@ class ModifyUsers extends React.Component {
         const allowedGroups = ['owner', 'admin'];
         var timeoutCounter = 0;
         while(!this.props.authLoaded){
-            await Wait(500);
+            await Wait(1000);
             timeoutCounter ++;
             console.log('waiting on authLoaded')
             if (timeoutCounter > 5){
@@ -104,14 +105,22 @@ class ModifyUsers extends React.Component {
         return permission.slice(0, 1).toUpperCase() + permission.slice(1, permission.length);
     }
 
-    handleSearchSubmit(event) {
+    async handleSearchSubmit(event) {
         event.preventDefault();
 
         this.setState({ queried: true });
-        this.props.fetchUsers(this.state.searchType, this.state.searchTerm);
+        const response = await this.props.fetchUsers(this.state.searchType, this.state.searchTerm);
+        response ? this.setState({ apiError: false }) : this.setState({ apiError: true });
     }
 
     renderUsers(){
+        if(this.state.apiError){
+            return(
+                <h5>
+                    An error occurred while loading data. Please try again
+                </h5>
+            )
+        }
         if(Object.keys(this.props.users).length === 0){
             // Return different message before and after first search is sent
             if(!this.state.queried) {
@@ -239,9 +248,10 @@ class ModifyUsers extends React.Component {
         )
     }
 
-    fetchAllUsers = () => {
+    fetchAllUsers = async () => {
         this.setState({ searchTerm: '' , queried: true });
-        this.props.fetchAllUsers()
+        const response = await this.props.fetchAllUsers();
+        response ? this.setState({ apiError: false }) : this.setState({ apiError: true });
     }
 
     showModal = () => {
@@ -262,7 +272,7 @@ class ModifyUsers extends React.Component {
         }
     }
 
-    onSubmitCallback = () => {
+    onSubmitCallback = async () => {
         if(this.state.showCreate){
             this.setState({ showCreate: false })
         } else if(this.state.showEdit){
@@ -274,9 +284,11 @@ class ModifyUsers extends React.Component {
             return;
         }
         if(this.state.searchTerm === ''){
-            this.props.fetchAllUsers();
+            const response = await this.props.fetchAllUsers();
+            response ? this.setState({ apiError: false }) : this.setState({ apiError: true });
         } else {
-            this.props.fetchUsers(this.state.searchType, this.state.searchTerm);
+            const response = await this.props.fetchUsers(this.state.searchType, this.state.searchTerm);
+            response ? this.setState({ apiError: false }) : this.setState({ apiError: true });
         }
     };
 

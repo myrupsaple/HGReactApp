@@ -17,7 +17,8 @@ class DeleteResourceEvent extends React.Component {
         super(props);
         this.state = {
             showModal: true,
-            confirmed: false
+            confirmed: false,
+            apiError: false
         }
     }
 
@@ -33,14 +34,31 @@ class DeleteResourceEvent extends React.Component {
     }
 
     onConfirm = async () => {
-        await this.props.fetchResourceEvent(this.props.id);
+        const response = await this.props.fetchResourceEvent(this.props.id);
+        if(!response){
+            this.setState({ apiError: true });
+            return null;
+        }
+
         const resourceEvent = this.props.resourceEvent;
         
-        this.props.resourceEventUpdateTributeStats(resourceEvent.tribute_email, resourceEvent.type, 'delete');
-        this.props.deleteResourceEvent(this.props.id);
+        const response2 = await this.props.deleteResourceEvent(this.props.id);
+        if(!response2){
+            this.setState({ apiError: true });
+            return null;
+        }
+        const response3 = await this.props.resourceEventUpdateTributeStats(resourceEvent.tribute_email, resourceEvent.type, 'delete');
+        if(!response3){
+            this.setState({ apiError: true });
+            return null;
+        }
 
         if(resourceEvent.method === 'code'){
-            this.props.resourceEventUpdateResourceList(resourceEvent.notes, 'NA', 'delete')
+            const response4 = await this.props.resourceEventUpdateResourceList(resourceEvent.notes, 'NA', 'delete')
+            if(!response4){
+                this.setState({ apiError: true });
+                return null;
+            }
         }
 
         if(this._isMounted){
@@ -50,7 +68,9 @@ class DeleteResourceEvent extends React.Component {
     }
 
     renderBody = () => {
-        if(this.state.confirmed){
+        if(this.state.apiError){
+            return 'An error occurred during deletion. Please try again later.'
+        } else if(this.state.confirmed){
             return 'Entry deleted successfully';
         } else {
             return(
@@ -62,13 +82,15 @@ class DeleteResourceEvent extends React.Component {
     }
 
     renderFooter = () => {
-        if(this.state.confirmed){
+        if(this.state.apiError){
+            return <Button variant="secondary" onClick={this.handleClose}>Cancel</Button>
+        } else if(this.state.confirmed){
             return null;
         } else {
             return(
                 <>
                     <Button variant="danger" onClick={this.onConfirm}>Confirm</Button>
-                    <Button variant="info" onClick={this.handleClose}>Cancel</Button>
+                    <Button variant="secondary" onClick={this.handleClose}>Cancel</Button>
                 </>
             );
         }

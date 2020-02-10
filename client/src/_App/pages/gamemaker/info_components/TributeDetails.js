@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Button, Modal } from 'react-bootstrap';
 
-import { fetchTribute, updateTribute, createTribute } from '../../../../actions';
+import { fetchTribute } from '../../../../actions';
 import TributeInfoForm from './TributeInfoForm';
 import DeleteTribute from './DeleteTribute';
 
@@ -11,12 +11,19 @@ class TributeDetails extends React.Component {
 
     constructor(props){
         super(props);
-        this.state = {};
+        this.state = {
+            showModal: true, 
+            showEdit: false, 
+            showDelete: false
+        };
     }
 
     async componentDidMount() {
         this._isMounted = true;
-        await this.props.fetchTribute(this.props.email);
+        const response = await this.props.fetchTribute(this.props.email);
+        if(!response){
+            return null;
+        }
     
         if(this._isMounted){
             this.setState({
@@ -28,10 +35,7 @@ class TributeDetails extends React.Component {
                 districtPartner: this.props.tribute.districtPartner,
                 area: this.props.tribute.area,
                 mentor: this.props.tribute.mentor,
-                paidRegistration: this.props.tribute.paidRegistration,
-                showModal: true,
-                showEdit: false,
-                showDelete: false
+                paidRegistration: this.props.tribute.paidRegistration
             });
         }
     }
@@ -81,12 +85,16 @@ class TributeDetails extends React.Component {
     }
 
     renderActions(){
-        return(
-            <>
-            <Button variant="info" onClick={() => this.setState({ showEdit: true })}>Edit Tribute Info</Button>
-            <Button variant="danger" onClick={() => this.setState({ showDelete: true })}>Delete Tribute</Button>
-            </>
-        );
+        if(!this.props.tribute.first_name){
+            return <Button variant="danger" onClick={this.handleClose}>Close</Button>;
+        } else {
+            return(
+                <>
+                <Button variant="info" onClick={() => this.setState({ showEdit: true })}>Edit Tribute Info</Button>
+                <Button variant="danger" onClick={() => this.setState({ showDelete: true })}>Delete Tribute</Button>
+                </>
+            );
+        }
     }
 
     // Ensures cleanup of values is completed upon modal closure (tribute info form)
@@ -169,4 +177,4 @@ const mapStateToProps = state => {
     };
 };
 
-export default connect(mapStateToProps, { fetchTribute, updateTribute, createTribute })(TributeDetails);
+export default connect(mapStateToProps, { fetchTribute })(TributeDetails);

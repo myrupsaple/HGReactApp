@@ -41,7 +41,7 @@ class AppNavBar extends React.Component {
                     </NavDropdown>
 
                     <Nav.Link href="/App/dev-updates">
-                        Dev. Updates 😬
+                        Dev. Updates <span role="img" aria-label="grimace">😬</span>
                     </Nav.Link>
                 </>
             );

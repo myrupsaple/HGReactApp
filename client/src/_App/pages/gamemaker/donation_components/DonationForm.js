@@ -21,7 +21,7 @@ class DonationForm extends React.Component {
         const day = now.getDate().toLocaleString(undefined, {minimumIntegerDigits: 2});
 
         this.state = {
-            tribute_email: 'No Assignment',
+            tribute_email: '',
             donor_name: '',
             method: '',
             date: `${year}-${month}-${day}`,
@@ -29,6 +29,13 @@ class DonationForm extends React.Component {
             originalAmount: '',
             amount: '',
             tags: '',
+            // Validation
+            emailValid: 1,
+            donorValid: 1,
+            methodValid: 1,
+            amountValid: 1,
+            formValid: 1,
+            // Handle the Modal
             showModal: true,
             submitted: false
         };
@@ -44,7 +51,11 @@ class DonationForm extends React.Component {
     async componentDidMount(){
         this._isMounted = true;
         if(this.props.mode === 'edit'){
-            await this.props.fetchDonation(this.props.id);
+            const response = await this.props.fetchDonation(this.props.id);
+            if(!response){
+                this.setState({ apiError: true });
+                return;
+            }
 
             const donation = this.props.donation;
             
@@ -59,20 +70,42 @@ class DonationForm extends React.Component {
                     method: donation.method,
                     originalAmount: donation.amount,
                     amount: donation.amount,
-                    tags: donation.tags
+                    tags: donation.tags,
+                    emailValid: 0,
+                    methodValid: 0,
+                    donorValid: 0,
+                    amountValid: 0
                 })
             }
         }
     }
 
     handleTribute(event){
-        this.setState({ tribute_email: event.target.value });
+        const input = event.target.value;
+        this.setState({ tribute_email: input });
+        if(input === ''){
+            this.setState({ emailValid: 2 });
+        } else {
+            this.setState({ emailValid: 0 });
+        }
     }
     handleDonor(event){
-        this.setState({ donor_name: event.target.value });
+        const input = event.target.value;
+        this.setState({ donor_name: input });
+        if(input.replace(/\s/) === ''){
+            this.setState({ donorValid: 2 });
+        } else {
+            this.setState({ donorValid: 0 });
+        }
     }
     handleMethod(event){
-        this.setState({ method: event.target.value });
+        const input = event.target.value;
+        this.setState({ method: input });
+        if(input.replace(/\s/) === ''){
+            this.setState({ methodValid: 2 });
+        } else {
+            this.setState({ methodValid: 0 });
+        }
     }
     handleDate(date){
         const day = date.getDate().toLocaleString(undefined, { minimumIntegerDigits: 2 });
@@ -84,42 +117,77 @@ class DonationForm extends React.Component {
         });
     }
     handleAmount(event){
-        this.setState({ amount: event.target.value });
+        const input = event.target.value
+        this.setState({ amount: input });
+        if(input === ''){
+            this.setState({ amountValid: 2 });
+        } else if(isNaN(input)){
+            this.setState({ amountValid: 3 });
+        } else if(Math.floor(input) <= 0){
+            this.setState({ amountValid: 4 });
+        } else {
+            this.setState({ amountValid: 0 });
+        }
     }
     handleTags(event){
         this.setState({ tags: event.target.value });
     }
 
-    handleFormSubmit = () => {
-        if(!this.state.date || !this.state.tribute_email || !this.state.donor_name ||
-            !this.state.method || !this.state.amount){
-                alert('Please fill in the required fields');
-                return;
-            }
+    handleFormSubmit = async () => {
+        if(this.state.emailValid === 1){
+            this.setState({ emailValid: 2 });
+        }
+        if(this.state.donorValid === 1){
+            this.setState({ donorValid: 2 });
+        }
+        if(this.state.methodValid === 1){
+            this.setState({ methodValid: 2 });
+        }
+        if(this.state.amountValid === 1){
+            this.setState({ amountValid: 2 });
+        }
 
-        if(this._isMounted){
-            this.setState({ submitted: true })
+        if(this.state.emailValid + this.state.donorValid + this.state.methodValid + this.state.amountValid !== 0){
+            this.setState({ formValid: 2 });
+            return null;
         }
 
         const donationObject = {
             email: this.state.tribute_email,
-            donor: this.state.donor_name,
-            method: this.state.method,
+            donor: encodeURIComponent(this.state.donor_name),
+            method: encodeURIComponent(this.state.method),
             date: this.state.date,
             amount: this.state.amount,
-            tags: this.state.tags
+            tags: encodeURIComponent(this.state.tags) 
         };
         if (!donationObject.tags.replace(/\s/g, '').length) {
             donationObject.tags = 'none';
         }
+
         if(this.props.mode === 'edit'){
             donationObject.id = this.props.id;
-            this.props.updateDonation(donationObject);
+            const response = await this.props.updateDonation(donationObject);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
         } else if(this.props.mode === 'create'){
-            this.props.createDonation(donationObject);
+            const response = await this.props.createDonation(donationObject);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
         }
 
-        this.props.donationUpdateTributeStats(this.state.tribute_email, this.state.amount - this.state.originalAmount);
+        const response = await this.props.donationUpdateTributeStats(this.state.tribute_email, this.state.amount - this.state.originalAmount);
+        if(!response){
+            this.setState({ apiError: true });
+            return null;
+        }
+
+        if(this._isMounted){
+            this.setState({ submitted: true })
+        }
 
         setTimeout(() => this.handleClose(), 1000);
     }
@@ -165,10 +233,12 @@ class DonationForm extends React.Component {
                         <Form.Control 
                             value={this.state.tribute_email} 
                             onChange={this.handleTribute} 
-                            as="select" autoComplete="off"
+                            as="select"
+                            disabled={this.props.mode === "edit"}
                         >
                             {this.renderNameChoices()}
                         </Form.Control>
+                        {this.renderEmailValidation()}
                     </Form.Group></div>
                 </Form.Row>
                 <Form.Row>
@@ -179,6 +249,7 @@ class DonationForm extends React.Component {
                             autoComplete="off"
                             onChange={this.handleDonor}
                         />
+                        {this.renderDonorValidation()}
                     </Form.Group></div>
                 </Form.Row>
                 <Form.Row>
@@ -189,6 +260,7 @@ class DonationForm extends React.Component {
                             onChange={this.handleMethod}
                             autoComplete="off"
                         />
+                        {this.renderMethodValidation()}
                     </Form.Group></div>
                     <div className="col-6"><Form.Group controlId="amount">
                         <Form.Label>Amount*</Form.Label>    
@@ -197,6 +269,7 @@ class DonationForm extends React.Component {
                             onChange={this.handleAmount}
                             autoComplete="off"
                         />
+                        {this.renderAmountValidation()}
                     </Form.Group></div>
                 </Form.Row>
                 <Form.Row>
@@ -213,6 +286,110 @@ class DonationForm extends React.Component {
         );
     }
 
+    renderEmailValidation = () =>{
+        if(this.state.emailValid === 2){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Email is required
+                </p>
+            );
+        } else if(this.state.emailValid === 0) {
+            return(
+                <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10003;</span> Tribute
+                </p>
+            );
+        } else {
+            return null;
+        }
+    }
+    renderDonorValidation = () =>{
+        if(this.state.donorValid === 2){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Donor name is required
+                </p>
+            );
+        } else if(this.state.donorValid === 0) {
+            return(
+                <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10003;</span> Donor name
+                </p>
+            );
+        } else {
+            return null;
+        }
+    }
+    renderMethodValidation = () =>{
+        if(this.state.methodValid === 2){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Donation method is required
+                </p>
+            );
+        } else if(this.state.methodValid === 0) {
+            return(
+                <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10003;</span> Method
+                </p>
+            );
+        } else {
+            return null;
+        }
+    }
+    renderAmountValidation = () =>{
+        if(this.state.amountValid === 2){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Amount is required
+                </p>
+            );
+        } else if (this.state.amountValid === 3){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Amount must be a number
+                </p>
+            );
+        } else if(this.state.amountValid === 4) {
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Amount must be positive
+                </p>
+            );
+        } else if(this.state.amountValid === 0) {
+            return(
+                <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10003;</span> Amount
+                </p>
+            );
+        } else {
+            return null;
+        }
+    }
+    renderFormValidation = () =>{
+        if(this.state.submitted){
+            return null;
+        } else if(this.props.mode === 'edit' && !this.props.donation.tribute_email){
+            return null;
+        } 
+        if(this.state.emailValid + this.state.donorValid + 
+            this.state.methodValid + this.state.amountValid === 0) {
+            return(
+                <p className="coolor-text-green" style={{ fontSize: "12pt" }}>
+                    <span role="img" aria-label="check/x">&#10003;</span> Ready to submit?
+                </p>
+            );
+        } else if(this.state.formValid === 2){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Please fix the indicated fields
+                </p>
+            );
+        } else {
+            return null;
+        }
+    }
+
     renderNameChoices(){
         const tributes = this.props.tributes;
         tributes.sort((a, b) => {
@@ -222,6 +399,7 @@ class DonationForm extends React.Component {
         })
         return (
         <>
+            <option value="">Please select a recipient...</option>
             <option value="No Assignment">No Assignment</option>
             {tributes.map(tribute => {
                 return (
@@ -239,11 +417,24 @@ class DonationForm extends React.Component {
             return null;
         }
         return(
-            <Form.Row>
+            <>
+                {this.renderApiError()}
                 <Button variant="danger" onClick={this.handleClose}>Cancel</Button>
                 <Button variant="info" onClick={this.handleFormSubmit}>Submit</Button>
-            </Form.Row>
+            </>
         );
+    }
+
+    renderApiError = () => {
+        if(this.state.apiError){
+            return (
+                <div className="row coolor-text-red">
+                    An error occurred. Please try again.
+                </div>
+            );
+        } else {
+            return null;
+        }
     }
 
     handleClose = () => {
@@ -254,6 +445,7 @@ class DonationForm extends React.Component {
     }
 
     render = () => {
+        console.log(this.state);
         return(
             <Modal show={this.state.showModal} onHide={this.handleClose}>
                 <Modal.Header>
@@ -263,6 +455,7 @@ class DonationForm extends React.Component {
                     {this.renderModalBody()}
                 </Modal.Body>
                 <Modal.Footer>
+                    {this.renderFormValidation()}
                     {this.renderModalFooter()}
                 </Modal.Footer>
             </Modal>

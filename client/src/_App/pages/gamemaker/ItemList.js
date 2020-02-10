@@ -13,7 +13,7 @@ import {
 import ItemForm from './item_components/ItemForm';
 import DeleteModal from './shared_components/DeleteModal';
 
-class ManageItems extends React.Component {
+class ItemList extends React.Component {
     _isMounted = false;
 
     constructor(props){
@@ -29,7 +29,8 @@ class ManageItems extends React.Component {
             showEdit: false,
             showDelete: false,
             showPurhcase: false,
-            selectedId: null
+            selectedId: null,
+            apiError: false
         };
 
         this.handleSearchTerm = this.handleSearchTerm.bind(this);
@@ -41,7 +42,7 @@ class ManageItems extends React.Component {
         const allowedGroups = ['owner', 'admin', 'gamemaker'];
         var timeoutCounter = 0;
         while(!this.props.authLoaded){
-            await Wait(500);
+            await Wait(1000);
             timeoutCounter ++;
             console.log('waiting on authLoaded')
             if (timeoutCounter > 5){
@@ -94,14 +95,27 @@ class ManageItems extends React.Component {
     handleSearchTerm(event) {
         this.setState({ searchTerm: event.target.value })
     }
-    handleSearchSubmit(event) {
+    async handleSearchSubmit(event) {
         event.preventDefault();
 
         this.setState({ queried: true });
-        this.props.fetchItems(this.state.searchTerm);
+        const response = await this.props.fetchItems(this.state.searchTerm);
+        if(!response){
+            this.setState({ apiError: true });
+            return null;
+        } else {
+            this.setState({ apiError: false });
+        }
     }
 
     renderItems(){
+        if(this.state.apiError){
+            return(
+                <h5>
+                    An error occurred while loading data. Please try again.
+                </h5>
+            );
+        }
         if(Object.keys(this.props.items).length === 0){
             // Return different message before and after first search is sent
             if(!this.state.queried) {
@@ -238,9 +252,15 @@ class ManageItems extends React.Component {
         )
     }
 
-    fetchAllItems = () => {
+    fetchAllItems = async () => {
         this.setState({ searchTerm: '' , queried: true });
-        this.props.fetchAllItems()
+        const response = await this.props.fetchAllItems();
+        if(!response){
+            this.setState({ apiError: true });
+            return null;
+        } else {
+            this.setState({ apiError: false });
+        }
     }
 
     renderModal = () => {
@@ -263,7 +283,7 @@ class ManageItems extends React.Component {
         }
     }
 
-    onSubmitCallback = () => {
+    onSubmitCallback = async () => {
         if(this.state.showCreate){
             this.setState({ showCreate: false })
         } else if(this.state.showEdit){
@@ -275,9 +295,17 @@ class ManageItems extends React.Component {
             return;
         }
         if(this.state.searchTerm === ''){
-            this.props.fetchAllItems();
+            const response = await this.props.fetchAllItems();
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
         } else {
-            this.props.fetchItems(this.state.searchTerm);
+            const response = await this.props.fetchItems(this.state.searchTerm);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
         }
     };
 
@@ -331,4 +359,4 @@ export default connect(mapStateToProps,
         fetchItems,
         fetchAllItems,
         deleteItem
-    })(ManageItems);
+    })(ItemList);

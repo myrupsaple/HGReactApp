@@ -8,7 +8,6 @@ import { setNavBar } from '../../../actions';
 import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components/AuthMessages';
 import Wait from '../../../components/Wait';
 import { 
-    fetchDonation,
     fetchDonations, 
     fetchAllDonations,
     fetchDonationsRange,
@@ -40,7 +39,10 @@ class ManageFunds extends React.Component {
             showEdit: false,
             showDelete: false,
             // Neded to access individual donation data
-            selectedId: null
+            selectedId: null,
+            // API error handling
+            apiInitialLoadError: false,
+            apiError: false
         };
 
         this.handleSearchType = this.handleSearchType.bind(this);
@@ -54,7 +56,7 @@ class ManageFunds extends React.Component {
         const allowedGroups = ['owner', 'admin', 'gamemaker'];
         var timeoutCounter = 0;
         while(!this.props.authLoaded){
-            await Wait(500);
+            await Wait(1000);
             timeoutCounter ++;
             console.log('waiting on authLoaded')
             if (timeoutCounter > 5){
@@ -102,7 +104,10 @@ class ManageFunds extends React.Component {
                 }
             })
         }
-        await this.props.fetchTributes();
+        const response = await this.props.fetchTributes();
+        if(!response){
+            this.setState({ apiInitialLoadError: true });
+        }
 
     }
 
@@ -161,16 +166,25 @@ class ManageFunds extends React.Component {
         if(searchType === 'tribute_email'){
             const emails = [];
             const name = this.state.searchTerm.toLowerCase();
+
             this.props.tributes.map(tribute => {
                 if(tribute.first_name.toLowerCase().includes(name)){
                     emails.push(tribute.email);
                 }
                 return null;
             });
-            emails.map(email => {
-                this.props.fetchDonations('tribute_email', email);
+
+            // Will automatically break out of the loop if an error is returned. 
+            // Thus, setState will be only be called once if an error occurs
+            emails.map(async email => {
+                const response = await this.props.fetchDonations('tribute_email', email);
+                if(!response){
+                    this.setState({ apiError: true });
+                }
                 return null;
-            })
+            });
+            this.setState({ apiError: false });
+
         } else if(this.state.searchTermSecondary === '') {
             if(this.state.searchType === 'amount' || this.state.searchType === 'date'){
                 // If no secondary term is provided and the search type is by amount or date,
@@ -178,21 +192,40 @@ class ManageFunds extends React.Component {
                 // a 'LIKE' search (eg. Searching for $10 would also return $100, $1000,
                 // $910, etc.). Range using the same number twice will perform an exact
                 // match search
-                this.props.fetchDonationsRange(searchType, this.state.searchTerm, this.state.searchTerm);
+                const response = await this.props.fetchDonationsRange(searchType, this.state.searchTerm, this.state.searchTerm);
+                if(!response){
+                    this.setState({ apiError: true });
+                    return null;
+                } else {
+                    this.setState({ apiError: false });
+                }
             } else {
-                this.props.fetchDonations(searchType, this.state.searchTerm)
+                const response = await this.props.fetchDonations(searchType, this.state.searchTerm);
+                if(!response){
+                    this.setState({ apiError: true });
+                    return null;
+                } else {
+                    this.setState({ apiError: false });
+                }
             }
                 
         } else {
             // Will only be called for 'amount' and 'date' search types
-            this.props.fetchDonationsRange(searchType,
+            const response = await this.props.fetchDonationsRange(searchType,
             this.state.searchTerm, this.state.searchTermSecondary);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            } else {
+                this.setState({ apiError: false });
+            }
         }
     }
 
-    fetchAllDonations = () => {
+    fetchAllDonations = async () => {
         this.setState({ searchTerm: '', searchTermSecondary: '', queried: true });
-        this.props.fetchAllDonations();
+        const response = await this.props.fetchAllDonations();
+            response ? this.setState({ apiError: false }) : this.setState({ apiError: true });
     }
 
     renderSearchForm() {
@@ -245,7 +278,7 @@ class ManageFunds extends React.Component {
     // Search query will be different depending on search type
     renderSearchField = () => {
         if(Object.keys(this.props.tributes).length === 0){
-            return 'Loading...';
+            return 'Loading tributes...';
         }
         if( this.state.searchType === 'tribute_email' ||
             this.state.searchType === 'donor_name' || 
@@ -353,6 +386,19 @@ class ManageFunds extends React.Component {
     }
 
     renderDonations = () => {
+        if(this.state.apiInitialLoadError){
+            return(
+                <h5>
+                    An error occurred while loading data. Please refresh the page and try again.
+                </h5>
+            );
+        } else if(this.state.apiError){
+            return(
+                <h5>
+                    An error occurred while loading data. Please try again.
+                </h5>
+            );
+        }
         if(Object.keys(this.props.donations).length === 0){
             // Return different message before and after first search is sent
             if(!this.state.queried) {
@@ -429,7 +475,7 @@ class ManageFunds extends React.Component {
         return 'Unrecognized Tribute';
     }
 
-    onSubmitCallback = () => {
+    onSubmitCallback = async () => {
         if(this.state.showCreate){
             this.setState({ showCreate: false })
         } else if(this.state.showEdit){
@@ -441,9 +487,17 @@ class ManageFunds extends React.Component {
             return;
         }
         if(this.state.searchTerm === ''){
-            this.props.fetchAllDonations();
+            const response = await this.props.fetchAllDonations();
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
         } else {
-            this.props.fetchDonations(this.formatSearchType(this.state.searchType), this.state.searchTerm);
+            const response = await this.props.fetchDonations(this.formatSearchType(this.state.searchType), this.state.searchTerm);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
         }
     }
 
@@ -480,7 +534,8 @@ class ManageFunds extends React.Component {
         }
     }
 
-    render = () =>{
+    render = () => {
+        console.log(this.state);
         return(
             <>
                 {this.renderContent()}
@@ -506,7 +561,6 @@ const mapStateToProps = state => {
 export default connect(mapStateToProps, 
     { 
         setNavBar,
-        fetchDonation,
         fetchDonations, 
         fetchAllDonations,
         fetchDonationsRange,

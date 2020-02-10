@@ -35,8 +35,15 @@ class LifeEventForm extends React.Component {
             timeFormatted: `${hours}:${minutes}`,
             notes: 'None',
             allowNotes: true,
+            // Form validation
+            emailValid: 1,
+            secondaryValid: 0,
+            formValid: 1,
+            // Modal handling
             showModal: true,
-            submitted: false
+            submitted: false,
+            // API error handling
+            apiError: false
         };
 
         this.handleTribute = this.handleTribute.bind(this);
@@ -50,7 +57,10 @@ class LifeEventForm extends React.Component {
     async componentDidMount(){
         this._isMounted = true;
         if(this.props.mode === 'edit'){
-            await this.props.fetchLifeEvent(this.props.id);
+            const response = await this.props.fetchLifeEvent(this.props.id);
+            if(!response){
+                return null;
+            }
             
             const time = this.props.lifeEvent.time;
             const hours = Math.floor(time/60).toLocaleString(undefined, { minimumIntegerDigits: 2 });
@@ -68,7 +78,8 @@ class LifeEventForm extends React.Component {
                     originalMethod: lifeEvent.method,
                     time: time,
                     timeFormatted: `${hours}:${minutes}`,
-                    notes: lifeEvent.notes
+                    notes: lifeEvent.notes,
+                    emailValid: 0
                 })
                 // if(lifeEvent.method === 'combat'){
                 //     this.setState({
@@ -80,23 +91,26 @@ class LifeEventForm extends React.Component {
     }
 
     handleTribute(event){
-        if(event.target.value === 'Please Select a Tribute...'){
+        if(event.target.value === ''){
             this.setState({ tribute_email: '' });
+            this.setState({ emailValid: 2 });
             return;
+        } else {
+            const [name, email] = event.target.value.split(' || ');
+            this.setState({ tribute_email: email, tributeName: name, emailValid: 0 });
+            if(email === this.state.secondaryInput){
+                this.setState({ secondaryInput: '', secondaryInputName: '', secondaryValid: 3 });
+            }
         }
-        const [name, email] = event.target.value.split(' || ');
-        if(email === this.state.secondaryInput){
-            this.setState({ secondaryInput: '', secondaryInputName: ''})
-        }
-        this.setState({ tribute_email: email, tributeName: name });
     }
     handleSecondary(event){
-        if(event.target.value === 'Please Select a Tribute...'){
-            this.setState({ tribute_email: '' });
+        if(event.target.value === ''){
+            this.setState({ tribute_email: '', secondaryValid: 2 });
             return;
+        } else {
+            const [name, email] = event.target.value.split(' || ');
+            this.setState({ secondaryInput: email, secondaryInputName: name, secondaryValid: 0 });
         }
-        const [name, email] = event.target.value.split(' || ');
-        this.setState({ secondaryInput: email, secondaryInputName: name });
     }
     handleType(event){
         const type = event.target.value;
@@ -105,13 +119,15 @@ class LifeEventForm extends React.Component {
             this.setState({ 
                 method: 'purchased',
                 notes: 'None',
-                allowNotes: true
+                allowNotes: true,
+                secondaryValid: 0
             });
         } else if(type === 'lost'){ 
             this.setState({ 
                 method: 'combat', 
                 notes: 'Combat notes will be automatically generated on form submission', 
-                allowNotes: false 
+                allowNotes: false,
+                secondaryValid: 1
             }) 
         };
     }
@@ -124,11 +140,14 @@ class LifeEventForm extends React.Component {
             this.handleSecondary(object);
             this.setState({ 
                 notes: 'Combat notes will be automatically generated on form submission',
-                allowNotes: false });
+                allowNotes: false,
+                secondaryValid: 1
+            });
         } else {
             this.setState({ 
                 notes: 'None',
-                allowNotes: true
+                allowNotes: true,
+                secondaryValid: 0
             });
         }
     }
@@ -147,14 +166,19 @@ class LifeEventForm extends React.Component {
     }
 
     handleFormSubmit = async () => {
-        if(!this.state.time || !this.state.tribute_email || !this.state.type ||
-            !this.state.method || ((this.state.method === 'combat') === (this.state.secondaryInput === ''))){
-                alert('Please fill in the required fields');
-                return;
+        if(this.state.emailValid === 1){
+            this.setState({ emailValid: 2 });
+        }
+        if(this.state.method === 'combat'){
+            if(this.state.secondaryValid === 1){
+                this.setState({ secondaryValid: 2 });
+            } else {
+                this.setState({ secondaryValid: 0 });
             }
-
-        if(this._isMounted){
-            this.setState({ submitted: true })
+        }
+        if(this.state.emailValid + this.state.secondaryValid !== 0){
+            this.setState({ formValid: 2 });
+            return;
         }
 
         // Object to be passed to create action handler
@@ -163,7 +187,7 @@ class LifeEventForm extends React.Component {
             type: this.state.type,
             method: this.state.method,
             time: this.state.time,
-            notes: this.state.notes
+            notes: encodeURIComponent(this.state.notes)
         };
 
         // Pass an additional object if the method is 'combat' since we want to
@@ -187,33 +211,74 @@ class LifeEventForm extends React.Component {
         // Dispatch actions
         if(this.props.mode === 'edit'){
             lifeEvent.id = this.props.id;
-            await this.props.updateLifeEvent(lifeEvent);
+            const response = await this.props.updateLifeEvent(lifeEvent);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
 
-            await this.props.lifeEventUpdateTributeStatsLives(
+            const response2 = await this.props.lifeEventUpdateTributeStatsLives(
                 this.state.originalEmail, this.state.originalType, this.state.originalMethod, 'delete');
-            await this.props.lifeEventUpdateTributeStatsLives(
+            if(!response2){
+                this.setState({ apiError: true });
+                return null;
+            }
+            const response3 = await this.props.lifeEventUpdateTributeStatsLives(
                 lifeEvent.email, lifeEvent.type, lifeEvent.method, 'create');
+            if(!response3){
+                this.setState({ apiError: true });
+                return null;
+            }
 
             if(this.state.method === 'combat'){
                 lifeEventSecondary.id = this.props.id + 1;
-                await this.props.updateLifeEvent(lifeEventSecondary);
+                const response = await this.props.updateLifeEvent(lifeEventSecondary);
+                if(!response){
+                    this.setState({ apiError: true });
+                    return null;
+                }
 
-                await this.props.lifeEventUpdateTributeStatsKills(
+                const response2 = await this.props.lifeEventUpdateTributeStatsKills(
                     lifeEventSecondary.email, 'create');
+                if(!response2){
+                    this.setState({ apiError: true });
+                    return null;
+                }
             }
         } else if(this.props.mode === 'create'){
-            await this.props.createLifeEvent(lifeEvent);
+            const response = await this.props.createLifeEvent(lifeEvent);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
 
-            await this.props.lifeEventUpdateTributeStatsLives(
+            const response2 = await this.props.lifeEventUpdateTributeStatsLives(
                 lifeEvent.email, lifeEvent.type, lifeEvent.method, 'create');
+            if(!response2){
+                this.setState({ apiError: true });
+                return null;
+            }
 
             if(this.state.method === 'combat'){
-                await this.props.createLifeEvent(lifeEventSecondary);
+                const response = await this.props.createLifeEvent(lifeEventSecondary);
+                if(!response){
+                    this.setState({ apiError: true });
+                    return null;
+                }
 
-                await this.props.lifeEventUpdateTributeStatsKills(
+                const response2 = await this.props.lifeEventUpdateTributeStatsKills(
                     lifeEventSecondary.email, 'create');
+                if(!response2){
+                    this.setState({ apiError: true });
+                    return null;
+                }
             }
         }
+
+        if(this._isMounted){
+            this.setState({ submitted: true })
+        }
+
         setTimeout(() => this.handleClose(), 1000);
     }
 
@@ -245,7 +310,7 @@ class LifeEventForm extends React.Component {
             <Form>
                 <Form.Row>
                     <div className="col-4"><Form.Group controlId="time">
-                        <Form.Label>Life Event Time</Form.Label>
+                        <Form.Label>Life Event Time*</Form.Label>
                         <DatePicker
                             showTimeSelect
                             showTimeSelectOnly
@@ -257,7 +322,7 @@ class LifeEventForm extends React.Component {
                 </Form.Row>
                 <Form.Row>
                     <div className="col-12"><Form.Group controlId="tribute">
-                        <Form.Label>Tribute Name</Form.Label>    
+                        <Form.Label>Tribute Name*</Form.Label>    
                         <Form.Control 
                             defaultValue={this.state.tribute_email} 
                             onChange={this.handleTribute} 
@@ -265,11 +330,12 @@ class LifeEventForm extends React.Component {
                         >
                             {this.renderNameChoices()}
                         </Form.Control>
+                        {this.renderEmailValidation()}
                     </Form.Group></div>
                 </Form.Row>
                 <Form.Row>
                     <div className="col-6"><Form.Group controlId="type">
-                        <Form.Label>Event Type</Form.Label>    
+                        <Form.Label>Event Type*</Form.Label>    
                         <Form.Control 
                             defaultValue="gained"
                             onChange={this.handleType}
@@ -280,7 +346,7 @@ class LifeEventForm extends React.Component {
                         </Form.Control>
                     </Form.Group></div>
                     <div className="col-6"><Form.Group controlId="method">
-                        <Form.Label>Method</Form.Label>    
+                        <Form.Label>Method*</Form.Label>    
                             {this.renderMethodChoices()}
                     </Form.Group></div>
                 </Form.Row>
@@ -298,6 +364,70 @@ class LifeEventForm extends React.Component {
                 </Form.Row>
             </Form>
         );
+    }
+    renderEmailValidation = () => {
+        if(this.state.emailValid === 2){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Tribute is required
+                </p>
+            );
+        } else if(this.state.emailValid === 0) {
+            return(
+                <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10003;</span> Tribute
+                </p>
+            );
+        } else {
+            return null;
+        }
+    }
+    renderSecondaryValidation = () => {
+        if(this.state.secondaryValid === 2){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Killer is required
+                </p>
+            );
+        } else if (this.state.secondaryValid === 3){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Killer cannot match victim
+                </p>
+            );
+        } else if(this.state.secondaryValid === 0) {
+            return(
+                <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10003;</span> Killer
+                </p>
+            );
+        } else {
+            return null;
+        }
+    }
+    renderFormValidation = () => {
+        if(this.state.submitted){
+            return null;
+        } else if(this.props.mode === 'edit' && !this.props.lifeEvent.tribute_email){
+            return null;
+        } 
+        if(this.state.emailValid + this.state.secondaryValid === 0) {
+            return(
+                <p className="coolor-text-green" style={{ fontSize: "12pt" }}>
+                    <span role="img" aria-label="check/x">&#10003;</span> Ready to submit? 
+                </p>
+            );
+        } else if(this.state.formValid === 2){
+            return(
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                        <span role="img" aria-label="check/x">&#10071;</span> Please fix the indicated fields.
+                    </p>
+                </div>
+            );
+        } else {
+            return null;
+        }
     }
 
     renderNameChoices(){
@@ -326,7 +456,7 @@ class LifeEventForm extends React.Component {
         if(this.state.type === 'gained'){
             return(
                 <Form.Control 
-                    defaultValue={this.state.method}
+                    value={this.state.method}
                     onChange={this.handleMethod}
                     as="select"
                 >
@@ -339,7 +469,7 @@ class LifeEventForm extends React.Component {
         } else if (this.state.type === 'lost'){
             return(
                 <Form.Control 
-                    defaultValue={this.state.method}
+                    value={this.state.method}
                     onChange={this.handleMethod}
                     as="select"
                 >
@@ -380,6 +510,7 @@ class LifeEventForm extends React.Component {
                             );
                         })}
                     </Form.Control>
+                    {this.renderSecondaryValidation()}
                 </Form.Group></div>
             </Form.Row>
             );
@@ -390,11 +521,24 @@ class LifeEventForm extends React.Component {
             return null;
         }
         return(
-            <Form.Row>
+            <>
+                {this.renderApiError()}
                 <Button variant="danger" onClick={this.handleClose}>Cancel</Button>
                 <Button variant="info" onClick={this.handleFormSubmit}>Submit</Button>
-            </Form.Row>
+            </>
         );
+    }
+
+    renderApiError = () => {
+        if(this.state.apiError){
+            return (
+                <div className="row coolor-text-red">
+                    An error occurred. Please try again.
+                </div>
+            );
+        } else {
+            return null;
+        }
     }
 
     handleClose = () => {
@@ -415,6 +559,7 @@ class LifeEventForm extends React.Component {
                     {this.renderModalBody()}
                 </Modal.Body>
                 <Modal.Footer>
+                    {this.renderFormValidation()}
                     {this.renderModalFooter()}
                 </Modal.Footer>
             </Modal>

@@ -135,7 +135,8 @@ connection.connect(async (err) => {
             lives_exempt TINYINT DEFAULT 1,
             lives_purchased TINYINT DEFAULT 0,
             lives_lost TINYINT DEFAULT 0,
-            kill_count TINYINT DEFAULT 0
+            kill_count TINYINT DEFAULT 0,
+            has_immunity BOOL DEFAULT 0
         )`;
 
         const createDonations = `CREATE TABLE donations(
@@ -730,6 +731,25 @@ app.get(`/resource/list/get/single/:id`, (req, res) => {
     });
 })
 
+// FETCH_RESOURCE_LIST_ITEM_BY_CODE
+app.get(`/resource/list/get/singleByCode/:code`, (req, res) => {
+    const code = req.params.code;
+    const queryStringGetResListItem = `SELECT * FROM resource_list WHERE code = '${code}'`;
+    console.log(queryStringGetResListItem);
+    connection.query(queryStringGetResListItem, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for resource list: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
 // FETCH_RESOURCE_LIST_ITEMS
 app.get(`/resource/list/get/list/:type/:query`, (req, res) => {
     const { type, query } = req.params;
@@ -747,26 +767,6 @@ app.get(`/resource/list/get/list/:type/:query`, (req, res) => {
 
         res.json(rows);
     });
-})
-
-// FETCH_RESOURCE_LIST_ITEM_RANGE
-app.get(`/resource/list/get/range/:type/:query1/:query2`, (req, res) => {
-    const { type, query1, query2 } = req.params;
-    const queryStringGetResListItemRange = `SELECT * FROM resource_list WHERE
-    ${type} >= '${query1}' AND ${type} <= '${query2}'`;
-    console.log(queryStringGetResListItemRange);
-    connection.query(queryStringGetResListItemRange, (err, rows, fields) => {
-        if(err){
-            console.log('Failed to query for resource list: ' + err);
-            res.sendStatus(500);
-            res.end();
-            return;
-        }
-
-        _CORS_ALLOW(res);
-        
-        res.json(rows);
-    })
 })
 
 // FETCH_ALL_RESOURCE_LIST_ITEMS
@@ -872,7 +872,7 @@ app.get(`/resource/events/get/single/:id`, (req, res) => {
 // FETCH_RESOURCE_EVENTS
 app.get(`/resource/events/get/list/:type/:query`, (req, res) => {
     const { type, query } = req.params;
-    const queryStringGetResEventItems = `SELECT * FROM resource_event WHERE ${type} LIKE '%${query}%'`;
+    const queryStringGetResEventItems = `SELECT * FROM resource_events WHERE ${type} LIKE '%${query}%'`;
     console.log(queryStringGetResEventItems);
     connection.query(queryStringGetResEventItems, (err, rows, fields) => {
         if(err){
@@ -1111,7 +1111,7 @@ app.get(`/life-events/get/single/:id`, (req, res) => {
 })
 
 // FETCH_LIFE_EVENTS
-app.get(`/life-events/get/list/:type/:query`, (req, res) => {
+app.get(`/life-eents/get/list/:type/:query`, (req, res) => {
     const { type, query } = req.params;
     const queryStringGetLifeEvents = `SELECT * FROM life_events WHERE ${type} = '${query}'`;
     console.log(queryStringGetLifeEvents);
@@ -1130,7 +1130,7 @@ app.get(`/life-events/get/list/:type/:query`, (req, res) => {
 })
 
 // FETCH_LIFE_EVENTS_RANGE
-app.get(`/life-events/get/range/:type/:query_lower/:query_upper`, (req, res) => {
+app.get(`/life-eents/get/range/:type/:query_lower/:query_upper`, (req, res) => {
     const { type, query_lower, query_upper } = req.params;
     const queryStringGetLifeEventsRange = `SELECT * FROM life_events WHERE 
     ${type} >= ${query_lower} AND ${type} <= ${query_upper}`;
@@ -1189,9 +1189,9 @@ app.post(`/life-events/post/:email/:type/:method/:time/:notes`, (req, res) => {
 })
 
 // UPDATE_LIFE_EVENT
-app.put(`/life-events/post/:id/:email/:type/:method/:time/:notes`, (req, res) => {
+app.put(`/life-events/put/:id/:email/:type/:method/:time/:notes`, (req, res) => {
     const { id, email, type, method, time, notes } = req.params;
-    const queryStringUpdateLifeEvent = `UPDATE life_events SET email = '${email}',
+    const queryStringUpdateLifeEvent = `UPDATE life_events SET tribute_email = '${email}',
     type = '${type}', method = '${method}', time = ${time}, notes = '${notes}'
     WHERE id = ${id}`;
     console.log(queryStringUpdateLifeEvent);
@@ -1741,7 +1741,7 @@ app.post(`/purchases/life-events/post/:email/:time`, (req, res) => {
 app.put(`/purchases/tribute-stats/lives/put/:email`, (req, res) => {
     const email = req.params.email;
     const queryStringAddPurchasedLife = `UPDATE tribute_stats SET lives_purchased = 
-    lives_purchased + 1 WHERE email = '${email}'`;
+    lives_purchased + 1, lives_remaining = lives_remaining + 1 WHERE email = '${email}'`;
     console.log(queryStringAddPurchasedLife);
     connection.query(queryStringAddPurchasedLife, (err, rows, fields) => {
         if(err){
@@ -1781,8 +1781,8 @@ app.post(`/purchases/resources/post/:email/:type/:time`, (req, res) => {
 // ADD_PURCHASED_RESOURCE
 app.put(`/purchases/tribute-stats/resources/put/:email/:formattedType`, (req, res) => {
     const { email, formattedType } = req.params;
-    const queryStringAddPurchasedResource = `UPDATE tribute_stats SET ${formattedType} = 
-    ${formattedType} + 1 WHERE email = '${email}'`;
+    const queryStringAddPurchasedResource = `UPDATE tribute_stats SET ${formattedType}_used = 
+    ${formattedType}_used + 1 WHERE email = '${email}'`;
     console.log(queryStringAddPurchasedResource);
     connection.query(queryStringAddPurchasedResource, (err, rows, fields) => {
         if(err){
@@ -1805,42 +1805,6 @@ app.put(`/purchases/tribute-stats/immunity/put/:email`, (req, res) => {
     1 WHERE email = '${email}'`;
     console.log(queryStringGiveImmunity);
     connection.query(queryStringGiveImmunity, (err, rows, fields) => {
-        if(err){
-            console.log('Failed to query for tribute stats: ' + err);
-            res.sendStatus(500);
-            res.end();
-            return;
-        }
-
-        _CORS_ALLOW(res);
-
-        res.json(rows);
-    });
-})
-
-// TRANSFER_FUNDS
-app.put(`/purchases/tribute-stats/funds-transfer/put/:emailFrom/:emailTo/:amount`, (req, res) => {
-    const { emailTo, emailFrom, amount } = req.params;
-    const queryStringTransferFrom = `UPDATE tribute_stats SET funds_remaining = 
-    funds_remaining - ${amount} WHERE email = '${emailFrom}'`;
-    console.log(queryStringTransferFrom);
-    connection.query(queryStringTransferFrom, (err, rows, fields) => {
-        if(err){
-            console.log('Failed to query for tribute stats: ' + err);
-            res.sendStatus(500);
-            res.end();
-            return;
-        }
-
-        _CORS_ALLOW(res);
-
-        res.json(rows);
-    });
-
-    const queryStringTransferTo = `UPDATE tribute_stats SET funds_remaining = 
-    funds_remaining + ${amount} WHERE email = '${emailTo}'`;
-    console.log(queryStringTransferTo);
-    connection.query(queryStringTransferTo, (err, rows, fields) => {
         if(err){
             console.log('Failed to query for tribute stats: ' + err);
             res.sendStatus(500);

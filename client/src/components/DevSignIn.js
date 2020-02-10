@@ -13,7 +13,8 @@ class DevSignIn extends React.Component {
         this.state = {
             email: '',
             permissions: '',
-            ownerLock: false
+            ownerLock: false,
+            show: 0,
         };   
 
         this.handleEmail = this.handleEmail.bind(this);
@@ -29,7 +30,7 @@ class DevSignIn extends React.Component {
 
         if(this.props.currentPerms === 'owner'){
             if(this._isMounted){
-                this.setState({ ownerLock: true })
+                this.setState({ ownerLock: true, show: 1 })
             }
         }
     }
@@ -52,7 +53,10 @@ class DevSignIn extends React.Component {
     }
     
     render = () => {
-        if(this.state.ownerLock){
+        if(!this.state.ownerLock){
+            return null;
+        }
+        if(this.state.show === 2){
             return(
                 <div style={{ display: "flex", padding: "10px", justifyContent: "flex-end" }}>
                     <Form onSubmit={this.handleSubmit}>
@@ -82,7 +86,7 @@ class DevSignIn extends React.Component {
                             </div>
                         </Form.Row>
                         <Form.Row>
-                            <Button variant="danger" onClick={() => this.setState({ ownerLock: false })}>
+                            <Button variant="danger" onClick={() => this.setState({ show: 1 })}>
                                 Hide Dev Sign In
                             </Button>
                             <Button variant="info" type="submit">
@@ -90,6 +94,21 @@ class DevSignIn extends React.Component {
                             </Button>
                         </Form.Row>
                     </Form>
+                </div>
+            );
+        } else if(this.state.show === 1) {
+            return (
+                <div style={{ display: "flex", padding: "10px", justifyContent: "flex-end" }}>
+                <Form>
+                    <Form.Row>
+                        <Button onClick={() => this.setState({ show: 2 })} variant="info">
+                            Dev Sign In
+                        </Button>
+                        <Button onClick={() => this.setState({ show: 0})} variatn="danger">
+                            Close
+                        </Button>
+                    </Form.Row>
+                </Form>
                 </div>
             );
         } else {

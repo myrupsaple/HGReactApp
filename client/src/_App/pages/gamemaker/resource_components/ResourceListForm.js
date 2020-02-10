@@ -5,7 +5,8 @@ import { Form, Button, Modal } from 'react-bootstrap';
 import { 
     fetchResourceListItem, 
     createResourceListItem,
-    updateResourceListItem
+    updateResourceListItem,
+    fetchResourceListItemByCode
 } from '../../../../actions';
 
 class ResourceListForm extends React.Component {
@@ -18,10 +19,17 @@ class ResourceListForm extends React.Component {
             type: 'food',
             timesUsed: 0,
             maxUses: 1,
-            usedBy: '',
+            usedBy: ' ',
             notes: 'None',
+            // Validation
+            codeValid: 1,
+            maxUsesValid: 1,
+            formValid: 1,
+            // Handle Modal
             showModal: true,
-            submitted: false
+            submitted: false,
+            // API error handling
+            apiError: false
         };
 
         this.handleCode = this.handleCode.bind(this);
@@ -33,7 +41,10 @@ class ResourceListForm extends React.Component {
     async componentDidMount(){
         this._isMounted = true;
         if(this.props.mode === 'edit'){
-            await this.props.fetchResourceListItem(this.props.id);
+            const response = await this.props.fetchResourceListItem(this.props.id);
+            if(!response){
+                return null;
+            }
             
             if(this._isMounted){
                 this.setState({
@@ -43,19 +54,37 @@ class ResourceListForm extends React.Component {
                     maxUses: this.props.selectedResource.max_uses,
                     usedBy: this.props.selectedResource.used_by,
                     notes: this.props.selectedResource.notes,
+                    codeValid: 0,
+                    maxUsesValid: 0
                 })
             }
         }
     }
 
     handleCode(event){
-        this.setState({ code: event.target.value });
+        const input = event.target.value;
+        this.setState({ code: input });
+        if(input.replace(/\s/) === ''){
+            this.setState({ codeValid: 2 });
+        } else{
+            this.setState({ codeValid: 0 });
+        }
     }
     handleType(event){
         this.setState({ type: event.target.value });
     }
     handleMaxUses(event){
-        this.setState({ maxUses: event.target.value });
+        const input = event.target.value
+        this.setState({ maxUses: input });
+        if(input === ''){
+            this.setState({ maxUsesValid: 2 });
+        } else if(isNaN(input)){
+            this.setState({ maxUsesValid: 3 });
+        } else if(Math.floor(input) <= 0){
+            this.setState({ maxUsesValid: 4 });
+        } else {
+            this.setState({ maxUsesValid: 0 });
+        }
     }
     handleNotes(event){
         this.setState({ notes: event.target.value });
@@ -63,22 +92,39 @@ class ResourceListForm extends React.Component {
 
 
     handleFormSubmit = async () => {
-        if(!this.state.code || !this.state.type || !this.state.maxUses){
-                alert('Please fill in the required fields');
-                return;
-            }
+        if(this.state.codeValid === 1){
+            this.setState({ codeValid: 2 });
+        }
+        if(this.state.maxUsesValid === 1 && (isNaN(this.state.maxUses) || this.state.maxUses <= 0)){
+            this.setState({ maxUsesValid: 2 });
+        } else {
+            await this.setState({ maxUsesValid: 0 });
+        }
 
-        if(this._isMounted){
-            this.setState({ submitted: true })
+        if(this.state.codeValid + this.state.maxUsesValid !== 0){
+            this.setState({ formValid: 2 });
+            return null;
+        }
+
+        if(this.props.mode === 'create'){
+            const response = await this.props.fetchResourceListItemByCode(this.state.code);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
+            if(Object.entries(this.props.selectedResource).length !== 0){
+                this.setState({ codeValid: 3, formValid: 2 });
+                return null;
+            }
         }
 
         const resourceItem = {
-            code: this.state.code.toLowerCase(),
+            code: encodeURIComponent(this.state.code.toLowerCase()),
             type: this.state.type,
             timesUsed: this.state.timesUsed,
             maxUses: this.state.maxUses,
             usedBy: this.state.usedBy,
-            notes: this.state.notes.replace(/'/g, '')
+            notes: encodeURIComponent(this.state.notes)
         };
         if (!resourceItem.notes.replace(/\s/g, '').length) {
             resourceItem.notes = 'none';
@@ -86,10 +132,23 @@ class ResourceListForm extends React.Component {
 
         if(this.props.mode === 'edit'){
             resourceItem.id = this.props.id;
-            this.props.updateResourceListItem(resourceItem);
+            const response = await this.props.updateResourceListItem(resourceItem);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
         } else if(this.props.mode === 'create'){
-            this.props.createResourceListItem(resourceItem);
+            const response = await this.props.createResourceListItem(resourceItem);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
         }
+
+        if(this._isMounted){
+            this.setState({ submitted: true })
+        }
+
         setTimeout(() => this.handleClose(), 1000);
     }
 
@@ -127,6 +186,7 @@ class ResourceListForm extends React.Component {
                             onChange={this.handleCode} 
                             autoComplete="off"
                         />
+                        {this.renderCodeValidation()}
                     </Form.Group></div>
                 </Form.Row>
                 <Form.Row>
@@ -151,6 +211,7 @@ class ResourceListForm extends React.Component {
                             value={this.state.maxUses}
                             onChange={this.handleMaxUses}
                         />
+                        {this.renderMaxUsesValidation()}
                     </Form.Group></div>
                 </Form.Row>
                 <Form.Row>
@@ -166,17 +227,105 @@ class ResourceListForm extends React.Component {
             </Form>
         );
     }
+    
+    renderCodeValidation = () =>{
+        if(this.state.codeValid === 2){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Code is required
+                </p>
+            );
+        } else if(this.state.codeValid === 3){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Code already exists
+                </p>
+            );
+        } else if(this.state.codeValid === 0) {
+            return(
+                <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10003;</span> Code
+                </p>
+            );
+        } else {
+            return null;
+        }
+    }
+    renderMaxUsesValidation = () =>{
+        if(this.state.maxUsesValid === 2){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Max uses is required
+                </p>
+            );
+        } else if (this.state.maxUsesValid === 3){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Max uses must be a number
+                </p>
+            );
+        } else if (this.state.maxUsesValid === 4){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Max uses must be positive
+                </p>
+            );
+        } else if(this.state.maxUsesValid === 0) {
+            return(
+                <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10003;</span> Max uses
+                </p>
+            );
+        } else {
+            return null;
+        }
+    }
+    renderFormValidation = () =>{
+        if(this.state.submitted){
+            return null;
+        } else if(this.props.mode === 'edit' && !this.props.selectedResource.code){
+            return null;
+        } 
+        if(this.state.codeValid + this.state.maxUsesValid === 0) {
+            return(
+                <p className="coolor-text-green" style={{ fontSize: "12pt" }}>
+                    <span role="img" aria-label="check/x">&#10003;</span> Ready to submit?
+                </p>
+            );
+        } else if(this.state.formValid === 2){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Please fix the indicated fields
+                </p>
+            );
+        } else {
+            return null;
+        }
+    }
 
     renderModalFooter(){
         if(this.state.submitted){
             return null;
         }
         return(
-            <Form.Row>
+            <>
+                {this.renderApiError()}
                 <Button variant="danger" onClick={this.handleClose}>Cancel</Button>
                 <Button variant="info" onClick={this.handleFormSubmit}>Submit</Button>
-            </Form.Row>
+            </>
         );
+    }
+
+    renderApiError = () => {
+        if(this.state.apiError){
+            return (
+                <div className="row coolor-text-red">
+                    An error occurred. Please try again.
+                </div>
+            );
+        } else {
+            return null;
+        }
     }
 
     handleClose = () => {
@@ -186,7 +335,8 @@ class ResourceListForm extends React.Component {
         }
     }
 
-    render(){
+    render = () => {
+        console.log(this.state);
         return(
             <Modal show={this.state.showModal} onHide={this.handleClose}>
                 <Modal.Header>
@@ -196,6 +346,7 @@ class ResourceListForm extends React.Component {
                     {this.renderModalBody()}
                 </Modal.Body>
                 <Modal.Footer>
+                    {this.renderFormValidation()}
                     {this.renderModalFooter()}
                 </Modal.Footer>
             </Modal>
@@ -217,5 +368,6 @@ export default connect(mapStateToProps,
 { 
     fetchResourceListItem,
     createResourceListItem,
-    updateResourceListItem
+    updateResourceListItem,
+    fetchResourceListItemByCode
 })(ResourceListForm);

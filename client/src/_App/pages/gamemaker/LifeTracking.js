@@ -45,7 +45,10 @@ class ManageFunds extends React.Component {
             showEdit: false,
             showDelete: false,
             // Neded to access individual life event data
-            selectedId: null
+            selectedId: null,
+            // API error handling
+            apiInitialLoadError: false,
+            apiError: false
         };
         this.handleSearchType = this.handleSearchType.bind(this);
         this.handleSearchTerm = this.handleSearchTerm.bind(this);
@@ -61,7 +64,7 @@ class ManageFunds extends React.Component {
         const allowedGroups = ['owner', 'admin', 'gamemaker'];
         var timeoutCounter = 0;
         while(!this.props.authLoaded){
-            await Wait(500);
+            await Wait(1000);
             timeoutCounter ++;
             console.log('waiting on authLoaded')
             if (timeoutCounter > 5){
@@ -109,7 +112,10 @@ class ManageFunds extends React.Component {
                 }
             })
         }
-        await this.props.fetchTributes();
+        const response = await this.props.fetchTributes();
+        if(!response){
+            this.setState({ apiInitialLoadError: true });
+        }
     }
 
     handleSearchType(event) {
@@ -184,29 +190,68 @@ class ManageFunds extends React.Component {
                 }
                 return null;
             });
-            emails.map(email => {
-                this.props.fetchLifeEvents(searchType, email);
+            emails.map(async email => {
+                const response = await this.props.fetchLifeEvents(searchType, email);
+                if(!response){
+                    this.setState({ apiError: true });
+                }
                 return null;
             })
+            this.setState({ apiError: false });
 
         } else if(searchType === 'method'){
             if(searchTerm === 'purchased' || searchTerm === 'combat'){
-                this.props.fetchLifeEvents(searchType, searchTerm);
+                const response = await this.props.fetchLifeEvents(searchType, searchTerm);
+                if(!response){
+                    this.setState({ apiError: true });
+                    return null;
+                } else {
+                    this.setState({ apiError: false });
+                }
             } else if(searchTerm === 'mutts'){
-                this.props.fetchLifeEvents('method', 'mutts')
+                const response = await this.props.fetchLifeEvents('method', 'mutts');
+                if(!response){
+                    this.setState({ apiError: true });
+                    return null;
+                } else {
+                    this.setState({ apiError: false });
+                }
             } else if(searchTermSecondary === 'all'){
                 const resources = ['life', 'food', 'water', 'medicine', 'roulette'];
                 for (let resource of resources){
-                    this.props.fetchLifeEvents('method', resource);
+                    const response = await this.props.fetchLifeEvents('method', resource);
+                    if(!response){
+                        this.setState({ apiError: true });
+                        return null;
+                    }
                 }
+                this.setState({ apiError: false });
             } else {
-                this.props.fetchLifeEvents(searchType, searchTermSecondary);
+                const response = await this.props.fetchLifeEvents(searchType, searchTermSecondary);
+                if(!response){
+                    this.setState({ apiError: true });
+                    return null;
+                } else {
+                    this.setState({ apiError: false });
+                }
             }
         } else if(searchType === 'time'){
             if(searchTermSecondary === ''){
-                this.props.fetchLifeEvents(searchType, searchTerm);
+                const response = await this.props.fetchLifeEvents(searchType, searchTerm);
+                if(!response){
+                    this.setState({ apiError: true });
+                    return null;
+                } else {
+                    this.setState({ apiError: false });
+                }
             } else {
-                this.props.fetchLifeEventsRange(searchType, searchTerm, searchTermSecondary);
+                const response = await this.props.fetchLifeEventsRange(searchType, searchTerm, searchTermSecondary);
+                if(!response){
+                    this.setState({ apiError: true });
+                    return null;
+                } else {
+                    this.setState({ apiError: false });
+                }
             }
         }
     }
@@ -417,9 +462,15 @@ class ManageFunds extends React.Component {
         );
     }
 
-    searchForAllLifeEvents = () => {
+    searchForAllLifeEvents = async () => {
         this.setState({ searchTerm: '', searchTermSecondary: '', queried: true});
-        this.props.fetchAllLifeEvents();
+        const response = await this.props.fetchAllLifeEvents();
+        if(!response){
+            this.setState({ apiError: true });
+            return null;
+        } else {
+            this.setState({ apiError: false });
+        }
     }
 
     renderTableHeader(){
@@ -436,6 +487,19 @@ class ManageFunds extends React.Component {
     }
 
     renderLifeEvents(){
+        if(this.state.apiInitialLoadError) {
+            return(
+                <h5>
+                    An error occurred when loading data. Please refresh the page and try again.
+                </h5>
+            );
+        } else if(this.state.apiError) {
+            return(
+                <h5>
+                    An error occurred when loading data. Please try again.
+                </h5>
+            );
+        }
         if(Object.keys(this.props.lifeEvents).length === 0){
             // Return different message before and after first search is sent
             if(!this.state.queried) {
@@ -591,7 +655,7 @@ class ManageFunds extends React.Component {
         );
     }
 
-    onSubmitCallback = () => {
+    onSubmitCallback = async () => {
         if(this.state.showCreate){
             this.setState({ showCreate: false })
         } else if(this.state.showEdit){
@@ -603,9 +667,17 @@ class ManageFunds extends React.Component {
             return;
         }
         if(this.state.searchTerm === ''){
-            this.props.fetchAllLifeEvents();
+            const response = await this.props.fetchAllLifeEvents();
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
         } else {
-            this.props.fetchLifeEvents(this.state.searchType, this.state.searchTerm);
+            const response = await this.props.fetchLifeEvents(this.state.searchType, this.state.searchTerm);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
         }
     }
 
@@ -644,6 +716,7 @@ class ManageFunds extends React.Component {
     }
 
     render = () => {
+        console.log(this.state);
         return(
             <>
                 {this.renderContent()}

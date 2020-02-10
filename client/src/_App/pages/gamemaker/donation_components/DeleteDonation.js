@@ -16,7 +16,8 @@ class DeleteDonation extends React.Component {
         super(props);
         this.state = {
             showModal: true,
-            confirmed: false
+            confirmed: false,
+            apiError: false
         }
     }
 
@@ -32,11 +33,24 @@ class DeleteDonation extends React.Component {
     }
 
     onConfirm = async () => {
-        await this.props.fetchDonation(this.props.id);
+        const response = await this.props.fetchDonation(this.props.id);
+        if(!response){
+            this.setState({ apiError: true });
+            return null;
+        }
+        
         const donation = this.props.donation;
         
-        this.props.donationUpdateTributeStats(donation.tribute_email, donation.amount * -1);
-        this.props.deleteDonation(this.props.id);
+        const response2 = await this.props.deleteDonation(this.props.id);
+        if(!response2){
+            this.setState({ apiError: true });
+            return null;
+        }
+        const response3 = await this.props.donationUpdateTributeStats(donation.tribute_email, donation.amount * -1);
+        if(!response3){
+            this.setState({ apiError: true });
+            return null;
+        }
 
         if(this._isMounted){
             this.setState({ confirmed: true });
@@ -47,6 +61,8 @@ class DeleteDonation extends React.Component {
     renderBody = () => {
         if(this.state.confirmed){
             return 'Entry deleted successfully';
+        } else if(this.state.apiError){
+            return 'An error occurred during deletion. Please try again later';
         } else {
             return(
                 <>
@@ -57,7 +73,13 @@ class DeleteDonation extends React.Component {
     }
 
     renderFooter = () => {
-        if(this.state.confirmed){
+        if(this.state.apiError) {
+            return(
+                <>
+                    <Button variant="secondary" onClick={this.handleClose}>Close</Button>
+                </>
+            );
+        } else if(this.state.confirmed){
             return null;
         } else {
             return(

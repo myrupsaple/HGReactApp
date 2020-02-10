@@ -33,7 +33,9 @@ class ViewDetails extends React.Component{
         console.log(purchase);
         if(!Object.keys(purchase).length){
             return 'Loading...';
-        }
+        } else if(!purchase.payer_email){
+            return <h3>An error occured while retrieving purchase data. Please try again.</h3> 
+        } 
         return(
            <div style={{ marginLeft: "20px" }}>
                 <div className="row"><span className="font-weight-bold">Purchasing Tribute:</span><span>&nbsp;{this.getTributeName(purchase.payer_email)}</span></div>
@@ -81,7 +83,7 @@ class ViewDetails extends React.Component{
     renderModalFooter = () => {
         return(
             <>
-            <Button onClick={this.handleClose} variant="danger">
+            <Button onClick={this.handleClose} variant="secondary">
                 Close
             </Button>
             </>

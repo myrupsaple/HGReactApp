@@ -22,7 +22,7 @@ class ManageGame extends React.Component {
         const allowedGroups = ['owner', 'admin', 'gamemaker'];
         var timeoutCounter = 0;
         while(!this.props.authLoaded){
-            await Wait(500);
+            await Wait(1000);
             timeoutCounter ++;
             console.log('waiting on authLoaded')
             if (timeoutCounter > 5){

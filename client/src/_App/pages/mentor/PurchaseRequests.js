@@ -36,7 +36,10 @@ class PurchaseRequests extends React.Component {
             showDetails: false,
             showApproval: false,
             // Needed to access individual purchase request data
-            selectedId: null
+            selectedId: null,
+            // API error handling
+            apiError: false,
+            apiInitialLoadError: false
         };
     }
 
@@ -45,7 +48,7 @@ class PurchaseRequests extends React.Component {
         const allowedGroups = ['owner', 'admin', 'gamemaker', 'mentor'];
         var timeoutCounter = 0;
         while(!this.props.authLoaded){
-            await Wait(500);
+            await Wait(1000);
             timeoutCounter ++;
             console.log('waiting on authLoaded')
             if (timeoutCounter > 5){
@@ -95,9 +98,13 @@ class PurchaseRequests extends React.Component {
             })
         }
 
-        await this.props.fetchTributes();
-        await this.props.fetchAllPurchaseRequests();
-        await this.props.fetchMentors();
+        const response1 = await this.props.fetchTributes();
+        const response2 = await this.props.fetchAllPurchaseRequests();
+        const response3 = await this.props.fetchMentors();
+        if(!response1 || !response2 || !response3){
+            this.setState({ apiInitialLoadError: true });
+        }
+
         if(this._isMounted){
             this.setState({ queried: true })
         }
@@ -106,9 +113,14 @@ class PurchaseRequests extends React.Component {
     // Render modal header (Create/refresh list buttons)
     renderButtons(){
         const switchModes = (
-            <Button onClick={() => { 
+            <Button onClick={async () => { 
                     this.setState({ displayMode: this.state.displayMode === 'pending' ? 'processed' : 'pending' });
-                    this.props.fetchAllPurchaseRequests();
+                    const response = await this.props.fetchAllPurchaseRequests();
+                    if(!response){
+                        this.setState({ apiError: true });
+                    } else{
+                        this.setState({ apiError: false });
+                    }
                 }}
                 variant="secondary"
             >
@@ -147,6 +159,19 @@ class PurchaseRequests extends React.Component {
             purchases = purchases.filter(purchase => purchase.status === 'pending');
         } else {
             purchases = purchases.filter(purchase => purchase.status !== 'pending');
+        }
+        if(this.state.apiInitialLoadError){
+            return(
+                <h5>
+                    An error occurred when loading data. Please refresh the page and try again.
+                </h5>
+            );
+        } else if(this.state.apiError){
+            return(
+                <h5>
+                    An error occurred when loading data. Please try again.
+                </h5>
+            );
         }
         if(Object.keys(purchases).length === 0){
             if(!this.state.queried) {
@@ -324,7 +349,7 @@ class PurchaseRequests extends React.Component {
         return 'Unknown User';
     }
 
-    onSubmitCallback = () => {
+    onSubmitCallback = async () => {
         if(this.state.showCreate){
             this.setState({ showCreate: false })
         } else if(this.state.showEdit){
@@ -336,7 +361,11 @@ class PurchaseRequests extends React.Component {
         } else if(this.state.showApproval){
             this.setState({ showApproval: false })
         }
-        this.props.fetchAllPurchaseRequests();
+        const response = await this.props.fetchAllPurchaseRequests();
+        if(!response){
+            this.setState({ apiError: true });
+            return null;
+        }
     }
 
     showModal() {

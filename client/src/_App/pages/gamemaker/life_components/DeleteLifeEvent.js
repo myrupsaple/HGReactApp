@@ -17,7 +17,8 @@ class DeleteLifeEvent extends React.Component {
         super(props);
         this.state = {
             showModal: true,
-            confirmed: false
+            confirmed: false,
+            apiError: false
         }
     }
 
@@ -33,17 +34,34 @@ class DeleteLifeEvent extends React.Component {
     }
 
     onConfirm = async () => {
-        await this.props.fetchLifeEvent(this.props.id);
-        const lifeEvent = this.props.lifeEvent;
-        
-        if(lifeEvent.type === 'combat'){
-            this.props.lifeEventUpdateTributeStatsKills(lifeEvent.tribute_email, 'delete');
-        } else {
-            this.props.lifeEventUpdateTributeStatsLives(
-                lifeEvent.tribute_email, lifeEvent.type, lifeEvent.method, 'delete');
+        const response = await this.props.fetchLifeEvent(this.props.id);
+        if(!response){
+            this.setState({ apiError: true });
+            return null;
         }
 
-        this.props.deleteLifeEvent(this.props.id);
+        const lifeEvent = this.props.lifeEvent;
+
+        const response2 = await this.props.deleteLifeEvent(this.props.id);
+        if(!response2){
+            this.setState({ apiError: true });
+            return null;
+        }
+        
+        if(lifeEvent.type === 'combat'){
+            const response = await this.props.lifeEventUpdateTributeStatsKills(lifeEvent.tribute_email, 'delete');
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
+        } else {
+            const response = await this.props.lifeEventUpdateTributeStatsLives(
+                lifeEvent.tribute_email, lifeEvent.type, lifeEvent.method, 'delete');
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
+        }
 
         if(this._isMounted){
             this.setState({ confirmed: true });
@@ -54,6 +72,8 @@ class DeleteLifeEvent extends React.Component {
     renderBody = () => {
         if(this.state.confirmed){
             return 'Entry deleted successfully';
+        } if(this.state.apiError){
+            return 'An error occurred during deletion. Please try again later';
         } else {
             return(
                 <>
@@ -66,6 +86,8 @@ class DeleteLifeEvent extends React.Component {
     renderFooter = () => {
         if(this.state.confirmed){
             return null;
+        } else if(this.state.apiError){
+            return <Button variant="secondary" onClick={this.handleClose}>Close</Button>
         } else {
             return(
                 <>

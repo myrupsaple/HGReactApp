@@ -24,7 +24,8 @@ class DeleteUser extends React.Component {
                 permissions: this.props.user.permissions,
                 firstConfirm: false,
                 show: true,
-                submitted: false
+                submitted: false,
+                apiError: false
             });
         }
     }
@@ -35,6 +36,15 @@ class DeleteUser extends React.Component {
         if(this.state.submitted){
             modalBody = <h4>User Deleted Successfully!</h4>;
             renderActions = null;
+        } else if(this.state.apiError){
+            modalBody = ( 
+                <h4>
+                    An error occurred while deleting the user. Please try again later.
+                </h4>
+            );
+            renderActions = (
+                <Button variant="secondary" onClick={this.handleClose}>Close</Button>
+            );
         } else if(!this.props.user.first_name){
             modalBody = ( 
                 <h4>
@@ -42,7 +52,7 @@ class DeleteUser extends React.Component {
                 </h4>
             );
             renderActions = (
-                <Button variant="secondary" onClick={this.handleClose}>Cancel</Button>
+                <Button variant="secondary" onClick={this.handleClose}>Close</Button>
             );
         } else if (!this.state.firstConfirm){
             modalBody = (
@@ -101,8 +111,13 @@ class DeleteUser extends React.Component {
         this.setState({ firstConfirm: true });
     }
 
-    handleFinalConfirm = () => {
-        this.props.deleteUser(this.props.user.id);
+    handleFinalConfirm = async () => {
+        const response = await this.props.deleteUser(this.props.user.id);
+        if(!response){
+            this.setState({ apiError: true });
+            return null;
+        }
+        
         this.setState({ submitted: true });
         setTimeout(() => this.handleClose(), 1000);
     }

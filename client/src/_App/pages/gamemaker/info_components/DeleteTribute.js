@@ -9,21 +9,25 @@ class DeleteTribute extends React.Component {
 
     constructor(props){
         super(props);
-        this.state = {};
+        this.state = { 
+            firstConfirm: false,
+            show: true,
+            submitted: false
+        };
     }
 
     async componentDidMount() {
         this._isMounted = true;
-        await this.props.fetchTribute(this.props.email, this.props.id);
+        const response = await this.props.fetchTribute(this.props.email, this.props.id);
+        if(!response){
+            return null;
+        }
 
         if(this._isMounted){
             this.setState({
                 first_name: this.props.tribute.first_name,
                 last_name: this.props.tribute.last_name,
-                email: this.props.tribute.email,
-                firstConfirm: false,
-                show: true,
-                submitted: false
+                email: this.props.tribute.email
             });
         }
     }
@@ -34,6 +38,15 @@ class DeleteTribute extends React.Component {
         if(this.state.submitted){
             modalBody = <h4>User Deleted Successfully!</h4>;
             renderActions = null;
+        } else if(this.state.apiError){
+            modalBody = ( 
+                <h4>
+                    An error occurred while deleting the user. Please try again later.
+                </h4>
+            );
+            renderActions = (
+                <Button variant="secondary" onClick={this.handleClose}>Close</Button>
+            );
         } else if(!this.props.tribute.first_name){
             modalBody = ( 
                 <h4>
@@ -100,9 +113,14 @@ class DeleteTribute extends React.Component {
         this.setState({ firstConfirm: true });
     }
 
-    handleFinalConfirm = () => {
+    handleFinalConfirm = async () => {
+        const response = await this.props.deleteTribute(this.props.tribute.id);
+        if(!response){
+            this.setState({ apiError: true });
+            return null;
+        }
+
         this.setState({ submitted: true });
-        this.props.deleteTribute(this.props.tribute.id);
         setTimeout(() => this.handleClose(), 1000);
     }
     

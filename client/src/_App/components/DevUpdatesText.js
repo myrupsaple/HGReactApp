@@ -5,6 +5,20 @@ const DevUpdatesText = () =>{
         <>
         <h1>Development Updates and Things to Look Out For</h1>
         <h5>Remember, if you run into any errors, please notify me by sending a screenshot and a description of how you got to the error. Thanks!</h5>
+        <h4>
+            <ol>
+                <li>Finished implementing form validation on all pages</li>
+                <li>Also added measures to prevent duplicate account emails and resource codes from being submitted</li>
+            </ol>
+        </h4>
+        <h4>February 7</h4>
+        <ol>
+            <li>Began implementing better form validation with feedback</li>
+        </ol>
+        <h4>February 3</h4>
+        <ol>
+            <li>Mostly finished connecting components. Everything is now hooked up to the tribute_stats database</li>
+        </ol>
         <h4>February 1</h4>
         <ol>
             <li>Began connecting various components. Changes are mostly behind-the-scenes for now.</li>

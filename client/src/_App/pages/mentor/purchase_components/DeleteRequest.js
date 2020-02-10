@@ -17,13 +17,13 @@ class DeleteRequest extends React.Component {
         super(props);
         this.state = {
             showModal: true,
-            confirmed: false
+            confirmed: false,
+            apiError: false
         }
     }
 
     componentDidMount = async () => {
         this._isMounted = true;
-        this.props.fetchPurchaseRequest(this.props.id);
     }
 
     handleClose = () => {
@@ -34,24 +34,45 @@ class DeleteRequest extends React.Component {
     }
 
     onConfirm = async () => {
-        this.props.deletePurchaseRequest(this.props.id);
+        const response = await this.props.fetchPurchaseRequest(this.props.id);
+        if(!response){
+            this.setState({ apiError: true });
+            return null;
+        }
+
+        const response2 = await this.props.deletePurchaseRequest(this.props.id);
+        if(!response2){
+            this.setState({ apiError: true });
+            return null;
+        }
     
         if(this._isMounted){
             this.setState({ confirmed: true });
         }
 
         const purchase = this.props.selectedPurchase;
-        this.props.purchaseUpdateFunds(purchase.payer_email, purchase.cost * -1);
+
+        const response3 = await this.props.purchaseUpdateFunds(purchase.payer_email, purchase.cost * -1);
+        if(!response3){
+            this.setState({ apiError: true });
+            return null;
+        }
 
         if(purchase.category === 'item'){
-            this.props.purchaseUpdateItemQuantity(purchase.item_id, purchase.quantity * -1);
+            const response = await this.props.purchaseUpdateItemQuantity(purchase.item_id, purchase.quantity * -1);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
         }
 
         setTimeout(() => this.handleClose(), 1000);
     }
 
     renderBody = () => {
-        if(this.state.confirmed){
+        if(this.state.apiError){
+            return 'An error occurred. Please try again later.'
+        } else if(this.state.confirmed){
             return 'Entry deleted successfully';
         } else {
             return(
@@ -63,7 +84,9 @@ class DeleteRequest extends React.Component {
     }
 
     renderFooter = () => {
-        if(this.state.confirmed){
+        if(this.state.apiError){
+            return <Button variant="secondary" onClick={this.handleClose}>Close</Button>
+        } else if(this.state.confirmed){
             return null;
         } else {
             return(

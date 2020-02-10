@@ -22,7 +22,9 @@ class TributeAccountInfo extends React.Component {
             // no tributes are found
             queried: false,
             showCreate: false,
-            showDetails: false
+            showDetails: false,
+            // API erro handling
+            apiError: false,
         };
     }
 
@@ -31,7 +33,7 @@ class TributeAccountInfo extends React.Component {
         const allowedGroups = ['owner', 'admin', 'gamemaker'];
         var timeoutCounter = 0;
         while(!this.props.authLoaded){
-            await Wait(500);
+            await Wait(1000);
             timeoutCounter ++;
             console.log('waiting on authLoaded')
             if (timeoutCounter > 5){
@@ -80,7 +82,10 @@ class TributeAccountInfo extends React.Component {
             })
         }
 
-        await this.props.fetchTributes();
+        const response = await this.props.fetchTributes();
+        if(!response){
+            this.setState({ apiError: true });
+        }
         if(this._isMounted){
             this.setState({ queried: true })
         }
@@ -102,6 +107,13 @@ class TributeAccountInfo extends React.Component {
     }
 
     renderTributes(){
+        if(this.state.apiError){
+            return(
+                <h5>
+                    An error occurred while loading data.
+                </h5>
+            );
+        }
         if(Object.keys(this.props.tributes).length === 0){
             // Return different message before and after first search is sent
             if(!this.state.queried) {
@@ -203,9 +215,12 @@ class TributeAccountInfo extends React.Component {
 
     // Performs cleanup upon modal closure, ensuring that showCreate and showDetails
     // do not get stuck in the 'true' state. Refreshes list upon closure
-    onSubmitCallback = () => {
+    onSubmitCallback = async () => {
         this.setState({ showCreate: false, showDetails: false })
-        this.props.fetchTributes();
+        const response = await this.props.fetchTributes();
+        if(!response){
+            this.setState({ apiError: true });
+        }
     };
 
     renderContent = () => {

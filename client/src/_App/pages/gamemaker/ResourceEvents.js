@@ -12,7 +12,6 @@ import {
     fetchResourceEvents,
     fetchResourceEventsRange,
     fetchAllResourceEvents,
-    deleteResourceEvent,
     clearResourceEvents
 } from '../../../actions';
 import ResourceEventForm from './resource_components/ResourceEventForm';
@@ -28,7 +27,7 @@ class ManageFunds extends React.Component {
                 payload: null
             },
             queried: false,
-            searchType: 'Tribute Name',
+            searchType: 'tribute_email',
             searchTerm: '',
             searchTermSecondary: '',
             timeFormatted: '',
@@ -40,7 +39,10 @@ class ManageFunds extends React.Component {
             showEdit: false,
             showDelete: false,
             // Neded to access individual resource event data
-            selectedId: null
+            selectedId: null,
+            // API error handling
+            apiInitialLoadError: false,
+            apiError: false
         };
         this.handleSearchType = this.handleSearchType.bind(this);
         this.handleSearchTerm = this.handleSearchTerm.bind(this);
@@ -55,7 +57,7 @@ class ManageFunds extends React.Component {
         const allowedGroups = ['owner', 'admin', 'gamemaker'];
         var timeoutCounter = 0;
         while(!this.props.authLoaded){
-            await Wait(500);
+            await Wait(1000);
             timeoutCounter ++;
             console.log('waiting on authLoaded')
             if (timeoutCounter > 5){
@@ -103,7 +105,11 @@ class ManageFunds extends React.Component {
                 }
             })
         }
-        await this.props.fetchTributes();
+        const response = await this.props.fetchTributes();
+        if(!response){
+            this.setState({ apiInitialLoadError: true });
+        }
+
     }
 
     handleSearchType(event) {
@@ -153,7 +159,7 @@ class ManageFunds extends React.Component {
 
         await this.props.clearResourceEvents();
 
-        const searchType = this.formatSearchType(this.state.searchType);
+        const searchType = this.state.searchType;
         const searchTerm = this.state.searchTerm;
         const searchTermSecondary = this.state.searchTermSecondary;
 
@@ -166,19 +172,41 @@ class ManageFunds extends React.Component {
                 }
                 return null;
             });
-            matches.map(match => {
-                this.props.fetchResourceEvents(searchType, match);
+            matches.map(async match => {
+                const response = await this.props.fetchResourceEvents(searchType, match);
+                if(!response){
+                    this.setState({ apiError: true });
+                }
                 return null;
             })
+            this.setState({ apiError: false });
 
         } else if(searchType === 'time'){
             if(searchTermSecondary === ''){
-                this.props.fetchResourceEvents(searchType, searchTerm);
+                const response = await this.props.fetchResourceEvents(searchType, searchTerm);
+                if(!response){
+                    this.setState({ apiError: true });
+                    return null;
+                } else {
+                    this.setState({ apiError: false });
+                }
             } else {
-                this.props.fetchResourceEventsRange(searchType, searchTerm, searchTermSecondary);
+                const response = await this.props.fetchResourceEventsRange(searchType, searchTerm, searchTermSecondary);
+                if(!response){
+                    this.setState({ apiError: true });
+                    return null;
+                } else {
+                    this.setState({ apiError: false });
+                }
             }
         } else if(searchType === 'notes'){
-            this.props.fetchResourceEvents(searchType, searchTerm);
+            const response = await this.props.fetchResourceEvents(searchType, searchTerm);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            } else {
+                this.setState({ apiError: false });
+            }
         }
     }
 
@@ -352,9 +380,14 @@ class ManageFunds extends React.Component {
         );
     }
 
-    searchForAllResourceEvents = () => {
+    searchForAllResourceEvents = async () => {
         this.setState({ searchTerm: '', searchTermSecondary: '', queried: true});
-        this.props.fetchAllResourceEvents();
+        const response = await this.props.fetchAllResourceEvents();
+        if(!response){
+            this.setState({ apiError: true });
+        } else {
+            this.setState({ apiError: false });
+        }
     }
 
     renderSearchField = () => {
@@ -418,6 +451,19 @@ class ManageFunds extends React.Component {
     }
 
     renderResourceEvents(){
+        if(this.state.apiInitialLoadError){
+            return(
+                <h5>
+                    An error occurred while loading data. Please refresh the page and try again.
+                </h5>
+            );
+        } else if(this.state.apiError){
+            return(
+                <h5>
+                    An error occurred while loading data. Please try again.
+                </h5>
+            );
+        }
         if(Object.keys(this.props.resourceEvents).length === 0){
             // Return different message before and after first search is sent
             if(!this.state.queried) {
@@ -594,7 +640,7 @@ class ManageFunds extends React.Component {
         );
     }
 
-    onSubmitCallback = () => {
+    onSubmitCallback = async () => {
         if(this.state.showCreate){
             this.setState({ showCreate: false })
         } else if(this.state.showEdit){
@@ -606,9 +652,17 @@ class ManageFunds extends React.Component {
             return;
         }
         if(this.state.searchTerm === ''){
-            this.props.fetchAllResourceEvents();
+            const response = await this.props.fetchAllResourceEvents();
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
         } else {
-            this.props.fetchResourceEvents(this.state.searchType, this.state.searchTerm);
+            const response = await this.props.fetchResourceEvents(this.state.searchType, this.state.searchTerm);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
         }
     }
 
@@ -677,6 +731,5 @@ export default connect(mapStateToProps,
         fetchResourceEvents,
         fetchResourceEventsRange,
         fetchAllResourceEvents,
-        deleteResourceEvent,
         clearResourceEvents
     })(ManageFunds);
