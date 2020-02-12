@@ -703,6 +703,7 @@ class ManageFunds extends React.Component {
     render = () => {
         return(
             <>
+                <h3 style={{ padding: "10px" }}>Resource Events</h3>
                 {this.renderContent()}
             </>
         )

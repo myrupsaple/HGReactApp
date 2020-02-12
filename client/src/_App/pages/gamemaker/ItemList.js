@@ -334,6 +334,7 @@ class ItemList extends React.Component {
     render = () =>{
         return(
             <>
+                <h3 style={{ padding: "10px" }}>Update Items and Costs</h3>
                 {this.renderContent()}
             </>
         )

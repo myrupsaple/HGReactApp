@@ -581,6 +581,8 @@ class ManageFunds extends React.Component {
                         Delete
                 </Button>
             );
+        } else if(lifeEvent.method === 'resource'){
+            return null;
         }
         return(
             <div className="row">
@@ -719,6 +721,7 @@ class ManageFunds extends React.Component {
         console.log(this.state);
         return(
             <>
+                <h3 style={{ padding: "10px" }}>Life Tracking</h3>
                 {this.renderContent()}
             </>
         )

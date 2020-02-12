@@ -1,12 +1,14 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
+// TODO: Update directories as necessary
+import { setNavBar } from '../../actions';
 import AppNavBar from '../components/AppNavBar';
 import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../components/AuthMessages';
 import Wait from '../../components/Wait';
 
 class MapRules extends React.Component {
-    _isMounted = true;
+    _isMounted = false;
     state = {
         auth: {
             loading: true,
@@ -56,6 +58,8 @@ class MapRules extends React.Component {
     }
 
     componentDidMount = async () => {
+        this._isMounted = true;
+        this.props.setNavBar('app');
         // Check authorization
         const authPayload = await this.checkAuth();
         if(this._isMounted){
@@ -80,6 +84,7 @@ class MapRules extends React.Component {
             return(
                 // RETURN JSX UPON SUCCESSFUL LOGIN SHOULD BE PASTED HERE 
                 <>
+                    Hello
                 </>
             );
         } else {
@@ -90,10 +95,7 @@ class MapRules extends React.Component {
     render = () =>{
         return(
             <>
-                <AppNavBar />
-                <div className="ui-container">
-                    {this.renderContent()}
-                </div>
+                {this.renderContent()}
             </>
         )
     }
@@ -111,4 +113,7 @@ const mapStateToProps = state => {
     }
 }
 
-export default connect(mapStateToProps)(MapRules);
+export default connect(mapStateToProps, 
+    {
+    setNavBar,
+    })(SubmitResource);

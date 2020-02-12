@@ -35,7 +35,7 @@ const DonationTracking = (
 
 const ApprovePurchases = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/purchase-requests">
-        Purchase Requests^
+        Purchase Requests+
     </NavDropdown.Item>
 );
 
@@ -65,17 +65,18 @@ const ManageItems = (
 
 //---------------------------------MENTORS------------------------------------//
 
+// Samge page as purchase management for gamemakers
 const RequestPurchase = (
     <NavDropdown.Item as={Nav.Link} href="/App/mentor/purchase-requests">
-        Request Purchase*
+        Request Purchase+
     </NavDropdown.Item>
 );
 
 //---------------------------------TRIBUTES-----------------------------------//
 
-const SubmitCodes = (
-    <NavDropdown.Item as={Nav.Link} href="/App/tribute/submit">
-        Submit Resource Code*
+const TributeDashboard = (
+    <NavDropdown.Item as={Nav.Link} href="/App/tribute/dashboard">
+        Tribute Dashboard^
     </NavDropdown.Item>
 );
 
@@ -111,6 +112,7 @@ export const OwnerTools = (
             {ResourceEvents}
             {ManageItems}
             {ViewLocations}
+            {TributeDashboard}
         </>
 )
 
@@ -155,7 +157,7 @@ export const MentorTools = (
 export const TributeTools = (
         <>
             {Messaging}
-            {SubmitCodes}
+            {TributeDashboard}
         </>
 );
 

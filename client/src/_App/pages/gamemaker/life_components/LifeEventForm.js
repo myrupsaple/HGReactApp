@@ -461,7 +461,6 @@ class LifeEventForm extends React.Component {
                     as="select"
                 >
                     <option value="purchased">Purchased</option>
-                    <option value="life_resource">Life Resource</option>
                     <option value="roulette_resource">Roulette Resource</option>
                     <option value="other">Other (Specify in notes)</option>
                 </Form.Control>

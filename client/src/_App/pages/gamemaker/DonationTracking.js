@@ -524,6 +524,7 @@ class ManageFunds extends React.Component {
         if(this.state.auth.payload === null){
             return(
                 <>
+                    <h3 style={{ padding: "10px" }}>Donation Tracking</h3>
                     {this.renderSearchForm()}
                     {this.renderDonations()}
                     {this.renderModal()}

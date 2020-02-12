@@ -2,7 +2,11 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Button, Modal } from 'react-bootstrap';
 
-import { fetchTribute, deleteTribute } from '../../../../actions';
+import { 
+    fetchTribute, 
+    deleteTribute, 
+    deleteTributeDeleteStats 
+} from '../../../../actions';
 
 class DeleteTribute extends React.Component {
     _isMounted = false;
@@ -119,6 +123,11 @@ class DeleteTribute extends React.Component {
             this.setState({ apiError: true });
             return null;
         }
+        const response2 = await this.props.deleteTributeDeleteStats(this.props.tribute.email);
+        if(!response2){
+            this.setState({ apiError: true });
+            return null;
+        }
 
         this.setState({ submitted: true });
         setTimeout(() => this.handleClose(), 1000);
@@ -151,4 +160,9 @@ const mapStateToProps = state => {
     };
 };
 
-export default connect(mapStateToProps, { fetchTribute, deleteTribute })(DeleteTribute);
+export default connect(mapStateToProps, 
+    {
+        fetchTribute, 
+        deleteTribute,
+        deleteTributeDeleteStats
+    })(DeleteTribute);

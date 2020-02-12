@@ -23,6 +23,7 @@ class ApprovalForm extends React.Component{
             status: 'pending',
             submitted: false,
             notes: '',
+            notesValid: 1,
             apiError: false
         }
 
@@ -73,10 +74,23 @@ class ApprovalForm extends React.Component{
                     <Form.Row>
                         <Form.Label>Notes</Form.Label>
                         <Form.Control value={this.state.notes} onChange={this.handleNotes}/>
+                        {this.renderNotesValidation()}
                     </Form.Row>
                 </Form>
             </div>
         );
+    }
+
+    renderNotesValidation = () => {
+        if(this.state.notesValid === 2){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Notes are required when denying a request.
+                </p>
+            );
+        } else {
+            return null;
+        }
     }
 
     capitalizeFirst(string){
@@ -168,9 +182,9 @@ class ApprovalForm extends React.Component{
     }
 
     denyRequest = async () => {
-        if (!this.state.notes.replace(/\s/g, '').length) {
-            alert('Notes are required to deny a request');
-            return;
+        if (this.state.notes.replace(/\s/g, '').length === 0) {
+            this.setState({ notesValid: 2 });
+            return null;
         }
 
         if(this.props.purchase.category === 'item'){

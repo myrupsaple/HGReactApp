@@ -5,12 +5,25 @@ const DevUpdatesText = () =>{
         <>
         <h1>Development Updates and Things to Look Out For</h1>
         <h5>Remember, if you run into any errors, please notify me by sending a screenshot and a description of how you got to the error. Thanks!</h5>
-        <h4>
-            <ol>
-                <li>Finished implementing form validation on all pages</li>
-                <li>Also added measures to prevent duplicate account emails and resource codes from being submitted</li>
-            </ol>
-        </h4>
+        <h4>February 11</h4>
+        <ol>
+            <li>More debugging</li>
+            <li>Began implementing the tribute dashboard page.</li>
+        </ol>
+        <h4>February 10</h4>
+        <ol>
+            <li>Mentors will now be unable to request a purchase if the tribute has insufficient funds</li>
+            <li>Fixed other various bugs.</li>
+        </ol>
+        <h4>February 9</h4>
+        <ol>
+            <li>Added proper error reporting to all components. If the server does not properly process a request, the user will now be notified.</li>
+        </ol>
+        <h4>February 8</h4>
+        <ol>
+            <li>Finished implementing form validation on all pages</li>
+            <li>Also added measures to prevent duplicate account emails and resource codes from being submitted</li>
+        </ol>
         <h4>February 7</h4>
         <ol>
             <li>Began implementing better form validation with feedback</li>

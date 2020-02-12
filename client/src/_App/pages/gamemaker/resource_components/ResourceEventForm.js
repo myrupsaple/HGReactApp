@@ -4,12 +4,15 @@ import { Form, Button, Modal } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 
 import { 
-    fetchResourceEvent, 
+    fetchTributes,
+    fetchResourceEvent,
+    fetchLifeEventByTerms,
     createResourceEvent,
     updateResourceEvent,
-    fetchTributes,
+    fetchResourceListItemByCode,
     resourceEventUpdateTributeStats,
-    resourceEventUpdateLifeEvents,
+    resourceEventCreateLifeEvent,
+    resourceEventUpdateLifeEvent,
     resourceEventUpdateResourceList
 } from '../../../../actions';
 
@@ -24,8 +27,9 @@ class ResourceEventForm extends React.Component {
         const time = 60 * hours + 1 * minutes;
 
         this.state = {
+            tribute: '',
             tribute_email: '',
-            // Used if a tribute is slain in combat. Specifies the killer
+            // Used to log which tribute used a resource
             tributeName: '',
             type: 'food',
             method: 'code',
@@ -56,21 +60,29 @@ class ResourceEventForm extends React.Component {
             if(!response){
                 return null;
             }
+
+            var notes = this.props.resourceEvent.notes;
+            if(this.props.resourceEvent.method === 'code' && this.props.resourceEvent.notes.includes('golden')){
+                notes = notes.split(' ')[0];
+            }
             
             const time = this.props.resourceEvent.time;
             const hours = Math.floor(time/60).toLocaleString(undefined, { minimumIntegerDigits: 2 });
             const minutes = (time % 60).toLocaleString(undefined, { minimumIntegerDigits: 2 });;
+
+            const resourceEvent = this.props.resourceEvent;
             if(this._isMounted){
                 this.setState({
-                    tribute_email: this.props.resourceEvent.tribute_email,
-                    originalEmail: this.props.resourceEvent.tribute_email,
-                    type: this.props.resourceEvent.type,
-                    originalType: this.props.resourceEvent.type,
-                    method: this.props.resourceEvent.method,
+                    tribute: `${this.getTributeName(resourceEvent.tribute_email)} || ${resourceEvent.tribute_email}`,
+                    tribute_email: resourceEvent.tribute_email,
+                    originalEmail: resourceEvent.tribute_email,
+                    type: resourceEvent.type,
+                    originalType: resourceEvent.type,
+                    method: resourceEvent.method,
                     time: time,
                     timeFormatted: `${hours}:${minutes}`,
-                    notes: this.props.resourceEvent.notes,
-                    originalNotes: this.props.resourceEvent.notes,
+                    notes: notes,
+                    originalNotes: notes,
                     emailValid: 0
                 })
             }
@@ -78,12 +90,13 @@ class ResourceEventForm extends React.Component {
     }
 
     handleTribute(event){
-        if(event.target.value === ''){
-            this.setState({ tribute_email: '', emailValid: 2 });
+        const input = event.target.value;
+        if(input === ''){
+            this.setState({ tribute: input, tribute_email: '', emailValid: 2 });
             return null;
         } else {
-            const [name, email] = event.target.value.split(' || ');
-            this.setState({ tribute_email: email, tributeName: name, emailValid: 0 });
+            const [name, email] = input.split(' || ');
+            this.setState({ tribute: input, tribute_email: email, tributeName: name, emailValid: 0 });
         }
     }
     handleType(event){
@@ -96,7 +109,8 @@ class ResourceEventForm extends React.Component {
     }
     handleMethod(event){
         const input = event.target.value;
-        if(this.state.type === 'golden'){
+        if(this.state.type.includes('golden')){
+            // Method pre-set to 'code' when 'golden' was selected as the type
             this.setState({ type: `golden-${input}` })
         } else {
             this.setState({ method: input });
@@ -133,12 +147,49 @@ class ResourceEventForm extends React.Component {
             time: this.state.time,
             notes: encodeURIComponent(this.state.notes)
         };
-        if(this.state.type.split('-')[0] === 'golden'){
-            resourceEventObject.notes = resourceEventObject.notes + ' (golden used)';
-        }
 
+        var code = '';
+        if(resourceEventObject.method === 'code'){
+            code = resourceEventObject.notes.toLowerCase();
+
+            if(this.props.mode === 'create'){
+                const response = await this.props.fetchResourceListItemByCode(code);
+                if(!response){
+                    this.setState({ apiError: true });
+                    return null;
+                } else {
+                    this.setState({ apiError: false });
+                }
+                console.log(resourceEventObject.type);
+                // If empty, code was invalid
+                if(Object.keys(this.props.code).length === 0){
+                    this.setState({ formValid: 3 });
+                    return null;
+                } else if(this.props.code.type !== resourceEventObject.type && this.props.code.type !== 'golden'){
+                    this.setState({ formValid: 4 });
+                    return null;
+                } else if(this.props.code.times_used >= this.props.code.max_uses){
+                    this.setState({ formValid: 5 });
+                    return null;
+                }
+            }
+
+            if(resourceEventObject.type.includes('golden')){
+                resourceEventObject.type = resourceEventObject.type.split('-')[1];
+                resourceEventObject.notes = resourceEventObject.notes + ' (golden used)';
+            }
+        }
+        
         if (!resourceEventObject.notes.replace(/\s/g, '').length) {
             resourceEventObject.notes = 'none';
+        }
+
+        const response = await this.props.fetchLifeEventByTerms(resourceEventObject.email, resourceEventObject.time, resourceEventObject.notes);
+        if(!response){
+            this.setState({ apiError: true });
+            return null;
+        } else if(Object.keys(this.props.lifeEvent).length !== 0 && this.props.mode === 'create'){
+            this.setState({ formValid: 6 });
         }
 
         if(this.props.mode === 'edit'){
@@ -156,17 +207,18 @@ class ResourceEventForm extends React.Component {
                 this.setState({ apiError: true });
                 return null;
             }
-            const response3 = await this.props.resourceEventUpdateTributeStats(this.state.tribute_email,
-                this.state.type, 'create');
+            const response3 = await this.props.resourceEventUpdateTributeStats(resourceEventObject.email,
+                resourceEventObject.type, 'create');
             if(!response3){
                 this.setState({ apiError: true });
                 return null;
             }
             
             // Life events updating
-            if(this.state.type === 'life'){
-                const response = await this.props.resourceEventUpdateLifeEvents(this.state.tribute_email,
-                this.state.time, 'create');
+            if(resourceEventObject.type === 'life'){
+                console.log("UPDATED")
+                const response = await this.props.resourceEventUpdateLifeEvent(this.state.originalEmail, 
+                    resourceEventObject.email, resourceEventObject.time, resourceEventObject.notes);
                 if(!response){
                     this.setState({ apiError: true });
                     return null;
@@ -174,20 +226,20 @@ class ResourceEventForm extends React.Component {
             }
 
             // Resource list counts updating (will delete 'used_by' if updated)
-            if(this.state.method === 'code'){
+            if(resourceEventObject.method === 'code'){
                 const response = await this.props.fetchTributes();
                 if(!response){
                     this.setState({ apiError: true });
                     return null;
                 }
                 const response2 = await this.props.resourceEventUpdateResourceList(
-                    this.state.originalNotes, 'NA', 'delete');
+                    this.state.originalNotes, code, 'edit');
                 if(!response2){
                     this.setState({ apiError: true });
                     return null;
                 }
                 const response3 = await this.props.resourceEventUpdateResourceList(
-                    this.state.notes.toLowerCase(), this.getTributeName(this.state.tribute_email), 'create');
+                    this.getTributeName(resourceEventObject.email), code, 'create');
                 if(!response3){
                     this.setState({ apiError: true });
                     return null;
@@ -201,31 +253,31 @@ class ResourceEventForm extends React.Component {
             }
 
             // Tribute stats updating
-            const response2 = await this.props.resourceEventUpdateTributeStats(this.state.tribute_email,
-                this.state.type, 'create');
+            const response2 = await this.props.resourceEventUpdateTributeStats(resourceEventObject.email,
+                resourceEventObject.type, 'create');
             if(!response2){
                 this.setState({ apiError: true });
                 return null;
             }
 
             // Life events updating
-            if(this.state.type === 'life'){
-                const response = await this.props.resourceEventUpdateLifeEvents(this.state.tribute_email,
-                this.state.time, 'create');
+            if(resourceEventObject.type === 'life'){
+                const response = await this.props.resourceEventCreateLifeEvent(resourceEventObject.email,
+                resourceEventObject.time, resourceEventObject.notes);
                 if(!response){
                     this.setState({ apiError: true });
                     return null;
                 }
             }
             // Resource list counts updating (there is no undo for this action if edited)
-            if(this.state.method === 'code'){
+            if(resourceEventObject.method === 'code'){
                 const response = await this.props.fetchTributes();
                 if(!response){
                     this.setState({ apiError: true });
                     return null;
                 }
                 const response2 = await this.props.resourceEventUpdateResourceList(
-                    this.state.notes.toLowerCase(), this.getTributeName(this.state.tribute_email), 'create');
+                    this.getTributeName(resourceEventObject.email), code, 'create');
                 if(!response2){
                     this.setState({ apiError: true });
                     return null;
@@ -294,7 +346,7 @@ class ResourceEventForm extends React.Component {
                     <div className="col-12"><Form.Group controlId="tribute">
                         <Form.Label>Tribute Name*</Form.Label>    
                         <Form.Control 
-                            defaultValue={this.state.tribute_email} 
+                            value={this.state.tribute} 
                             onChange={this.handleTribute} 
                             as="select" autoComplete="off"
                         >
@@ -307,9 +359,10 @@ class ResourceEventForm extends React.Component {
                     <div className="col-6"><Form.Group controlId="type">
                         <Form.Label>Resource Type*</Form.Label>    
                         <Form.Control 
-                            defaultValue="gained"
+                            value={this.state.type}
                             onChange={this.handleType}
                             as="select"
+                            disabled={this.props.mode === 'edit'}
                         >
                             <option value="food">Food</option>
                             <option value="water">Water</option>
@@ -323,11 +376,12 @@ class ResourceEventForm extends React.Component {
                         {this.renderMethodChoices(this.state.type)}
                     </Form.Group></div>
                     <div className="col-12"><Form.Group controlId="notes">
-                        <Form.Label>Notes</Form.Label>    
+                        <Form.Label>Notes (If a code was used, enter the code here)</Form.Label>    
                         <Form.Control 
                             value={this.state.notes}
                             autoComplete="off"
                             onChange={this.handleNotes}
+                            disabled={this.props.mode === 'edit'}
                         />
                     </Form.Group></div>
                 </Form.Row>
@@ -358,7 +412,40 @@ class ResourceEventForm extends React.Component {
         } else if(this.props.mode === 'edit' && !this.props.resourceEvent.tribute_email){
             return null;
         } 
-        if(this.state.emailValid === 0) {
+        
+        if(this.state.formValid === 3){
+            return(
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                        <span role="img" aria-label="check/x">&#10071;</span> You entered an invalid resource code.
+                    </p>
+                </div>
+            );
+        } else if(this.state.formValid === 4){
+            return(
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                        <span role="img" aria-label="check/x">&#10071;</span> Resource type does not match the code you entered.
+                    </p>
+                </div>
+            );
+        } else if(this.state.formValid === 5){
+            return(
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                        <span role="img" aria-label="check/x">&#10071;</span> This resource has been used the maximum number of times.
+                    </p>
+                </div>
+            );
+        } else if(this.state.formValid === 6){
+            return(
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                        <span role="img" aria-label="check/x">&#10071;</span> Please select a different time.
+                    </p>
+                </div>
+            );
+        } else if(this.state.emailValid === 0) {
             return(
                 <p className="coolor-text-green" style={{ fontSize: "12pt" }}>
                     <span role="img" aria-label="check/x">&#10003;</span> Ready to submit? 
@@ -398,9 +485,10 @@ class ResourceEventForm extends React.Component {
                 <>
                 <Form.Label>Use As*</Form.Label>    
                 <Form.Control 
-                    defaultValue="gained"
+                    value={this.state.type.split('-')[1]}
                     onChange={this.handleMethod}
                     as="select"
+                    disabled={this.props.mode === 'edit'}
                 >
                     <option value="food">Food</option>
                     <option value="water">Water</option>
@@ -409,31 +497,19 @@ class ResourceEventForm extends React.Component {
                 </>
             );
             
-        } else if(type !== 'life'){
+        } else {
             return(
                 <>
                 <Form.Label>Method*</Form.Label>    
                 <Form.Control 
-                defaultValue="gained"
+                value={this.state.method}
                 onChange={this.handleMethod}
                 as="select"
+                disabled={this.props.mode === 'edit'}
                 >
                     <option value="code">Code</option>
                     <option value="purchased">Purchased</option>
                     <option value="other">Other</option>
-                </Form.Control>
-                </>
-            );
-        } else {
-            return (
-                <>
-                <Form.Label>Method*</Form.Label>    
-                <Form.Control 
-                defaultValue="gained"
-                onChange={this.handleMethod}
-                as="select"
-                >
-                    <option value="code">Code</option>
                 </Form.Control>
                 </>
             );
@@ -497,17 +573,22 @@ class ResourceEventForm extends React.Component {
 
 const mapStateToProps = state => {
     return {
-        resourceEvent: state.selectedResourceEvent
+        resourceEvent: state.selectedResourceEvent,
+        lifeEvent: state.selectedLifeEvent,
+        code: state.selectedResource
     };
 }
 
 export default connect(mapStateToProps, 
 { 
-    fetchResourceEvent,
     fetchTributes,
+    fetchResourceEvent,
+    fetchLifeEventByTerms,
     createResourceEvent,
     updateResourceEvent,
+    fetchResourceListItemByCode,
     resourceEventUpdateTributeStats,
-    resourceEventUpdateLifeEvents,
+    resourceEventCreateLifeEvent,
+    resourceEventUpdateLifeEvent,
     resourceEventUpdateResourceList
 })(ResourceEventForm);

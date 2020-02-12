@@ -248,6 +248,7 @@ class TributeAccountInfo extends React.Component {
     render = () => {
         return(
             <>
+                <h3 style={{ padding: "10px" }}>Tribute Account Management</h3>
                 {this.renderContent()}
             </>
         )

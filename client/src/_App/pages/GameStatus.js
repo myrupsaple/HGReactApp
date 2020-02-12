@@ -18,7 +18,8 @@ class GameStatus extends React.Component {
         auth: {
             loading: true,
             payload: null
-        }
+        },
+        apiError: false
     };
 
     checkAuth = async () => {
@@ -73,8 +74,12 @@ class GameStatus extends React.Component {
             })
         }
 
-        await this.props.getGameState();
+        const response = await this.props.getGameState();
+        if(!response){
+            this.setState({ apiError: true });
+        }
         const startTime = new Date(Date.parse(this.props.gameState.start_time));
+        console.log(startTime)
         if(this._isMounted){
             this.setState({
                 gameStart: {
@@ -128,7 +133,7 @@ class GameStatus extends React.Component {
             );
             if(this._isMounted){
                 this.setState({
-                    gameDidStart,
+                    gameDidStart: gameDidStart,
                     time: currentTimeString,
                     gameTime: gameTimeString
                 })
@@ -147,6 +152,7 @@ class GameStatus extends React.Component {
             return(
                 <>
                     <h1>Games Started At: {this.getStartTime()} </h1>
+                    <h1>Current Time: {this.state.time}</h1>
                     <h1>Game Time: {this.state.gameTime}</h1>
                 </>
             );
@@ -154,6 +160,7 @@ class GameStatus extends React.Component {
             return(
                 <>
                     <h1>Games Will Begin At: {this.getStartTime()} </h1>
+                    <h1>Current Time: {this.state.time}</h1>
                     <h1>Time Until Games Begin: {this.state.gameTime}</h1>
                 </>
             )
@@ -168,12 +175,13 @@ class GameStatus extends React.Component {
                 <p>{Loading}</p>
                 </>
             );
+        } else if(this.state.apiError){
+            return <h3>Unable to load data at this time. Please try again later.</h3>
         }
         if(this.state.auth.payload === null){
             return(
                 <>
                 {this.renderConditionalText()}
-                <h1>Current Time: {this.state.time}</h1>
                 <h1>Resources You Need:</h1>
                 <h1>Special Events:</h1>
                 <h1>Tributes Remaining:</h1>
@@ -194,6 +202,7 @@ class GameStatus extends React.Component {
     render = () =>{
         return(
             <>
+                <h3>Current Game Status</h3>
                 {this.renderContent()}
             </>
         )

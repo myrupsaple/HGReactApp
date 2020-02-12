@@ -31,7 +31,9 @@ import {
     FETCH_ALL_ITEMS,
     FETCH_ALL_MENTORS,
     FETCH_PURCHASE,
+    FETCH_PURCHASES,
     FETCH_ALL_PURCHASES,
+    CLEAR_PURCHASES_QUEUE,
     FETCH_GAMESTATE
 } from './types';
 
@@ -297,6 +299,20 @@ export const deleteTribute = id => async () => {
     await app.delete(`/tribute/info/delete/${id}`)
         .then(res => {
             console.log('Successfully deleted tribute');
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        })
+    return response;
+}
+
+export const deleteTributeDeleteStats = email => async () => {
+    console.log(`Actions: DELETE tribute stats account initiated with email ${email}`);
+    var response = null;
+    await app.delete(`/tribute/info/tribute-stats/delete/${email}`)
+        .then(res => {
+            console.log('Successfully deleted tribute stats account');
             response = res;
         })
         .catch(err => {
@@ -711,10 +727,24 @@ export const resourceEventUpdateTributeStats = (email, type, mode) => async () =
     return response;
 }
 
-export const resourceEventUpdateLifeEvents = (email, time, mode) => async () => {
+export const resourceEventCreateLifeEvent = (email, time, notes) => async () => {
+    console.log(`Actions: Create life events with life resource`);
+    var response = null;
+    await app.post(`/resource-events/life-events/post/${email}/${time}/${notes}`)
+        .then(res => {
+            console.log(`Successfully created life events with life resource`);
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    return response;
+}
+
+export const resourceEventUpdateLifeEvent = (email1, email2, time, notes) => async () => {
     console.log(`Actions: Update life events with life resource`);
     var response = null;
-    await app.put(`/resource-events/life-events/put/${email}/${time}/${mode}`)
+    await app.put(`/resource-events/life-events/put/${email1}/${email2}/${time}/${notes}`)
         .then(res => {
             console.log(`Successfully updated life events with life resource`);
             response = res;
@@ -725,7 +755,21 @@ export const resourceEventUpdateLifeEvents = (email, time, mode) => async () => 
     return response;
 }
 
-export const resourceEventUpdateResourceList = (code, name, mode) => async () => {
+export const resourceEventDeleteLifeEvent = (email, time, notes) => async () => {
+    console.log(`Actions: Delete life events with life resource`);
+    var response = null;
+    await app.delete(`/resource-events/life-events/delete/${email}/${time}/${notes}`)
+        .then(res => {
+            console.log(`Successfully updated life events with life resource`);
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    return response;
+}
+
+export const resourceEventUpdateResourceList = (name, code, mode) => async () => {
     console.log(`Actions: Update resource list with resource event`);
     var response = null;
     await app.put(`/resource-events/resource-list/put/${name}/${code}/${mode}`)
@@ -745,6 +789,24 @@ export const fetchLifeEvent = id => async (dispatch) => {
     console.log(`Actions: Get Life Event initiated with id ${id}`);
     var response = null;
     await app.get(`/life-events/get/single/${id}`)
+        .then(res => {
+            console.log('Successfully Fetched Life Event');
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    
+    if(response && response.data){
+        dispatch ({ type: FETCH_LIFE_EVENT, payload: response.data[0] });
+    }
+    return response;
+}
+
+export const fetchLifeEventByTerms = (email, time, notes) => async (dispatch) => {
+    console.log(`Actions: Get Life Event by terms initiated with email ${email} and time ${time}`);
+    var response = null;
+    await app.get(`/life-events/get/single/terms/${email}/${time}/${notes}`)
         .then(res => {
             console.log('Successfully Fetched Life Event');
             response = res;
@@ -1023,6 +1085,24 @@ export const fetchPurchaseRequest = (id) => async (dispatch) => {
     return response;
 }
 
+export const fetchPurchaseRequests = (email) => async (dispatch) => {
+    console.log(`Actions: Fetch purchase requests with status 'pending' from ${email}`);
+    var response = null;
+    await app.get(`/purchases/get/list/${email}`)
+        .then(res => {
+            console.log('Successfully fetched purchase requests');
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    
+    if(response && response.data){
+        dispatch ({ type: FETCH_PURCHASES, payload: response.data });
+    }
+    return response;
+}
+
 export const fetchAllPurchaseRequests = () => async (dispatch) => {
     console.log(`Actions: Fetch all purchase requests`);
     var response = null;
@@ -1054,10 +1134,9 @@ export const createPurchaseRequest = (purchase) => async (dispatch) => {
         item_name,
         item_id, 
         cost, 
-        quantity,
-        notes
+        quantity
     } = purchase;
-    await app.post(`/purchases/post/${time}/${status}/${mentor_email}/${payer_email}/${receiver_email}/${category}/${item_name}/${item_id}/${cost}/${quantity}/${notes}`)
+    await app.post(`/purchases/post/${time}/${status}/${mentor_email}/${payer_email}/${receiver_email}/${category}/${item_name}/${item_id}/${cost}/${quantity}`)
         .then(res => {
             console.log('Successfully created purchase request');
             response = res;
@@ -1130,6 +1209,10 @@ export const deletePurchaseRequest = (id) => async () => {
             console.log(err);
         });
     return response;
+}
+
+export const clearPurchasesList = () => async (dispatch) => {
+    dispatch({ type: CLEAR_PURCHASES_QUEUE });
 }
 
 export const purchaseCheckFunds = email => async () => {
@@ -1266,6 +1349,7 @@ export const getGameState = () => async (dispatch) => {
     await app.get(`/game-state/get`)
         .then(res => {
             console.log('Successfully Fetched Game State');
+            response = res;
         })
         .catch(err => {
             console.log(err);
@@ -1274,15 +1358,33 @@ export const getGameState = () => async (dispatch) => {
     if(response && response.data){
         dispatch ({ type: FETCH_GAMESTATE, payload: response.data });
     }
+    return response;
 }
 
 export const setGameStartTime = time => async () => {
     console.log(`Actions: Set Game Time initiated with value ${time}`);
+    var response = null;
     await app.put(`/game-state/put/game-time/${time}`)
         .then(res => {
             console.log(`Successfully game start time`);
+            response = res;
         })
         .catch(err => {
             console.log(err);
         });
+    return response;
+}
+
+export const setMaxDistricts = max => async () => {
+    console.log(`Actions: Set Max Districts initiated: ${max}`);
+    var response = null;
+    await app.put(`/game-state/put/max-districts/${max}`)
+        .then(res => {
+            console.log(`Successfully game start time`);
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    return response;
 }

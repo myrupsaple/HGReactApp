@@ -6,6 +6,7 @@ import {
     createPurchaseRequest,
     updatePurchaseRequest,
     fetchPurchaseRequest,
+    purchaseCheckFunds,
     purchaseUpdateFunds,
     purchaseUpdateItemQuantity,
     fetchAllItems,
@@ -21,10 +22,11 @@ class PurchaseForm extends React.Component{
             payer_email: '',
             receiver_email: '',
             category: '',
+            item: '',
             item_name: '',
             item_id: '',
-            amountPaid: 0,
             cost: 100,
+            originalCost: 0,
             quantity: 1,
             currentPriceTier: 'tier1_cost',
             // Validation
@@ -34,6 +36,7 @@ class PurchaseForm extends React.Component{
             itemValid: 1,
             costValid: 0,
             formValid: 1,
+            currentFunds: '',
             // Handle Modal
             showModal: true,
             firstConfirm: false,
@@ -64,10 +67,11 @@ class PurchaseForm extends React.Component{
                     payer_email: purchase.payer_email,
                     receiver_email: purchase.receiver_email,
                     category: purchase.category,
+                    item: `${purchase.item_name}|${purchase.item_id}`,
                     item_name: purchase.item_name,
                     item_id: purchase.item_id,
-                    amountPaid: purchase.cost,
                     cost: purchase.cost,
+                    originalCost: purchase.cost,
                     quantity: purchase.quantity,
                     payerValid: 0,
                     receiverValid: 0,
@@ -99,6 +103,9 @@ class PurchaseForm extends React.Component{
             this.setState({ payerValid: 2 });
         } else {
             this.setState({ payerValid: 0 });
+            if(this.state.category === 'transfer' && input === this.state.receiver_email){
+                this.setState({ receiverValid: 4 });
+            }
         }
     }
     handleReceiver(event){
@@ -108,37 +115,42 @@ class PurchaseForm extends React.Component{
             this.setState({ receiverValid: 2 });
         } else {
             this.setState({ receiverValid: 0 });
+            if(this.state.category === 'transfer' && input === this.state.payer_email){
+                this.setState({ receiverValid: 4 });
+            }
         }
     }
     async handleCategoryItem(event){
         const input = event.target.value;
-        console.log(event.target.id)
+        const inputType = event.target.id;
         
         this.setState({ item_name: '', item_id: '', cost: 0, formValid: 1 });
 
         // Validation
         if(input === ''){
-            if(event.target.id === 'category'){
+            if(inputType === 'category'){
                 this.setState({ category: '', categoryValid: 2, itemValid: 1 });
             } else {
                 this.setState({ itemValid: 2 });
             }
             return;
         } else {
-            if(event.target.id === 'category'){
+            if(inputType === 'category'){
                 await this.setState({ categoryValid: 0, itemValid: 1 });
                 if(input === 'life' || input === 'immunity'){
                     this.setState({ itemValid: 0 });
                 } else if(input === 'transfer'){
                     this.setState({ itemValid: 0, costValid: 1 });
                     if(this.state.payer_email === this.state.receiver_email){
-                        this.setState({ receiverValid: 4})
+                        this.setState({ receiverValid: 4 });
                     }
                 }
             } else {
                 this.setState({ itemValid: 0 });
             }
         }
+
+        // Input handling
 
         if(input !== 'item'){
             this.setState({ quantity: 1 });
@@ -151,17 +163,23 @@ class PurchaseForm extends React.Component{
         
         // Check whether input requires a secondary input or not ('item' input)
         if(input === 'resource' || input === 'item'){
+            // These inputs can only cocur in the category section
             this.setState({ category: input });
         } else {
             // Parse item value if item category is already selected
             var name = '';
             var id = '';
-            if(this.state.category === 'item'){
+            // Second check is required to prevent input from getting stuck on 'item'
+            // if switching from item to another category
+            if(this.state.category === 'item' && inputType !== 'category'){
+                // Special handling required for item purchases due to value syntax
                 [name, id] = input.split('|');
-                this.setState({ item_name: name, item_id: id });
+                this.setState({ item: input, item_name: name, item_id: id });
             } else if(input === 'life' || input === 'immunity'){
-                this.setState({ category: input, item_name: input});
+                // No secondary input is needed, so item name is set to match category
+                this.setState({ category: input, item_name: input });
             } else {
+                // Fallback case for resource purchases
                 this.setState({ item_name: input });
             }
 
@@ -188,6 +206,7 @@ class PurchaseForm extends React.Component{
                     break;
             }
             
+            // Need to fetch item ID to properly update quantity and fetch costs
             const response = await this.props.fetchItem(id);
             if(!response){
                 this.setState({ apiError: true });
@@ -309,8 +328,18 @@ class PurchaseForm extends React.Component{
             category: this.state.category,
             item_name: this.state.item_name,
             item_id: this.state.item_id,
-            cost: this.state.cost,
+            cost: Math.floor(this.state.cost),
             quantity: this.state.quantity
+        }
+
+        const response = await this.props.purchaseCheckFunds('michaelcuc24@gmail.com');
+        if(!response){
+            this.setState({ apiError: true });
+            return null;
+        }
+        if(response.data[0].funds_remaining < this.state.cost - this.state.originalCost){
+            this.setState({ formValid: 3, currentFunds: response.data[0].funds_remaining });
+            return null;
         }
 
         if(this.props.mode === 'edit'){
@@ -337,8 +366,8 @@ class PurchaseForm extends React.Component{
             }
         }
 
-        const response = await this.props.purchaseUpdateFunds(this.state.payer_email, (this.state.cost - this.state.amountPaid) * -1);
-        if(!response){
+        const response2 = await this.props.purchaseUpdateFunds(this.state.payer_email, (this.state.cost - this.state.originalCost) * -1);
+        if(!response2){
             this.setState({ apiError: true });
             return null;
         }
@@ -372,18 +401,19 @@ class PurchaseForm extends React.Component{
             if(this.state.category === 'transfer'){
                 const payingTribute = this.getTributeName(this.state.payer_email);
                 const receivingTribute = this.getTributeName(this.state.receiver_email);
+                const cost = Math.floor(this.state.cost);
                 return(
                     <h5>
-                        ${this.state.cost} will be transferred from {payingTribute}
+                        ${cost} will be transferred from {payingTribute}
                         &nbsp;to {receivingTribute} if the request is approved. {payingTribute}
-                        &nbsp;will be charged ${this.state.cost} to hold the request. This
+                        &nbsp;will be charged ${cost} to hold the request. This
                         &nbsp;will be refunded if the request is denied
                     </h5>
                 );
             }
 
             const totalCost = this.fetchCurrentPrice(this.props.selectedItem) * this.state.quantity;
-            const diff = totalCost - this.state.amountPaid;
+            const diff = totalCost - this.state.originalCost;
             const purchasingTribute = this.getTributeName(this.state.payer_email);
 
             var message = '';
@@ -396,7 +426,7 @@ class PurchaseForm extends React.Component{
                 extraText = `${purchasingTribute} will not be charged again.`
             }
             if(this.props.mode === 'edit'){
-                message = `The request you are editing had a previous total of $${this.state.amountPaid}.
+                message = `The request you are editing had a previous total of $${this.state.originalCost}.
                 Your new request has a total of $${totalCost}. ${extraText}`;
             } else {
                 message = `${purchasingTribute} will be charged $${totalCost} for this transaction upon submit.
@@ -630,11 +660,17 @@ class PurchaseForm extends React.Component{
         }
     }
     renderFormValidation = () => {
-        if(this.state.firstConfirm || this.state.payerValid + this.state.receiverValid + 
+        if(this.state.formValid === 3 && this.state.firstConfirm){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> 
+                    {this.getTributeName(this.state.payer_email)} has insufficient funds (current total: ${this.state.currentFunds})
+                </p>
+            );
+        } else if(this.state.firstConfirm || this.state.payerValid + this.state.receiverValid + 
             this.state.categoryValid + this.state.itemValid + this.state.costValid === 15){
                 return null;
-        }
-        if(this.state.payerValid + this.state.receiverValid + this.state.categoryValid +
+        } else if(this.state.payerValid + this.state.receiverValid + this.state.categoryValid +
             this.state.itemValid === 0) {
             return(
                 <p className="coolor-text-green" style={{ fontSize: "12pt" }}>
@@ -649,25 +685,6 @@ class PurchaseForm extends React.Component{
             );
         } else {
             return null;
-        }
-    }
-
-    renderCategoryChoices = () => {
-        if(this.state.payer_email !== '' && this.state.receiver_email !== ''){
-            return(
-                <>
-                <option value="">Please select a Category...</option>
-                <option value="item">Item</option>
-                <option value="resource">Resource</option>
-                <option value="life">Life (currently ${this.fetchCurrentPrice(this.props.items[0])})</option>
-                <option value="immunity">Immunity (currently ${this.fetchCurrentPrice(this.props.items[1])})</option>
-                <option value="transfer">Transfer Funds</option>
-                </>
-            );
-        } else {
-            return(
-                <option value="">Please Select Tributes...</option>
-            );
         }
     }
 
@@ -687,6 +704,25 @@ class PurchaseForm extends React.Component{
                 })}
             </>
         );
+    }
+
+    renderCategoryChoices = () => {
+        if(this.state.payer_email !== '' && this.state.receiver_email !== ''){
+            return(
+                <>
+                <option value="">Please select a Category...</option>
+                <option value="item">Item</option>
+                <option value="resource">Resource</option>
+                <option value="life">Life (currently ${this.fetchCurrentPrice(this.props.items[0])})</option>
+                <option value="immunity">Immunity (currently ${this.fetchCurrentPrice(this.props.items[1])})</option>
+                <option value="transfer">Transfer Funds</option>
+                </>
+            );
+        } else {
+            return(
+                <option value="">Please Select Tributes...</option>
+            );
+        }
     }
 
     renderItemMenu = (category) => {
@@ -803,11 +839,11 @@ class PurchaseForm extends React.Component{
             return(
                 <>
                     {this.renderApiError()}
+                    <Button onClick={() => this.setState({ firstConfirm: false, formValid: 1 })} variant="danger">
+                        Go Back
+                    </Button>
                     <Button onClick={this.handleSubmit} variant="info">
                         Send Request
-                    </Button>
-                    <Button onClick={() => this.setState({ firstConfirm: false })} variant="danger">
-                        Go Back
                     </Button>
                 </>
             );
@@ -880,6 +916,7 @@ export default connect(mapStateToProps,
         updatePurchaseRequest,
         fetchPurchaseRequest,
         purchaseUpdateFunds,
+        purchaseCheckFunds,
         purchaseUpdateItemQuantity,
         fetchAllItems,
         fetchItem

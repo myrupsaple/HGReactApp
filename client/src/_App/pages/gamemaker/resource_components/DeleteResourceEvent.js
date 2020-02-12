@@ -3,10 +3,12 @@ import { connect } from 'react-redux';
 import { Modal, Button } from 'react-bootstrap';
 
 import { 
+    fetchTributes,
     fetchResourceEvent,
     deleteResourceEvent, 
     resourceEventUpdateTributeStats,
-    resourceEventUpdateResourceList
+    resourceEventUpdateResourceList,
+    resourceEventDeleteLifeEvent
 } from '../../../../actions';
 
 class DeleteResourceEvent extends React.Component {
@@ -22,8 +24,13 @@ class DeleteResourceEvent extends React.Component {
         }
     }
 
-    componentDidMount(){
+    componentDidMount = async () => {
         this._isMounted = true;
+
+        const response = await this.props.fetchTributes();
+        if(!response){
+            this.setState({ apiError: true });
+        }
     }
 
     handleClose = () => {
@@ -47,6 +54,15 @@ class DeleteResourceEvent extends React.Component {
             this.setState({ apiError: true });
             return null;
         }
+
+        if(resourceEvent.type === 'life'){
+            const response = await this.props.resourceEventDeleteLifeEvent(resourceEvent.tribute_email, resourceEvent.type, resourceEvent.notes);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
+        }
+
         const response3 = await this.props.resourceEventUpdateTributeStats(resourceEvent.tribute_email, resourceEvent.type, 'delete');
         if(!response3){
             this.setState({ apiError: true });
@@ -54,8 +70,15 @@ class DeleteResourceEvent extends React.Component {
         }
 
         if(resourceEvent.method === 'code'){
-            const response4 = await this.props.resourceEventUpdateResourceList(resourceEvent.notes, 'NA', 'delete')
-            if(!response4){
+            var code = '';
+            if(resourceEvent.notes.includes('golden')){
+                code = resourceEvent.notes.split(' ')[0];
+            } else {
+                code = resourceEvent.notes;
+            }
+
+            const response = await this.props.resourceEventUpdateResourceList(this.getTributeName(resourceEvent.tribute_email), code, 'delete');
+            if(!response){
                 this.setState({ apiError: true });
                 return null;
             }
@@ -65,6 +88,15 @@ class DeleteResourceEvent extends React.Component {
             this.setState({ confirmed: true });
         }
         setTimeout(() => this.handleClose(), 1000);
+    }
+
+    getTributeName = (email) => {
+        for (let tribute of this.props.tributes){
+            if(email === tribute.email){
+                return (tribute.first_name + ' ' + tribute.last_name);
+            }
+        }
+        return 'Unrecognized Tribute';
     }
 
     renderBody = () => {
@@ -119,14 +151,17 @@ class DeleteResourceEvent extends React.Component {
 
 const mapStateToProps = state => {
     return {
-        resourceEvent: state.selectedResourceEvent
+        resourceEvent: state.selectedResourceEvent,
+        tributes: Object.values(state.tributes)
     };
 }
 
 export default connect(mapStateToProps, 
     { 
+        fetchTributes,
         fetchResourceEvent,
         deleteResourceEvent, 
         resourceEventUpdateTributeStats,
-        resourceEventUpdateResourceList
+        resourceEventUpdateResourceList,
+        resourceEventDeleteLifeEvent
     })(DeleteResourceEvent);

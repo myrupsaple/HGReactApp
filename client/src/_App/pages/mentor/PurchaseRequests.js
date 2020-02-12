@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Button } from 'react-bootstrap';
+import { Button, Col, Form } from 'react-bootstrap';
 
 import { setNavBar } from '../../../actions';
 import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components/AuthMessages';
@@ -8,8 +8,10 @@ import Wait from '../../../components/Wait';
 import { 
     fetchTributes,
     fetchMentors,
+    fetchPurchaseRequests,
     fetchAllPurchaseRequests,
-    deletePurchaseRequest
+    deletePurchaseRequest,
+    clearPurchasesList
 } from '../../../actions';
 import ViewDetails from './purchase_components/ViewDetails';
 import PurchaseForm from './purchase_components/PurchaseForm';
@@ -39,8 +41,13 @@ class PurchaseRequests extends React.Component {
             selectedId: null,
             // API error handling
             apiError: false,
-            apiInitialLoadError: false
+            apiInitialLoadError: false,
+            // Search handling
+            searchTerm: '',
+            searchQueried: false
         };
+
+        this.handleSearchField = this.handleSearchField.bind(this);
     }
 
     checkAuth = async () => {
@@ -110,11 +117,14 @@ class PurchaseRequests extends React.Component {
         }
     }
 
-    // Render modal header (Create/refresh list buttons)
+    handleSearchField(event){
+        this.setState({ searchTerm: event.target.value });
+    }
+
     renderButtons(){
         const switchModes = (
-            <Button onClick={async () => { 
-                    this.setState({ displayMode: this.state.displayMode === 'pending' ? 'processed' : 'pending' });
+            <Button onClick={ async () => { 
+                    this.setState({ displayMode: this.state.displayMode === 'pending' ? 'processed' : 'pending', searchQueried: false });
                     const response = await this.props.fetchAllPurchaseRequests();
                     if(!response){
                         this.setState({ apiError: true });
@@ -153,6 +163,68 @@ class PurchaseRequests extends React.Component {
         )
     }
 
+    renderSearch(){
+        return(
+            <Form onSubmit={this.handleSearchSubmit}>
+                <Form.Row>
+                    <Col>
+                        <Form.Group controlId="searchBy">
+                            <Form.Control 
+                                value={this.state.searchTerm} 
+                                onChange={this.handleSearchField}
+                                placeholder="Search for Purchases by Receiving Tribute Name..."
+                            />
+                        </Form.Group>
+                    </Col>
+                    <Col>
+                        <Button variant="info" onClick={this.handleSearchSubmit}>Search</Button>
+                        <Button variant="secondary" 
+                            onClick={this.fetchAllPurchaseRequests}
+                        >
+                            Show All
+                        </Button>
+                    </Col>
+                </Form.Row>
+            </Form>
+        );
+    }
+
+    fetchAllPurchaseRequests = async () => {
+        this.setState({ searchTerm: '', searchQueried: false })
+        const response = await this.props.fetchAllPurchaseRequests();
+        if(!response){
+            this.setState({ apiError: true });
+        } else {
+            this.setState({ apiError: false });
+        }
+    }
+
+    handleSearchSubmit = async (event) => {
+        event.preventDefault();
+
+        this.setState({ searchQueried: true });
+
+        await this.props.clearPurchasesList();
+
+        const emails = [];
+        const name = this.state.searchTerm.toLowerCase();
+        this.props.tributes.map(tribute => {
+            if(tribute.first_name.toLowerCase().includes(name)){
+                emails.push(tribute.email);
+            }
+            return null;
+        });
+
+        emails.map(async email => {
+            const response = await this.props.fetchPurchaseRequests(email);
+            if(!response){
+                this.setState({ apiError: true });
+            }
+            return null;
+        })
+        this.setState({ apiError: false });
+    }
+
     renderPurchases(){
         var purchases = this.props.purchases;
         if(this.state.displayMode === 'pending'){
@@ -183,19 +255,27 @@ class PurchaseRequests extends React.Component {
             } else {
                 // If list is empty, display the appropriate message based on the display mode
                 if(this.state.displayMode === 'pending'){
-                    return(
-                        <>
-                            <h5>All caught up :)</h5>
-                            <h6>No purchase requests were found.</h6>
-                        </>
-                    );
+                    if(this.state.searchQueried){
+                        return <h5>Couldn't find any purchase items matching your query :(</h5>
+                    } else {
+                        return(
+                            <>
+                                <h5>All caught up :)</h5>
+                                <h6>No pending purchase requests were found.</h6>
+                            </>
+                        );
+                    }
                 } else {
-                    return(
-                        <>
-                            <h5>There's nothing here :(</h5>
-                            <h6>Couldn't find any past purchase requests</h6>
-                        </>
-                    );
+                    if(this.state.searchQueried){
+                        return <h5>Couldn't find any purchase items matching your query :(</h5>
+                    } else {
+                        return(
+                            <>
+                                <h5>There's nothing here :(</h5>
+                                <h6>Couldn't find any past purchase requests</h6>
+                            </>
+                        );
+                    }
                 }
             }
         }
@@ -211,11 +291,11 @@ class PurchaseRequests extends React.Component {
                             <li className="list-group-item" key={purchase.id}>
                                 <div className="row">
                                     <div className="col">{this.getMentorName(purchase.mentor_email)}</div>
+                                    <div className="col">{this.getTributeName(purchase.receiver_email)}</div>
+                                    <div className="col">{this.getTributeName(purchase.payer_email)}</div>
                                     <div className="col">{purchase.item_name}</div>
                                     <div className="col">{purchase.quantity}</div>
                                     <div className="col">${purchase.cost}</div>
-                                    <div className="col">{this.getTributeName(purchase.payer_email)}</div>
-                                    <div className="col">{this.getTributeName(purchase.receiver_email)}</div>
                                     <div className="col">{this.renderAdmin(purchase)}</div>
                                 </div>
                             </li>
@@ -235,10 +315,10 @@ class PurchaseRequests extends React.Component {
                             <li className="list-group-item" key={purchase.id}>
                                 <div className="row">
                                     <div className="col">{this.getMentorName(purchase.mentor_email)}</div>
+                                    <div className="col">{this.getTributeName(purchase.receiver_email)}</div>
+                                    <div className="col">{this.getTributeName(purchase.payer_email)}</div>
                                     <div className="col">{purchase.status}</div>
                                     <div className="col">{purchase.item_name}</div>
-                                    <div className="col">{this.getTributeName(purchase.payer_email)}</div>
-                                    <div className="col">{this.getTributeName(purchase.receiver_email)}</div>
                                     <div className="col">{this.renderAdmin(purchase)}</div>
                                 </div>
                             </li>
@@ -256,11 +336,11 @@ class PurchaseRequests extends React.Component {
             return(
             <h5 className="row">
                 <div className="col">Requested By</div>
+                <div className="col">Receiver</div>
+                <div className="col">Payer</div>
                 <div className="col">Item</div>
                 <div className="col">Quantity</div>
                 <div className="col">Total</div>
-                <div className="col">Payer</div>
-                <div className="col">Receiver</div>
                 <div className="col">Actions</div>
             </h5>
             );
@@ -268,10 +348,10 @@ class PurchaseRequests extends React.Component {
             return(
                 <h5 className="row">
                     <div className="col">Requested By</div>
+                    <div className="col">Receiver</div>
+                    <div className="col">Payer</div>
                     <div className="col">Status</div>
                     <div className="col">Item</div>
-                    <div className="col">Payer</div>
-                    <div className="col">Receiver</div>
                     <div className="col">Actions</div>
                 </h5>
             );
@@ -361,10 +441,18 @@ class PurchaseRequests extends React.Component {
         } else if(this.state.showApproval){
             this.setState({ showApproval: false })
         }
-        const response = await this.props.fetchAllPurchaseRequests();
-        if(!response){
-            this.setState({ apiError: true });
-            return null;
+        if(this.state.searchTerm === ''){
+            const response = await this.props.fetchAllPurchaseRequests();
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
+        } else {
+            const response = await this.props.fetchPurchaseRequests(this.state.searchTerm);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            }
         }
     }
 
@@ -429,6 +517,7 @@ class PurchaseRequests extends React.Component {
         if(this.state.auth.payload === null){
             return(
                 <>
+                    {this.renderSearch()}
                     {this.renderButtons()}
                     {this.renderPurchases()}
                     {this.showModal()}
@@ -441,8 +530,11 @@ class PurchaseRequests extends React.Component {
 
     render = () => {
         console.log(this.state);
+        const mode = this.state.displayMode === 'pending' ? ': Pending Requests' : ': Processed Requests';
+        const message = this.state.auth.loading ? '' : mode;
         return(
             <>
+                <h3 style={{ padding: "10px" }}>View and Manage Purchase Requests{message}</h3>
                 {this.renderContent()}
             </>
         )
@@ -469,6 +561,8 @@ export default connect(mapStateToProps, {
     setNavBar,
     fetchTributes,
     fetchMentors,
+    fetchPurchaseRequests,
     fetchAllPurchaseRequests,
-    deletePurchaseRequest
+    deletePurchaseRequest,
+    clearPurchasesList
     })(PurchaseRequests);

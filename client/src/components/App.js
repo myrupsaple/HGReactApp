@@ -32,7 +32,7 @@ import GameStatus from '../_App/pages/GameStatus';
 import MapRules from '../_App/pages/MapRules';
 import Messaging from '../_App/pages/Messaging';
 // Tribute Tools
-import SubmitResource from '../_App/pages/tribute/SubmitResource';
+import TributeDashboard from '../_App/pages/tribute/TributeDashboard';
 // Helper Tools
 import ViewLocations from '../_App/pages/helper/ViewLocations';
 // Mentor Tools
@@ -88,7 +88,7 @@ class App extends React.Component {
                     <Route path="/App/map-rules" exact component={MapRules} />
                     <Route path="/App/messaging" exact component={Messaging} />
                     {/* Tribute Tools */}
-                    <Route path="/App/tribute/submit" exact component={SubmitResource} />
+                    <Route path="/App/tribute/dashboard" exact component={TributeDashboard} />
                     {/* Helper Tools */}
                     <Route path="/App/helper/locations" exact component={ViewLocations} />
                     {/* Mentor Tools */}
