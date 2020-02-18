@@ -18,6 +18,10 @@ import itemsReducer from './itemsReducer';
 import purchaseReducer from './purchaseReducer';
 import purchasesReducer from './purchasesReducer';
 import gameStateReducer from './gameStateReducer';
+import tributeStatReducer from './tributeStatReducer';
+import tributeStatsReducer from './tributeStatsReducer';
+import globalEventReducer from './globalEventReducer';
+import globalEventsReducer from './globalEventsReducer';
 
 export default combineReducers({
     config: configReducer,
@@ -38,5 +42,9 @@ export default combineReducers({
     items: itemsReducer,
     selectedPurchase: purchaseReducer,
     purchases: purchasesReducer,
-    gameState: gameStateReducer
+    gameState: gameStateReducer,
+    tributeStats: tributeStatReducer,
+    tributesStats: tributeStatsReducer,
+    selectedGlobalEvent: globalEventReducer,
+    globalEvents: globalEventsReducer
 });

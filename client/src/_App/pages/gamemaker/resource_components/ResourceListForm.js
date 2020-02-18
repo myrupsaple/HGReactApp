@@ -64,7 +64,7 @@ class ResourceListForm extends React.Component {
     handleCode(event){
         const input = event.target.value;
         this.setState({ code: input });
-        if(input.replace(/\s/) === ''){
+        if(input.replace(/\s/g, '') === ''){
             this.setState({ codeValid: 2 });
         } else{
             this.setState({ codeValid: 0 });

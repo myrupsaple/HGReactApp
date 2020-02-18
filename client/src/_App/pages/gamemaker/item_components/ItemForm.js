@@ -73,7 +73,7 @@ class ItemForm extends React.Component {
     handleName(event) {
         const input = event.target.value;
         this.setState({ name: input });
-        if(input.replace(/\s/) === ''){
+        if(input.replace(/\s/g, '') === ''){
             this.setState({ nameValid: 2 });
         } else {
             this.setState({ nameValid: 0 });
@@ -82,7 +82,7 @@ class ItemForm extends React.Component {
     handleDescription(event) {
         const input = event.target.value;
         this.setState({ description: input });
-        if(input.replace(/\s/) === ''){
+        if(input.replace(/\s/g, '') === ''){
             this.setState({ descriptionValid: 2 });
         } else {
             this.setState({ descriptionValid: 0 });

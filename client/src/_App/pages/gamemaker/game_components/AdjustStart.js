@@ -4,7 +4,7 @@ import { Modal, Button } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 
-import { setGameStartTime } from '../../../../actions';
+import { updateGameStartTime } from '../../../../actions';
 
 class AdjustStart extends React.Component {
     _isMounted = false;
@@ -48,7 +48,7 @@ class AdjustStart extends React.Component {
         const day = date.getDate();
         const hours = date.getHours();
         const minutes = date.getMinutes().toLocaleString(undefined, { minimumIntegerDigits: 2 });
-        await this.props.setGameStartTime(`${year}-${month}-${day} ${hours}:${minutes}:00`);
+        await this.props.updateGameStartTime(`${year}-${month}-${day} ${hours}:${minutes}:00`);
         if(this._isMounted){
             this.setState({ showCalendar: false, submitted: true });
         }
@@ -160,4 +160,4 @@ class AdjustStart extends React.Component {
     }
 }
 
-export default connect(null, { setGameStartTime })(AdjustStart);
+export default connect(null, { updateGameStartTime })(AdjustStart);

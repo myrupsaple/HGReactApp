@@ -61,7 +61,7 @@ class UserForm extends React.Component {
     handleFirstName(event) {
         const input = event.target.value;
         this.setState({ first_name: event.target.value });
-        if(input.replace(/\s/) === ''){
+        if(input.replace(/\s/g, '') === ''){
             this.setState({ firstNameValid: 2 });
         } else{
             this.setState({ firstNameValid: 0 });
@@ -70,7 +70,7 @@ class UserForm extends React.Component {
     handleLastName(event) {
         const input = event.target.value;
         this.setState({ last_name: event.target.value });
-        if(input.replace(/\s/) === ''){
+        if(input.replace(/\s/g, '') === ''){
             this.setState({ lastNameValid: 2 });
         } else {
             this.setState({ lastNameValid: 0 });
@@ -79,7 +79,7 @@ class UserForm extends React.Component {
     handleEmail(event) {
         const input = event.target.value;
         this.setState({ email: input });
-        if(input.replace(/\s/) === ''){
+        if(input.replace(/\s/g, '') === ''){
             this.setState({ emailValid: 2 });
         } else if (!/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(input)){
             this.setState({ emailValid: 3 });
@@ -90,7 +90,7 @@ class UserForm extends React.Component {
     handlePermissions(event) {
         const input = event.target.value;
         this.setState({ permissions: input });
-        if(input.replace(/\s/) === ''){
+        if(input.replace(/\s/g, '') === ''){
             this.setState({ permissionsValid: 2 });
         } else {
             this.setState({ permissionsValid: 0 });

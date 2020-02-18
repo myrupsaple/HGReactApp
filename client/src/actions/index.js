@@ -34,7 +34,12 @@ import {
     FETCH_PURCHASES,
     FETCH_ALL_PURCHASES,
     CLEAR_PURCHASES_QUEUE,
-    FETCH_GAMESTATE
+    FETCH_GAMESTATE,
+    FETCH_TRIBUTE_STAT,
+    FETCH_TRIBUTE_STATS,
+    FETCH_ALL_TRIBUTE_STATS,
+    FETCH_GLOBAL_EVENT,
+    FETCH_GLOBAL_EVENTS
 } from './types';
 
 //############################# (Misc. Settings) #############################//
@@ -1343,8 +1348,26 @@ export const transferFunds = (emailFrom, emailTo, amount) => async () => {
 
 //######################## (8) Game State Management #########################//
 
-export const getGameState = () => async (dispatch) => {
-    console.log(`Actions: Get Game State initiated`);
+export const fetchServerTime = () => async (dispatch) => {
+    console.log(`Actions: Get Server Time Initiated`);
+    var response = null;
+    await app.get(`/game-state/get/server-time`)
+        .then(res => {
+            console.log('Successfully fetched server time');
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    if(response && response.data && response.data[0]){
+        return response.data[0].CURRENT_TIMESTAMP;
+    } else {
+        return null;
+    }
+}
+
+export const fetchGameState = () => async (dispatch) => {
+    console.log(`Actions: Fetch Game State initiated`);
     var response = null;
     await app.get(`/game-state/get`)
         .then(res => {
@@ -1361,7 +1384,22 @@ export const getGameState = () => async (dispatch) => {
     return response;
 }
 
-export const setGameStartTime = time => async () => {
+export const fetchGameStatePriceTier = () => async () => {
+    console.log(`Actions: Fetch price tier`);
+    var response = null;
+    await app.get(`/game-state/get/price-tier`)
+        .then(res => {
+            console.log('Successfully fetched price tier');
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    
+    return response.data[0].current_price_tier;
+}
+
+export const updateGameStartTime = time => async () => {
     console.log(`Actions: Set Game Time initiated with value ${time}`);
     var response = null;
     await app.put(`/game-state/put/game-time/${time}`)
@@ -1375,12 +1413,114 @@ export const setGameStartTime = time => async () => {
     return response;
 }
 
-export const setMaxDistricts = max => async () => {
-    console.log(`Actions: Set Max Districts initiated: ${max}`);
+export const updateGameState = (maxDistricts, areas) => async () => {
+    console.log(`Actions: Set Max Districts initiated: ${maxDistricts} districts and areas: ${areas}`);
     var response = null;
-    await app.put(`/game-state/put/max-districts/${max}`)
+    await app.put(`/game-state/put/${maxDistricts}/${areas}`)
         .then(res => {
-            console.log(`Successfully game start time`);
+            console.log(`Successfully updated game state`);
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    return response;
+}
+
+//##################### (9) Tribute Stats and Dashboard ######################//
+
+export const fetchTributeStats = email => async (dispatch) => {
+    console.log(`Actions: Fetch tribute stats for ${email}`);
+    var response = null;
+    await app.get(`/tribute-stats/get/${email}`)
+        .then(res => {
+            console.log(`Successfully fetched tribute stats`);
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    if(response && response.data){
+        dispatch ({ type: FETCH_TRIBUTE_STAT, payload: response.data[0] });
+    }
+    return response;
+}
+
+//############################ (10) Global Events ############################//
+
+// FETCH_GLOBAL_EVENT
+export const fetchGlobalEvent = id => async (dispatch) => {
+    console.log(`Actions: Fetch global event with id ${id}`);
+    var response = null;
+    await app.get(`/global-events/get/single/${id}`)
+        .then(res => {
+            console.log(`Successfully fetched global event`);
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    if(response && response.data){
+        dispatch ({ type: FETCH_GLOBAL_EVENT, payload: response.data[0] });
+    }
+    return response;
+}
+
+// FETCH_GLOBAL_EVENTS (All)
+export const fetchGlobalEvents = () => async (dispatch) => {
+    console.log(`Actions: Fetch all global events`);
+    var response = null;
+    await app.get(`/global-events/get/all`)
+        .then(res => {
+            console.log(`Successfully fetched global events`);
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    if(response && response.data){
+        dispatch ({ type: FETCH_GLOBAL_EVENTS, payload: response.data });
+    }
+    return response;
+}
+
+// CREATE_GLOBAL_EVENT
+export const createGlobalEvent = (event) => async () => {
+    console.log(`Actions: Create global event`);
+    var response = null;
+    await app.post(`/global-events/post/${event.type}/${event.description}/${event.message}/${event.notification_time}/${event.event_end_time}/${event.start_action_code}/${event.end_action_code}`)
+        .then(res => {
+            console.log(`Successfully created global event`);
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    return response;
+}
+
+// UPDATE_GLOBAL_EVENT
+export const updateGlobalEvent = (event) => async () => {
+    console.log(`Actions: Update global event`);
+    var response = null;
+    await app.put(`/global-events/put/${event.id}/${event.type}/${event.description}/${event.message}/${event.notification_time}/${event.event_end_time}/${event.start_action_code}/${event.end_action_code}/${event.status}`)
+        .then(res => {
+            console.log(`Successfully updated global event`);
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    return response;
+}
+
+// DELETE_GLOBAL_EVENT
+export const deleteGlobalEvent = id => async () => {
+    console.log(`Actions: Delete global event with id ${id}`);
+    var response = null;
+    await app.delete(`/global-events/delete/${id}`)
+        .then(res => {
+            console.log(`Successfully deleted global event`);
             response = res;
         })
         .catch(err => {

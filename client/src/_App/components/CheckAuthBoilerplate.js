@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 
 // TODO: Update directories as necessary
 import { setNavBar } from '../../actions';
-import AppNavBar from '../components/AppNavBar';
 import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../components/AuthMessages';
 import Wait from '../../components/Wait';
 
@@ -21,7 +20,7 @@ class MapRules extends React.Component {
         const allowedGroups = ['owner', 'admin', 'gamemaker', 'tribute', 'mentor', 'helper'];
         var timeoutCounter = 0;
         while(!this.props.authLoaded){
-            await Wait(500);
+            await Wait(1000);
             timeoutCounter ++;
             console.log('waiting on authLoaded')
             if (timeoutCounter > 5){
@@ -31,7 +30,7 @@ class MapRules extends React.Component {
 
         timeoutCounter = 0;
         while(!this.props.isSignedIn){
-            await Wait(500);
+            await Wait(1000);
             timeoutCounter ++;
             console.log('waiting on isSignedIn');
             if (timeoutCounter > 5){
@@ -116,4 +115,4 @@ const mapStateToProps = state => {
 export default connect(mapStateToProps, 
     {
     setNavBar,
-    })(SubmitResource);
+    })(MapRules);

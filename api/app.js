@@ -1,10 +1,13 @@
 "use strict";
 const express = require('express');
 const cors = require('cors');
-const app = express();
 const morgan = require('morgan');
 const mysql = require('mysql');
 
+const setup = require('./components/setup');
+const events = require('./components/events');
+
+const app = express();
 app.use(morgan('short'));
 
 const _currentOrigin = 'http://localhost:3000';
@@ -27,287 +30,15 @@ const connection = mysql.createConnection({
 
 //################################ (0) SETUP #################################//
 
-connection.connect(async (err) => {
-    if(err) {
-        return console.log('error: ' + err.message);
-    }
+setup.runSetup(connection)
 
-    const findTables = `SHOW TABLES`;
-    var res = {};
-
-    connection.query(findTables, (err, results, fields) => {
-        if(err) {
-            console.log(err.message);
-        }
-        res = results.map(table => {
-            return table.Tables_in_hgapp;
-        });    
-
-        const tableList = {
-            users: false,
-            tributes: false,
-            tribute_stats:false,
-            donations: false,
-            resource_list: false,
-            resource_events: false,
-            life_events: false,
-            item_list: false,
-            purchases: false,
-            game_state: false
-        }
-        
-        for(let table of res){
-            switch(table){
-                case 'users':
-                    tableList.users = true;
-                    break;
-                case 'tributes':
-                    tableList.tributes = true;
-                    break;
-                case 'tribute_stats':
-                    tableList.tribute_stats = true;
-                    break;
-                case 'donations':
-                    tableList.donations = true;
-                    break;
-                case 'resource_list':
-                    tableList.resource_list = true;
-                    break;
-                case 'resource_events':
-                    tableList.resource_events = true;
-                    break;
-                case 'life_events':
-                    tableList.life_events = true;
-                    break;
-                case 'item_list':
-                    tableList.item_list = true;
-                    break;
-                case 'purchases':
-                    tableList.purchases = true;
-                    break;
-                case 'game_state':
-                    tableList.game_state = true;
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        const createUsers = `CREATE TABLE users(
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            first_name VARCHAR(20),
-            last_name VARCHAR(20),
-            email VARCHAR(40),
-            permissions VARCHAR(10)
-        )`;
-
-        const createTributes = `CREATE TABLE tributes(
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            first_name VARCHAR(20),
-            last_name VARCHAR(20),
-            email VARCHAR(40),
-            phone VARCHAR(12),
-            district TINYINT,
-            districtPartner_email VARCHAR(40),
-            area VARCHAR(15),
-            mentor_email VARCHAR(40),
-            paid_registration TINYINT(1)
-        )`;
-
-        const createTributeStats = `CREATE TABLE tribute_stats(
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            first_name VARCHAR(20),
-            last_name VARCHAR(20),
-            email VARCHAR(40),
-            funds_remaining INT DEFAULT 0,
-            total_donations INT DEFAULT 0,
-            total_purchases INT DEFAULT 0,
-            food_used TINYINT DEFAULT 0,
-            food_missed TINYINT DEFAULT 0,
-            water_used TINYINT DEFAULT 0,
-            water_missed TINYINT DEFAULT 0,
-            medicine_used TINYINT DEFAULT 0,
-            medicine_missed TINYINT DEFAULT 0,
-            roulette_used TINYINT DEFAULT 0,
-            golden_used TINYINT DEFAULT 0,
-            lives_remaining TINYINT DEFAULT 1,
-            life_resources TINYINT DEFAULT 0,
-            lives_exempt TINYINT DEFAULT 1,
-            lives_purchased TINYINT DEFAULT 0,
-            lives_lost TINYINT DEFAULT 0,
-            kill_count TINYINT DEFAULT 0,
-            has_immunity BOOL DEFAULT 0
-        )`;
-
-        const createDonations = `CREATE TABLE donations(
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            tribute_email VARCHAR(40),
-            donor_name VARCHAR(40),
-            method VARCHAR(20),
-            date DATE,
-            amount INT,
-            tags VARCHAR(50)
-        )`;
-
-        const createResourceList = `CREATE TABLE resource_list(
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            code VARCHAR(50),
-            type VARCHAR(10),
-            times_used TINYINT,
-            max_uses TINYINT,
-            used_by VARCHAR(300),
-            notes VARCHAR(75)
-        )`;
-
-        const createResourceEvents = `CREATE TABLE resource_events(
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            tribute_email VARCHAR(40),
-            type VARCHAR(15),
-            method VARCHAR(10),
-            time INT,
-            notes VARCHAR(75)
-        )`;
-
-        const createLifeEvents = `CREATE TABLE life_events(
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            tribute_email VARCHAR(40),
-            type VARCHAR(10),
-            method VARCHAR(20),
-            time INT,
-            notes VARCHAR(75)
-        )`;
-
-        const createItemList = `CREATE TABLE item_list(
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            item_name VARCHAR(30),
-            description VARCHAR(100),
-            quantity TINYINT,
-            tier1_cost INT,
-            tier2_cost INT,
-            tier3_cost INT,
-            tier4_cost INT
-        )`;
-
-        const createSpecialItems = `INSERT INTO item_list 
-            (id, item_name, description, quantity, tier1_cost, tier2_cost, tier3_cost, tier4_cost) 
-            VALUES 
-            (100, 'life', 'life', 1, 45, 70, 100, 150),
-            (200, 'immunity', 'immunity', 1, 300, 300, 300, 300),
-            (300, 'golden_resource', 'golden resource', 1, 300, 300, 300, 300),
-            (301, 'food_resource', 'food resource', 1, 80, 100, 100, 100),
-            (302, 'water_resource', 'water resource', 1, 100, 100, 120, 120),
-            (303, 'medicine_resource', 'medicine resource', 1, 75, 100, 125, 125),
-            (1000, 'id_shifter', 'none', 0, 0, 0, 0, 0)`;
-
-        const deleteIdShifter = `DELETE FROM item_list WHERE id = 1000`;
-
-        const createPurchases = `CREATE TABLE purchases(
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            time INT,
-            status VARCHAR(10),
-            mentor_email VARCHAR(40),
-            payer_email VARCHAR(40),
-            receiver_email VARCHAR(40),
-            category VARCHAR(10),
-            item_name VARCHAR(25),
-            item_id INT,
-            cost INT,
-            quantity TINYINT,
-            notes VARCHAR(50)
-        )`;
-
-        const createGameState = `CREATE TABLE game_state(
-            start_time DATETIME,
-            tributes_remaining TINYINT
-        )`;
-        
-        if(!tableList.users){
-            connection.query(createUsers, (err, results, fields) => {
-                if(err) {
-                    console.log(err.message);
-                }
-            });
-        }
-        if(!tableList.tributes){
-            connection.query(createTributes, (err, results, fields) => {
-                if(err) {
-                    console.log(err.message);
-                }
-            });
-        }
-        if(!tableList.tribute_stats){
-            connection.query(createTributeStats, (err, results, fields) => {
-                if(err) {
-                    console.log(err.message);
-                }
-            });
-        }
-        if(!tableList.donations){
-            connection.query(createDonations, (err, results, fields) => {
-                if(err){
-                    console.log(err.message);
-                }
-            });
-        }
-        if(!tableList.resource_list){
-            connection.query(createResourceList, (err, results, fields) => {
-                if(err){
-                    console.log(err.message);
-                }
-            });
-        }
-        if(!tableList.resource_events){
-            connection.query(createResourceEvents, (err, results, fields) => {
-                if(err){
-                    console.log(err.message);
-                }
-            });
-        }
-        if(!tableList.life_events){
-            connection.query(createLifeEvents, (err, results, fields) => {
-                if(err){
-                    console.log(err.message);
-                }
-            });
-        }
-        if(!tableList.item_list){
-            connection.query(createItemList, (err, results, fields) => {
-                if(err){
-                    console.log(err.message);
-                }
-            });
-            connection.query(createSpecialItems, (err, results, fields) => {
-                if(err){
-                    console.log(err.message);
-                }
-            });
-            connection.query(deleteIdShifter, (err, results, fields) => {
-                if(err){
-                    console.log(err.message);
-                }
-            });
-        }
-        if(!tableList.purchases){
-            connection.query(createPurchases, (err, results, fields) => {
-                if(err){
-                    console.log(err.message);
-                }
-            });
-        }
-        if(!tableList.game_state){
-            connection.query(createGameState, (err, results, fields) => {
-                if(err) {
-                    console.log(err.message);
-                }
-            });
-        }
-
-    })
-});
+events.checkForEvents(connection);
 
 app.options('*', cors(corsOptions), (req, res) => {
     return;
 })
+
+//events.checkForEvents(connection);
 
 //########################### (1) USER MANAGEMENT ############################//
 
@@ -1914,9 +1645,45 @@ app.put(`/purchases/tribute-stats/immunity/put/:email`, (req, res) => {
 
 //######################## (8) Game State Management #########################//
 
+// FETCH_SERVER_TIME
+app.get(`/game-state/get/server-time`, (req, res) => {
+    const queryStringGetGameState = `SELECT CURRENT_TIMESTAMP`;
+    console.log(queryStringGetGameState);
+    connection.query(queryStringGetGameState, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for timestamp: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
 // FETCH_GAMESTATE
 app.get(`/game-state/get`, (req, res) => {
-    const queryStringGetGameState = `SELECT * FROM game_state`
+    const queryStringGetGameState = `SELECT * FROM game_state`;
+    console.log(queryStringGetGameState);
+    connection.query(queryStringGetGameState, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for game state: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// FETCH_PRICE_TIER
+app.get(`/game-state/get/price-tier`, (req, res) => {
+    const queryStringGetGameState = `SELECT current_price_tier FROM game_state`;
     console.log(queryStringGetGameState);
     connection.query(queryStringGetGameState, (err, rows, fields) => {
         if(err){
@@ -1950,10 +1717,11 @@ app.put(`/game-state/put/game-time/:time`, (req, res) => {
     })
 })
 
-// UPDATE_MAX_DISTRICTS
-app.put(`/game-state/put/max-districts/:max`, (req, res) => {
-    const max = req.params.max;
-    const queryStringSetGameTime = `UPDATE game_state SET max_districts = '${max}'`;
+// UPDATE_GAME_STATE
+app.put(`/game-state/put/:maxDistricts/:areas`, (req, res) => {
+    const { maxDistricts, areas } = req.params;
+    const queryStringSetGameTime = `UPDATE game_state SET max_districts = '${maxDistricts}', areas = '${areas}'`;
+    console.log(queryStringSetGameTime);
     connection.query(queryStringSetGameTime, (err, rows, fields) => {
         if(err){
             console.log('Failed to query for game state: ' + err);
@@ -1968,6 +1736,128 @@ app.put(`/game-state/put/max-districts/:max`, (req, res) => {
     })
 })
 
+//##################### (9) Tribute Stats and Dashboard ######################//
+
+// FETCH_TRIBUTE_STATS
+app.get(`/tribute-stats/get/:email`, (req, res) => {
+    const email = req.params.email;
+    const queryStringGetTributeStats = `SELECT * FROM tribute_stats WHERE email = '${email}'`;
+    console.log(queryStringGetTributeStats);
+    connection.query(queryStringGetTributeStats, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for game state: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    })
+})
+
+//############################ (10) Global Events ############################//
+
+// FETCH_GLOBAL_EVENT
+app.get(`/global-events/get/single/:id`, (req, res) => {
+    const id = req.params.id;
+    const queryStringGetGlobalEvent = `SELECT * FROM global_events WHERE id = ${id}`;
+    console.log(queryStringGetGlobalEvent);
+    connection.query(queryStringGetGlobalEvent, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for global events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    })
+})
+
+// FETCH_ALL_GLOBAL_EVENTS
+app.get(`/global-events/get/all`, (req, res) => {
+    const queryStringGetAllGlobalEvent = `SELECT * FROM global_events`;
+    console.log(queryStringGetAllGlobalEvent);
+    connection.query(queryStringGetAllGlobalEvent, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for global events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    })
+})
+
+// CREATE_GLOBAL_EVENT
+app.post(`/global-events/post/:type/:description/:message/:notificationTime/:endTime/:startCode/:endCode`, (req, res) => {
+    const { type, description, message, notificationTime, endTime, startCode, endCode } = req.params;
+    const queryStringCreateGlobalEvent = `INSERT INTO global_events (type, description, message,
+        notification_time, event_end_time, start_action_code, end_action_code, status) VALUES
+        ('${type}', '${description}', '${message}', ${notificationTime}, ${endTime},
+        ${startCode}, ${endCode}, 'hidden')`;
+    console.log(queryStringCreateGlobalEvent);
+    connection.query(queryStringCreateGlobalEvent, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for global events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    })
+})
+
+// UPDATE_GLOBAL_EVENT
+app.put(`/global-events/put/:id/:type/:description/:message/:notificationTime/:endTime/:startCode/:endCode/:status`, (req, res) => {
+    const { id, type, description, message, notificationTime, endTime, startCode, endCode, status } = req.params;
+    const queryStringUpdateGlobalEvent = `UPDATE global_events SET type = '${type}', 
+    description = '${description}', message = '${message}', notification_time = ${notificationTime},
+    event_end_time = ${endTime}, start_action_code = ${startCode}, end_action_code = ${endCode},
+    status = '${status}' WHERE id = ${id}`;
+    console.log(queryStringUpdateGlobalEvent);
+    connection.query(queryStringUpdateGlobalEvent, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for global events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    })
+})
+
+// DELETE_GLOBAL_EVENT
+app.delete(`/global-events/delete/:id`, (req, res) => {
+    const { id } = req.params.id;
+    const queryStringDeleteGlobalEvent = `DELETE FROM global_events WHERE id = ${id}`;
+    console.log(queryStringDeleteGlobalEvent);
+    connection.query(queryStringDeleteGlobalEvent, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for global events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    })
+})
 
 //########################### RUNS THE API SERVER ############################//
 app.listen(3001, () => {

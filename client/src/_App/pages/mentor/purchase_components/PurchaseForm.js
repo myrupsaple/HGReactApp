@@ -10,7 +10,8 @@ import {
     purchaseUpdateFunds,
     purchaseUpdateItemQuantity,
     fetchAllItems,
-    fetchItem
+    fetchItem,
+    fetchGameStatePriceTier
 } from '../../../../actions';
 
 class PurchaseForm extends React.Component{
@@ -54,6 +55,31 @@ class PurchaseForm extends React.Component{
 
     componentDidMount = async () => {
         this._isMounted = true;
+
+        var priceTier = await this.props.fetchGameStatePriceTier();
+        if(!priceTier){
+            return null;
+        } else {
+            switch (priceTier){
+                case 1:
+                    priceTier = 'tier1_cost';
+                    break;
+                case 2:
+                    priceTier = 'tier2_cost';
+                    break;
+                case 3:
+                    priceTier = 'tier3_cost';
+                    break;
+                case 4:
+                    priceTier = 'tier4_cost';
+                    break;
+                default:
+                    priceTier = null;
+                    break;
+            }
+            this.setState({ currentPriceTier: priceTier });
+        }
+
         if(this.props.mode === 'edit'){
             const response = await this.props.fetchPurchaseRequest(this.props.id);
             if(!response){
@@ -242,7 +268,6 @@ class PurchaseForm extends React.Component{
         if(!item){
             return null;
         }
-        // TODO: This should return the current cost based on the time
         return item[this.state.currentPriceTier];
     }
 
@@ -720,7 +745,7 @@ class PurchaseForm extends React.Component{
             );
         } else {
             return(
-                <option value="">Please Select Tributes...</option>
+                <option value="">--Please Select Tributes First--</option>
             );
         }
     }
@@ -777,8 +802,8 @@ class PurchaseForm extends React.Component{
                 <>
                     <option value="">Please choose an item...</option>
                     {items.map(item => {
-                        // ID >= 1000 reserved for special items (lives, resources, etc.)
-                        if(item.id < 1000) return null;
+                        // ID <= 1000 reserved for special items (lives, resources, etc.)
+                        if(item.id <= 1000) return null;
                         else {
                             return(
                             <option key={item.id} 
@@ -919,5 +944,6 @@ export default connect(mapStateToProps,
         purchaseCheckFunds,
         purchaseUpdateItemQuantity,
         fetchAllItems,
-        fetchItem
+        fetchItem,
+        fetchGameStatePriceTier
     })(PurchaseForm);

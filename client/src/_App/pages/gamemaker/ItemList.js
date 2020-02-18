@@ -152,6 +152,9 @@ class ItemList extends React.Component {
             <ul className="list-group">
                 {this.renderTableHeader()}
                 {items.map(item => {
+                    if(item.id === 1000){
+                        return null;
+                    }
                     return(
                         <li className="list-group-item" key={item.id}>
                             <div className="row">

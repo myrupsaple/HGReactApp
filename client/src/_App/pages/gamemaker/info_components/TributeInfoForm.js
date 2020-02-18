@@ -2,7 +2,12 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Form, Button, Modal } from 'react-bootstrap';
 
-import { createTribute, updateTribute, fetchTribute } from '../../../../actions';
+import { 
+    createTribute, 
+    updateTribute, 
+    fetchTribute,
+    fetchGameState
+} from '../../../../actions';
 
 class TributeInfoForm extends React.Component {
     _isMounted = false;
@@ -17,7 +22,7 @@ class TributeInfoForm extends React.Component {
             phone: '',
             district: 1,
             districtPartner: '',
-            area: 'dank_denykstra',
+            area: '',
             mentor: '',
             paidRegistration: 1,
             // Validation
@@ -26,6 +31,7 @@ class TributeInfoForm extends React.Component {
             emailValid: 1,
             phoneValid: 1,
             partnerValid: 1,
+            areaValid: 1,
             mentorValid: 1,
             formValid: 1,
             // Handle the Modal
@@ -49,8 +55,13 @@ class TributeInfoForm extends React.Component {
         this.handleFormSubmit = this.handleFormSubmit.bind(this);
     }
 
-    componentDidMount(){
+    componentDidMount = async () => {
         this._isMounted = true;
+
+        const response = await this.props.fetchGameState();
+        if(!response){
+            this.setState({ apiError: true });
+        }
 
         if(this.props.mode === 'edit' && this._isMounted){
             this.setState({
@@ -69,6 +80,7 @@ class TributeInfoForm extends React.Component {
                 emailValid: 0,
                 phoneValid: 0,
                 partnerValid: 0,
+                areaValid: 0,
                 mentorValid: 0
             })
         }
@@ -79,7 +91,7 @@ class TributeInfoForm extends React.Component {
         this.setState({ first_name: input });
         if(input === ''){
             return null;
-        } else if(input.replace(/\s/) === ''){
+        } else if(input.replace(/\s/g, '') === ''){
             this.setState({ firstNameValid: 2 });
         } else {
             this.setState({ firstNameValid: 0 });
@@ -90,7 +102,7 @@ class TributeInfoForm extends React.Component {
         this.setState({ last_name: input });
         if(input === ''){
             return null;
-        } else if(input.replace(/\s/) === ''){
+        } else if(input.replace(/\s/g, '') === ''){
             this.setState({ lastNameValid: 2 });
         } else {
             this.setState({ lastNameValid: 0 });
@@ -99,7 +111,7 @@ class TributeInfoForm extends React.Component {
     handleEmail(event) {
         const input = event.target.value.toLowerCase();
         this.setState({ email: input });
-        if(input.replace(/\s/) === ''){
+        if(input.replace(/\s/g, '') === ''){
             this.setState({ emailValid: 2 });
         } else if (!/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(input)){
             this.setState({ emailValid: 3 });
@@ -128,7 +140,7 @@ class TributeInfoForm extends React.Component {
     handleDistrictPartner(event) {
         const input = event.target.value.toLowerCase();
         this.setState({ districtPartner: input });
-        if(input.replace(/\s/) === ''){
+        if(input.replace(/\s/g, '') === ''){
             this.setState({ partnerValid: 2 });
         } else if (!/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(input)){
             this.setState({ partnerValid: 3 });
@@ -137,12 +149,20 @@ class TributeInfoForm extends React.Component {
         }
     }
     handleArea(event) {
-        this.setState({ area: event.target.value });
+        const input = event.target.value;
+        this.setState({ area: input });
+        if(input === ''){
+            return null;
+        } else if(input.replace(/\s/g, '') === ''){
+            this.setState({ areaValid: 2 });
+        } else {
+            this.setState({ areaValid: 0 });
+        }
     }
     handleMentor(event) {
         const input = event.target.value.toLowerCase();
         this.setState({ mentor: input });
-        if(input.replace(/\s/) === ''){
+        if(input.replace(/\s/g, '') === ''){
             this.setState({ mentorValid: 2 });
         } else if (!/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(input)){
             this.setState({ mentorValid: 3 });
@@ -171,12 +191,15 @@ class TributeInfoForm extends React.Component {
         if(this.state.partnerValid === 1){
             this.setState({ partnerValid: 2 });
         }
+        if(this.state.areaValid === 1){
+            this.setState({ areaValid: 2 });
+        }
         if(this.state.mentorValid === 1){
             this.setState({ mentorValid: 2 });
         }
 
         if(this.state.firstNameValid + this.state.lastNameValid + this.state.emailValid +
-            this.state.phoneValid + this.state.partnerValid + this.state.mentorValid !== 0){
+            this.state.phoneValid + this.state.partnerValid + this.state.areaValid + this.state.mentorValid !== 0){
             this.setState({ formValid: 2 });
             return null;
         }
@@ -319,15 +342,8 @@ class TributeInfoForm extends React.Component {
                             onChange={this.handleDistrict}
                             as="select"
                         >
-                            {/* TODO: Make this dynamic */}
-                            <option value={1}>1</option>
-                            <option value={2}>2</option>
-                            <option value={3}>3</option>
-                            <option value={4}>4</option>
-                            <option value={5}>5</option>
-                            <option value={6}>6</option>
-                            <option value={7}>7</option>
-                            <option value={8}>8</option>
+                            
+                            {this.renderDistrictChoices()}
                         </Form.Control>
                     </Form.Group></div>
                     <div className="col-4"><Form.Group control-group="area">
@@ -337,13 +353,9 @@ class TributeInfoForm extends React.Component {
                             onChange={this.handleArea}
                             as="select"
                         >
-                            {/* TODO: Make this dynamic */}
-                            <option value="dank_denykstra">Dank Denykstra</option>
-                            <option value="sunsprout">SunSprout</option>
-                            <option value="hedrick">Hedrick</option>
-                            <option value="rieber">Rieber</option>
-                            <option value="off_campus">Off Campus</option>
+                            {this.renderAreaChoices()}
                         </Form.Control>
+                        {this.renderAreaValidation()}
                     </Form.Group></div>  
                     <div className="col-4"><Form.Group control-group="paid-registration">
                         <Form.Label>Paid Registration?*</Form.Label>
@@ -482,6 +494,23 @@ class TributeInfoForm extends React.Component {
             return null;
         }
     }
+    renderAreaValidation = () => {
+        if(this.state.areaValid === 2){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Area is required
+                </p>
+            );
+        } else if(this.state.areaValid === 0) {
+            return(
+                <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10003;</span> Area
+                </p>
+            );
+        } else {
+            return null;
+        }
+    }
     renderMentorValidation = () => {
         if(this.state.mentorValid === 2){
             return(
@@ -529,6 +558,33 @@ class TributeInfoForm extends React.Component {
         } else {
             return null;
         }
+    }
+
+    renderDistrictChoices(){
+        const choices = [];
+        for(let i = 1; i <= this.props.maxDistricts; i++){
+            choices.push(<option value={i} key={i}>District {i}</option>);
+        }
+        return(
+            <>
+            {choices.map(choice => choice)}
+            </>
+        )
+    }
+
+    renderAreaChoices(){
+        if(!this.props.areas){
+            return null;
+        }
+        const choices = this.props.areas.split(',');
+        return(
+            <>
+                <option value="" key="default">Select an area...</option>
+                {choices.map(area => {
+                    return <option value={area} key={area}>{area}</option>
+                })}
+            </>
+        );
     }
 
     renderActions = () => {
@@ -589,8 +645,15 @@ class TributeInfoForm extends React.Component {
 
 const mapStateToProps = state => {
     return {
-        tribute: state.selectedTribute
+        tribute: state.selectedTribute,
+        maxDistricts: state.gameState.max_districts,
+        areas: state.gameState.areas
     };
 }
 
-export default connect(mapStateToProps, { createTribute, updateTribute, fetchTribute })(TributeInfoForm);
+export default connect(mapStateToProps, { 
+    createTribute, 
+    updateTribute, 
+    fetchTribute,
+    fetchGameState
+})(TributeInfoForm);

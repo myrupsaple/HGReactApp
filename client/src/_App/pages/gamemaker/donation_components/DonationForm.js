@@ -92,7 +92,7 @@ class DonationForm extends React.Component {
     handleDonor(event){
         const input = event.target.value;
         this.setState({ donor_name: input });
-        if(input.replace(/\s/) === ''){
+        if(input.replace(/\s/g, '') === ''){
             this.setState({ donorValid: 2 });
         } else {
             this.setState({ donorValid: 0 });
@@ -101,7 +101,7 @@ class DonationForm extends React.Component {
     handleMethod(event){
         const input = event.target.value;
         this.setState({ method: input });
-        if(input.replace(/\s/) === ''){
+        if(input.replace(/\s/g, '') === ''){
             this.setState({ methodValid: 2 });
         } else {
             this.setState({ methodValid: 0 });
