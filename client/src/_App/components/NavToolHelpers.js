@@ -5,61 +5,61 @@ import { NavDropdown, Nav } from 'react-bootstrap';
 
 const ModifyUsersOwner = (
     <NavDropdown.Item as={Nav.Link} href="/App/owner/modify-users">
-        Modify Users (Owner)+
+        Modify Users (Owner)
     </NavDropdown.Item>
 );
 
 const ModifyUsers = (
     <NavDropdown.Item as={Nav.Link} href="/App/admin/modify-users">
-        Modify Users+
+        Modify Users
     </NavDropdown.Item>
 );
 
 const ManageGameState = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/manage-game">
-        Manage Game State^
+        Manage Game State
     </NavDropdown.Item>
 );
 
 const TributeAccountInfo = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/tribute-info">
-        Tribute Info+
+        Tribute Info
     </NavDropdown.Item>
 );
 
 const DonationTracking = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/donation-tracking">
-        Donation Tracking+
+        Donation Tracking
     </NavDropdown.Item>
 );
 
 const ApprovePurchases = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/purchase-requests">
-        Purchase Requests+
+        Purchase Requests
     </NavDropdown.Item>
 );
 
 const LifeTracking = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/life-tracking">
-        Life Tracking+
+        Life Tracking
     </NavDropdown.Item>
 );
 
 const ResourceList = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/resource-list">
-        Resource Codes+
+        Resource Codes
     </NavDropdown.Item>
 );
 
 const ResourceEvents = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/resource-events">
-        Resource Events+
+        Resource Events
     </NavDropdown.Item>
 );
 
 const ManageItems = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/manage-items">
-        Update Item Inventory+
+        Update Item Inventory
     </NavDropdown.Item>
 );
 
@@ -68,7 +68,7 @@ const ManageItems = (
 // Samge page as purchase management for gamemakers
 const RequestPurchase = (
     <NavDropdown.Item as={Nav.Link} href="/App/mentor/purchase-requests">
-        Request Purchase+
+        Request Purchase
     </NavDropdown.Item>
 );
 
@@ -76,33 +76,33 @@ const RequestPurchase = (
 
 const TributeDashboard = (
     <NavDropdown.Item as={Nav.Link} href="/App/tribute/dashboard">
-        Tribute Dashboard^
+        Tribute Dashboard
     </NavDropdown.Item>
 );
 
 //---------------------------------HELPERS------------------------------------//
 
-// Also should be accesible to gamemakers
-const ViewLocations = (
-    <NavDropdown.Item as={Nav.Link} href="/App/helper/locations">
-        View Tribute Locations*
-    </NavDropdown.Item>
-);
+// // Also should be accesible to gamemakers
+// const ViewLocations = (
+//     <NavDropdown.Item as={Nav.Link} href="/App/helper/locations">
+//         View Tribute Locations*
+//     </NavDropdown.Item>
+// );
 
 //---------------------------------GENERAL------------------------------------//
 
-const Messaging = (
-    <NavDropdown.Item as={Nav.Link} href="/App/messaging">
-        Messaging*
-    </NavDropdown.Item>
-);
+// const Messaging = (
+//     <NavDropdown.Item as={Nav.Link} href="/App/messaging">
+//         Messaging*
+//     </NavDropdown.Item>
+// );
 
 //---------------------------------EXPORTS------------------------------------//
 
 export const OwnerTools = (
         <>
             {ModifyUsersOwner}
-            {Messaging}
+            {/* {Messaging} */}
             {ManageGameState}
             {TributeAccountInfo}
             {DonationTracking}
@@ -111,7 +111,7 @@ export const OwnerTools = (
             {ResourceList}
             {ResourceEvents}
             {ManageItems}
-            {ViewLocations}
+            {/* {ViewLocations} */}
             {TributeDashboard}
         </>
 )
@@ -119,7 +119,7 @@ export const OwnerTools = (
 export const AdminTools = (
         <>
             {ModifyUsers}
-            {Messaging}
+            {/* {Messaging} */}
             {ManageGameState}
             {TributeAccountInfo}
             {DonationTracking}
@@ -128,13 +128,13 @@ export const AdminTools = (
             {ResourceList}
             {ResourceEvents}
             {ManageItems}
-            {ViewLocations}
+            {/* {ViewLocations} */}
         </>
 );
 
 export const GMTools = (
         <>
-            {Messaging}
+            {/* {Messaging} */}
             {ManageGameState}
             {TributeAccountInfo}
             {DonationTracking}
@@ -143,27 +143,27 @@ export const GMTools = (
             {ResourceList}
             {ResourceEvents}
             {ManageItems}
-            {ViewLocations}
+            {/* {ViewLocations} */}
         </>
 );
 
 export const MentorTools = (
         <>
-            {Messaging}
+            {/* {Messaging} */}
             {RequestPurchase}
         </>
 );
 
 export const TributeTools = (
         <>
-            {Messaging}
+            {/* {Messaging} */}
             {TributeDashboard}
         </>
 );
 
 export const HelperTools = (
         <>
-            {Messaging}
-            {ViewLocations}
+            {/* {Messaging} */}
+            {/* {ViewLocations} */}
         </>
 );

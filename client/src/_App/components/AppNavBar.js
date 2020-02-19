@@ -10,7 +10,7 @@ import {
     GMTools,
     MentorTools,
     TributeTools,
-    HelperTools
+    // HelperTools
 } from './NavToolHelpers';
 
 import './NavStyles.css';
@@ -29,7 +29,7 @@ class AppNavBar extends React.Component {
                     </Nav.Link>
 
                     <Nav.Link href="/App/game-status">
-                        Game Status*
+                        Game Status^
                     </Nav.Link>
 
                     <Nav.Link href="/App/map-rules">
@@ -84,8 +84,8 @@ class AppNavBar extends React.Component {
                 return MentorTools;
             case 'tribute':
                 return TributeTools;
-            case 'helper':
-                return HelperTools;
+            // case 'helper':
+            //     return HelperTools;
             default:
                 return null;
         }

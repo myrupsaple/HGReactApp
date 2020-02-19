@@ -43,8 +43,8 @@ export default combineReducers({
     selectedPurchase: purchaseReducer,
     purchases: purchasesReducer,
     gameState: gameStateReducer,
-    tributeStats: tributeStatReducer,
-    tributesStats: tributeStatsReducer,
+    selectedTributeStats: tributeStatReducer,
+    tributeStats: tributeStatsReducer,
     selectedGlobalEvent: globalEventReducer,
     globalEvents: globalEventsReducer
 });

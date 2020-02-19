@@ -79,9 +79,8 @@ const checkForEvents = async (connection) => {
     }
 }
 
-// CODE LIST: (1) add food required, (3) add water required, (5) add medicine required, 
-// (2) enforce food requirement, (4) enforce water requirement, (6) enforce medicine requirement,
-// (7) special requirement (use description), (8) message only,
+// CODE LIST: (1) add food required & enforce, (2) add water required & enforce, (3) add medicine required & enforce, 
+// (4) special requirement (use description), (5) message only,
 // (0) do nothing
 // (101) update costs to tier 1, (102) update costs to tier 2, (103) update costs to tier 3,
 // (104) update costs to tier 4
@@ -90,7 +89,6 @@ const checkForEvents = async (connection) => {
 
 const handleEvents = async (event, currentState, connection) => {
     if(currentState === 'hidden'){
-        // TODO: Announce event and deadline
         const queryStringUpdateEvent = `UPDATE global_events SET status = 'active' WHERE id = ${event.id}`;
         connection.query(queryStringUpdateEvent, (err, results, fields) => {
             if (err) {
@@ -98,12 +96,62 @@ const handleEvents = async (event, currentState, connection) => {
                 return;
             }})
     } else if (currentState === 'active'){
-        // TODO: Perform any actions required for those who did not meet the requirements (if any)
-
         const queryStringUpdateEvent = `UPDATE global_events SET status = 'completed' WHERE id = ${event.id}`;
         connection.query(queryStringUpdateEvent, (err, results, fields) => {
             if (err) {
                 console.log('Failed to query for events: ' + err);
+                return;
+            }})
+        
+        const actionCode = event.action_code;
+        var queryString = '';
+        var queryString2 = '';
+        switch(actionCode){
+            case 1:
+                queryString = `UPDATE game_state SET food_required = food_required + 1`;
+                queryString2 = `UPDATE tribute_stats SET food_missed = food_missed + 1, 
+                lives_remaining = lives_remaining - 1 WHERE food_used + food_missed < (SELECT food_required FROM game_state) + 1`;
+                break;
+            case 2:
+                queryString = `UPDATE game_state SET water_required = water_required + 1`;
+                queryString2 = `UPDATE tribute_stats SET water_missed = water_missed + 1, 
+                lives_remaining = lives_remaining - 1 WHERE water_used + water_missed < (SELECT water_required FROM game_state) + 1`;
+                break;
+            case 3:
+                queryString = `UPDATE game_state SET medicine_required = medicine_required + 1`;
+                queryString2 = `UPDATE tribute_stats SET medicine_missed = medicine_missed + 1, 
+                lives_remaining = lives_remaining - 1 WHERE medicine_used + medicine_missed < (SELECT medicine_required FROM game_state) + 1`;
+                break;
+            case 101:
+                queryString = `UPDATE game_state SET current_price_tier = 1`;
+                break;
+            case 102:
+                queryString = `UPDATE game_state SET current_price_tier = 2`;
+                break;
+            case 103:
+                queryString = `UPDATE game_state SET current_price_tier = 3`;
+                break;
+            case 104:
+                queryString = `UPDATE game_state SET current_price_tier = 4`;
+                break;
+        }
+
+        // Do this first because the async await isn't reliable
+        // queryString2 is configured with a +1 to account for the fact that the
+        // queryString1 query hasn't been sent yet.
+        if(queryString2 !== ''){
+            console.log(queryString2);
+            await connection.query(queryString2, (err, results, fields) => {
+                if (err) {
+                    console.log('Failed to query (2): ' + err);
+                    return;
+                }})
+        }
+
+        console.log(queryString);
+        await connection.query(queryString, (err, results, fields) => {
+            if (err) {
+                console.log('Failed to query: ' + err);
                 return;
             }})
     }

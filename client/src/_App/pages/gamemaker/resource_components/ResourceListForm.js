@@ -228,7 +228,7 @@ class ResourceListForm extends React.Component {
         );
     }
     
-    renderCodeValidation = () =>{
+    renderCodeValidation = () => {
         if(this.state.codeValid === 2){
             return(
                 <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
@@ -251,7 +251,7 @@ class ResourceListForm extends React.Component {
             return null;
         }
     }
-    renderMaxUsesValidation = () =>{
+    renderMaxUsesValidation = () => {
         if(this.state.maxUsesValid === 2){
             return(
                 <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
@@ -280,7 +280,7 @@ class ResourceListForm extends React.Component {
             return null;
         }
     }
-    renderFormValidation = () =>{
+    renderFormValidation = () => {
         if(this.state.submitted){
             return null;
         } else if(this.props.mode === 'edit' && !this.props.selectedResource.code){

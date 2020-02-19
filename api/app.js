@@ -917,7 +917,7 @@ app.get(`/life-events/get/single/terms/:email/:time/:notes`, (req, res) => {
 })
 
 // FETCH_LIFE_EVENTS
-app.get(`/life-eents/get/list/:type/:query`, (req, res) => {
+app.get(`/life-events/get/list/:type/:query`, (req, res) => {
     const { type, query } = req.params;
     const queryStringGetLifeEvents = `SELECT * FROM life_events WHERE ${type} = '${query}'`;
     console.log(queryStringGetLifeEvents);
@@ -1718,11 +1718,21 @@ app.put(`/game-state/put/game-time/:time`, (req, res) => {
 })
 
 // UPDATE_GAME_STATE
-app.put(`/game-state/put/:maxDistricts/:areas`, (req, res) => {
-    const { maxDistricts, areas } = req.params;
-    const queryStringSetGameTime = `UPDATE game_state SET max_districts = '${maxDistricts}', areas = '${areas}'`;
-    console.log(queryStringSetGameTime);
-    connection.query(queryStringSetGameTime, (err, rows, fields) => {
+app.put(`/game-state/put/:maxDistricts/:areas/:food_required/:water_required/:medicine_required/:current_price_tier/:game_active`, (req, res) => {
+    const { 
+        maxDistricts, 
+        areas, 
+        food_required,
+        water_required,
+        medicine_required,
+        current_price_tier,
+        game_active
+    } = req.params;
+    const queryStringUpdateGameState = `UPDATE game_state SET max_districts = '${maxDistricts}', areas = '${areas}',
+    food_required = ${food_required}, water_required = ${water_required}, medicine_required = ${medicine_required},
+    current_price_tier = ${current_price_tier}, game_active = ${game_active}`;
+    console.log(queryStringUpdateGameState);
+    connection.query(queryStringUpdateGameState, (err, rows, fields) => {
         if(err){
             console.log('Failed to query for game state: ' + err);
             res.sendStatus(500);
@@ -1738,14 +1748,130 @@ app.put(`/game-state/put/:maxDistricts/:areas`, (req, res) => {
 
 //##################### (9) Tribute Stats and Dashboard ######################//
 
-// FETCH_TRIBUTE_STATS
-app.get(`/tribute-stats/get/:email`, (req, res) => {
+// FETCH_TRIBUTE_STAT
+app.get(`/tribute-stats/get/single/:id`, (req, res) => {
+    const id = req.params.id;
+    const queryStringGetTributeStat = `SELECT * FROM tribute_stats WHERE id = '${id}'`;
+    console.log(queryStringGetTributeStat);
+    connection.query(queryStringGetTributeStat, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for tribute stats: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    })
+})
+
+// FETCH_TRIBUTE_STAT_BY_EMAIL
+app.get(`/tribute-stats/get/single/email/:email`, (req, res) => {
     const email = req.params.email;
-    const queryStringGetTributeStats = `SELECT * FROM tribute_stats WHERE email = '${email}'`;
+    const queryStringGetTributeStat = `SELECT * FROM tribute_stats WHERE email = '${email}'`;
+    console.log(queryStringGetTributeStat);
+    connection.query(queryStringGetTributeStat, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for tribute stats: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    })
+})
+
+// FETCH_TRIBUTE_STATS
+app.get(`/tribute-stats/get/list/:email`, (req, res) => {
+    const email = req.params.email;
+    const queryStringGetTributeStats = `SELECT * FROM tribute_stats WHERE mentor_email = '${email}'`;
     console.log(queryStringGetTributeStats);
     connection.query(queryStringGetTributeStats, (err, rows, fields) => {
         if(err){
-            console.log('Failed to query for game state: ' + err);
+            console.log('Failed to query for tribute stats: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    })
+})
+
+// FETCH_ALL_TRIBUTE_STATS
+app.get(`/tribute-stats/get/all`, (req, res) => {
+    const queryStringGetAllTributeStats = `SELECT * FROM tribute_stats`;
+    console.log(queryStringGetAllTributeStats);
+    connection.query(queryStringGetAllTributeStats, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for tribute stats: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    })
+})
+
+// FETCH_ALL_TRIBUTE_STATS_LIMITED
+app.get(`/tribute-stats/get/limited`, (req, res) => {
+    const queryStringGetAllTributeStats = `SELECT first_name, last_name, funds_remaining,
+    lives_remaining, lives_lost, kill_count FROM tribute_stats`;
+    console.log(queryStringGetAllTributeStats);
+    connection.query(queryStringGetAllTributeStats, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for tribute stats: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    })
+})
+
+// UPDATE_TRIBUTE_STATS
+app.put(`/tribute-stats/put/:id/:fUsed/:fMissed/:wUsed/:wMissed/:mUsed/:mMissed/:rUsed/:gUsed/:lRemaining/:lResources/:lExempt/:lPurchased/:lLost/:killCount/:immunity`, (req, res) => {
+    const {
+        id,
+        fUsed,
+        fMissed,
+        wUsed,
+        wMissed,
+        mUsed,
+        mMissed,
+        rUsed,
+        gUsed,
+        lRemaining,
+        lResources,
+        lExempt,
+        lPurchased,
+        lLost,
+        killCount,
+        immunity
+    } = req.params;
+    const queryStringUpdateTributeStats = `UPDATE tribute_stats SET food_used = ${fUsed},
+    food_missed = ${fMissed}, water_used = ${wUsed}, water_missed = ${wMissed}, 
+    medicine_used = ${mUsed}, medicine_missed = ${mMissed}, roulette_used = ${rUsed},
+    golden_used = ${gUsed}, lives_remaining = ${lRemaining}, life_resources = ${lResources},
+    lives_exempt = ${lExempt}, lives_purchased = ${lPurchased}, lives_lost = ${lLost},
+    kill_count = ${killCount}, has_immunity = ${immunity} WHERE id = ${id}`;
+    console.log(queryStringUpdateTributeStats);
+    connection.query(queryStringUpdateTributeStats, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for tribute stats: ' + err);
             res.sendStatus(500);
             res.end();
             return;
@@ -1796,13 +1922,31 @@ app.get(`/global-events/get/all`, (req, res) => {
     })
 })
 
+// FETCH_GLOBAL_EVENTS_BY_STATUS
+app.get(`/global-events/get/list`, (req, res) => {
+    const queryStringGetGlobalEvents = `SELECT * FROM global_events WHERE status = 'active' OR status = 'completed'`;
+    console.log(queryStringGetGlobalEvents);
+    connection.query(queryStringGetGlobalEvents, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for global events: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    })
+})
+
 // CREATE_GLOBAL_EVENT
-app.post(`/global-events/post/:type/:description/:message/:notificationTime/:endTime/:startCode/:endCode`, (req, res) => {
-    const { type, description, message, notificationTime, endTime, startCode, endCode } = req.params;
+app.post(`/global-events/post/:type/:description/:message/:notificationTime/:endTime/:actionCode`, (req, res) => {
+    const { type, description, message, notificationTime, endTime, actionCode } = req.params;
     const queryStringCreateGlobalEvent = `INSERT INTO global_events (type, description, message,
-        notification_time, event_end_time, start_action_code, end_action_code, status) VALUES
+        notification_time, event_end_time, action_code, status) VALUES
         ('${type}', '${description}', '${message}', ${notificationTime}, ${endTime},
-        ${startCode}, ${endCode}, 'hidden')`;
+        ${actionCode}, 'hidden')`;
     console.log(queryStringCreateGlobalEvent);
     connection.query(queryStringCreateGlobalEvent, (err, rows, fields) => {
         if(err){
@@ -1819,12 +1963,11 @@ app.post(`/global-events/post/:type/:description/:message/:notificationTime/:end
 })
 
 // UPDATE_GLOBAL_EVENT
-app.put(`/global-events/put/:id/:type/:description/:message/:notificationTime/:endTime/:startCode/:endCode/:status`, (req, res) => {
-    const { id, type, description, message, notificationTime, endTime, startCode, endCode, status } = req.params;
+app.put(`/global-events/put/:id/:type/:description/:message/:notificationTime/:endTime/:actionCode`, (req, res) => {
+    const { id, type, description, message, notificationTime, endTime, actionCode } = req.params;
     const queryStringUpdateGlobalEvent = `UPDATE global_events SET type = '${type}', 
     description = '${description}', message = '${message}', notification_time = ${notificationTime},
-    event_end_time = ${endTime}, start_action_code = ${startCode}, end_action_code = ${endCode},
-    status = '${status}' WHERE id = ${id}`;
+    event_end_time = ${endTime}, action_code = ${actionCode} WHERE id = ${id}`;
     console.log(queryStringUpdateGlobalEvent);
     connection.query(queryStringUpdateGlobalEvent, (err, rows, fields) => {
         if(err){
@@ -1842,7 +1985,7 @@ app.put(`/global-events/put/:id/:type/:description/:message/:notificationTime/:e
 
 // DELETE_GLOBAL_EVENT
 app.delete(`/global-events/delete/:id`, (req, res) => {
-    const { id } = req.params.id;
+    const id = req.params.id;
     const queryStringDeleteGlobalEvent = `DELETE FROM global_events WHERE id = ${id}`;
     console.log(queryStringDeleteGlobalEvent);
     connection.query(queryStringDeleteGlobalEvent, (err, rows, fields) => {

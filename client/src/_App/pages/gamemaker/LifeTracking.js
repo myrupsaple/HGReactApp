@@ -7,6 +7,7 @@ import { setNavBar } from '../../../actions';
 import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components/AuthMessages';
 import Wait from '../../../components/Wait';
 import { 
+    fetchGameState,
     fetchTributes,
     fetchLifeEvent,
     fetchLifeEvents,
@@ -113,7 +114,8 @@ class ManageFunds extends React.Component {
             })
         }
         const response = await this.props.fetchTributes();
-        if(!response){
+        const response2 = await this.props.fetchGameState();
+        if(!response || !response2){
             this.setState({ apiInitialLoadError: true });
         }
     }
@@ -353,6 +355,13 @@ class ManageFunds extends React.Component {
                 </>
             );
         } else if(this.state.searchType === 'time'){
+            const gameTime = new Date(Date.parse(this.props.gameState.start_time));
+            const date1 = new Date();
+            date1.setHours(gameTime.getHours());
+            date1.setMinutes(gameTime.getMinutes());
+            const date2 = new Date();
+            date2.setHours(gameTime.getHours() + 5);
+            date2.setMinutes(gameTime.getMinutes());
             return(
                 <>
                 <Form.Group controlId="query">
@@ -360,6 +369,9 @@ class ManageFunds extends React.Component {
                     <DatePicker 
                         showTimeSelect
                         showTimeSelectOnly
+                        minTime={date1}
+                        maxTime={date2}
+                        timeIntervals={2}
                         value={this.state.timeFormatted}
                         onChange={this.handleSearchTerm}
                         dateFormat="hh:mm aa"
@@ -371,6 +383,9 @@ class ManageFunds extends React.Component {
                     <DatePicker
                         showTimeSelect
                         showTimeSelectOnly
+                        minTime={date1}
+                        maxTime={date2}
+                        timeIntervals={2}
                         value={this.state.timeFormattedSecondary}
                         onChange={this.handleSearchTermSecondary}
                         dateFormat="hh:mm aa"
@@ -685,9 +700,9 @@ class ManageFunds extends React.Component {
 
     renderModal(){
         if(this.state.showCreate) {
-            return <LifeEventForm tributes={this.props.tributes} id={this.state.selectedId} mode="create" onSubmitCallback={this.onSubmitCallback}/>;
+            return <LifeEventForm gameState={this.props.gameState} tributes={this.props.tributes} id={this.state.selectedId} mode="create" onSubmitCallback={this.onSubmitCallback}/>;
         } else if(this.state.showEdit) {
-            return <LifeEventForm tributes={this.props.tributes} id={this.state.selectedId} mode="edit" onSubmitCallback={this.onSubmitCallback}/>;
+            return <LifeEventForm gameState={this.props.gameState} tributes={this.props.tributes} id={this.state.selectedId} mode="edit" onSubmitCallback={this.onSubmitCallback}/>;
         } else if(this.state.showDelete){
             return <DeleteLifeEvent id={this.state.selectedId}
             onSubmitCallback={this.onSubmitCallback} />
@@ -738,13 +753,15 @@ const mapStateToProps = state => {
         isSignedIn: state.auth.isSignedIn,
         userPerms: state.auth.userPerms,
         tributes: Object.values(state.tributes),
-        lifeEvents: Object.values(state.lifeEvents)
+        lifeEvents: Object.values(state.lifeEvents),
+        gameState: state.gameState
     }
 }
 
 export default connect(mapStateToProps, 
     {
         setNavBar,
+        fetchGameState,
         fetchTributes,
         fetchLifeEvent,
         fetchLifeEvents,

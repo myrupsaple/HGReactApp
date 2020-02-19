@@ -6,7 +6,8 @@ import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../components/Au
 import Wait from '../../components/Wait';
 import {
     fetchServerTime,
-    fetchGameState
+    fetchGameState,
+    fetchAllTributeStatsLimited
 } from '../../actions';
 
 class GameStatus extends React.Component {
@@ -14,6 +15,10 @@ class GameStatus extends React.Component {
     constructor(props){
         super(props);
         this.state = {
+            auth: {
+                loading: true,
+                payload: null
+            },
             gameStart: {
                 hours: 0,
                 minutes: 0,
@@ -77,7 +82,8 @@ class GameStatus extends React.Component {
         }
 
         const response = await this.props.fetchGameState();
-        if(!response){
+        const response2 = await this.props.fetchAllTributeStatsLimited();
+        if(!response || !response2){
             this.setState({ apiError: true });
         }
         const startTime = new Date(Date.parse(this.props.gameState.start_time));
@@ -160,23 +166,24 @@ class GameStatus extends React.Component {
     }
 
     renderConditionalText = () => {
-        if(this.state.gameDidStart){
-            return(
-                <>
-                    <h1>Games Started At: {this.getStartTime()} </h1>
-                    <h1>Current Time: {this.state.time}</h1>
-                    <h1>Game Time: {this.state.gameTime}</h1>
-                </>
-            );
-        } else {
-            return(
-                <>
-                    <h1>Games Will Begin At: {this.getStartTime()} </h1>
-                    <h1>Current Time: {this.state.time}</h1>
-                    <h1>Time Until Games Begin: {this.state.gameTime}</h1>
-                </>
-            )
-        }
+        const message1 = this.state.gameDidStart ? 'Games Started At: ' : 'Games Will Begin At: ';
+        const message2 = this.state.gameDidStart ? 'Game Time: ' : 'Time Until Games Begin: ';
+        return (
+            <>
+                <h2>{message1}</h2><h3 className="coolor-text-grey-darken-2">{this.getStartTime()}</h3>
+                <h2>Current Time:</h2><h3 className="coolor-text-grey-darken-2">{this.state.time}</h3>
+                <h2>{message2}</h2><h3 className="coolor-text-grey-darken-2">{this.state.gameTime}</h3>
+            </>
+        );
+    }
+
+    renderScoreBoard = () => {
+        return(
+            <>
+                <h1>Scoreboard</h1>
+
+            </>
+        );
     }
 
     renderContent = () => {
@@ -192,12 +199,17 @@ class GameStatus extends React.Component {
         }
         if(this.state.auth.payload === null){
             return(
-                <>
-                {this.renderConditionalText()}
-                <h1>Resources Needed:</h1>
-                <h1>Special Events Active:</h1>
-                <h1>Tributes Remaining:</h1>
-                </>
+                <div className="row">
+                    <div className="col-4">
+                        {this.renderConditionalText()}
+                        <h3>Resources Needed:</h3>
+                        <h3>Special Events Active:</h3>
+                        <h3>Tributes Remaining:</h3>
+                    </div>
+                    <div className="col-8">
+                        {this.renderScoreBoard()}
+                    </div>
+                </div>
             );
         } else {
             return (<h3>{this.state.auth.payload}</h3>);
@@ -207,7 +219,7 @@ class GameStatus extends React.Component {
     render = () =>{
         return(
             <>
-                <h3>Current Game Status</h3>
+                <h1>Current Game Status</h1>
                 {this.renderContent()}
             </>
         )
@@ -231,5 +243,6 @@ export default connect(mapStateToProps,
     { 
         setNavBar,
         fetchServerTime,
-        fetchGameState
+        fetchGameState,
+        fetchAllTributeStatsLimited
     })(GameStatus);

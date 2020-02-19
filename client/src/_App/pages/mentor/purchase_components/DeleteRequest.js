@@ -52,14 +52,14 @@ class DeleteRequest extends React.Component {
 
         const purchase = this.props.selectedPurchase;
 
-        const response3 = await this.props.purchaseUpdateFunds(purchase.payer_email, purchase.cost * -1);
+        const response3 = await this.props.purchaseUpdateFunds(purchase.payer_email, purchase.cost);
         if(!response3){
             this.setState({ apiError: true });
             return null;
         }
 
         if(purchase.category === 'item'){
-            const response = await this.props.purchaseUpdateItemQuantity(purchase.item_id, purchase.quantity * -1);
+            const response = await this.props.purchaseUpdateItemQuantity(purchase.item_id, purchase.quantity);
             if(!response){
                 this.setState({ apiError: true });
                 return null;

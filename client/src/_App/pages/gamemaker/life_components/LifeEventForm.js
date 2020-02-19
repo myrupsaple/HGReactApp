@@ -306,6 +306,13 @@ class LifeEventForm extends React.Component {
     }
 
     renderForm = () => {
+        const gameTime = new Date(Date.parse(this.props.gameState.start_time));
+        const date1 = new Date();
+        date1.setHours(gameTime.getHours());
+        date1.setMinutes(gameTime.getMinutes());
+        const date2 = new Date();
+        date2.setHours(gameTime.getHours() + 5);
+        date2.setMinutes(gameTime.getMinutes());
         return(
             <Form>
                 <Form.Row>
@@ -314,6 +321,9 @@ class LifeEventForm extends React.Component {
                         <DatePicker
                             showTimeSelect
                             showTimeSelectOnly
+                            minTime={date1}
+                            maxTime={date2}
+                            timeIntervals={2}
                             value={this.state.timeFormatted}
                             onChange={this.handleTime}
                             dateFormat="hh:mm aa"
@@ -572,7 +582,8 @@ class LifeEventForm extends React.Component {
 
 const mapStateToProps = state => {
     return {
-        lifeEvent: state.selectedLifeEvent
+        lifeEvent: state.selectedLifeEvent,
+        gameState: state.gameState
     };
 }
 

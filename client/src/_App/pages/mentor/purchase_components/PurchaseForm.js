@@ -11,7 +11,8 @@ import {
     purchaseUpdateItemQuantity,
     fetchAllItems,
     fetchItem,
-    fetchGameStatePriceTier
+    fetchGameStatePriceTier,
+    fetchServerTime
 } from '../../../../actions';
 
 class PurchaseForm extends React.Component{
@@ -30,6 +31,7 @@ class PurchaseForm extends React.Component{
             originalCost: 0,
             quantity: 1,
             currentPriceTier: 'tier1_cost',
+            originalPriceTier: 'tier1_cost',
             // Validation
             payerValid: 1,
             receiverValid: 1,
@@ -48,7 +50,8 @@ class PurchaseForm extends React.Component{
 
         this.handlePayer = this.handlePayer.bind(this);
         this.handleReceiver = this.handleReceiver.bind(this);
-        this.handleCategoryItem = this.handleCategoryItem.bind(this);
+        this.handleCategory = this.handleCategory.bind(this);
+        this.handleItem = this.handleItem.bind(this);
         this.handleQuantity = this.handleQuantity.bind(this);
         this.handleCost = this.handleCost.bind(this);
     }
@@ -77,7 +80,7 @@ class PurchaseForm extends React.Component{
                     priceTier = null;
                     break;
             }
-            this.setState({ currentPriceTier: priceTier });
+            this.setState({ currentPriceTier: priceTier, originalPriceTier: priceTier });
         }
 
         if(this.props.mode === 'edit'){
@@ -146,38 +149,27 @@ class PurchaseForm extends React.Component{
             }
         }
     }
-    async handleCategoryItem(event){
+    async handleCategory(event){
         const input = event.target.value;
-        const inputType = event.target.id;
         
         this.setState({ item_name: '', item_id: '', cost: 0, formValid: 1 });
 
         // Validation
         if(input === ''){
-            if(inputType === 'category'){
-                this.setState({ category: '', categoryValid: 2, itemValid: 1 });
-            } else {
-                this.setState({ itemValid: 2 });
-            }
-            return;
+            this.setState({ category: '', categoryValid: 2, itemValid: 1 });
         } else {
-            if(inputType === 'category'){
-                await this.setState({ categoryValid: 0, itemValid: 1 });
-                if(input === 'life' || input === 'immunity'){
-                    this.setState({ itemValid: 0 });
-                } else if(input === 'transfer'){
-                    this.setState({ itemValid: 0, costValid: 1 });
-                    if(this.state.payer_email === this.state.receiver_email){
-                        this.setState({ receiverValid: 4 });
-                    }
-                }
-            } else {
+            await this.setState({ categoryValid: 0, itemValid: 1 });
+            if(input === 'life' || input === 'immunity'){
                 this.setState({ itemValid: 0 });
+            } else if(input === 'transfer'){
+                this.setState({ itemValid: 0, costValid: 1 });
+                if(this.state.payer_email === this.state.receiver_email){
+                    this.setState({ receiverValid: 4 });
+                }
             }
         }
 
         // Input handling
-
         if(input !== 'item'){
             this.setState({ quantity: 1 });
         }
@@ -193,40 +185,20 @@ class PurchaseForm extends React.Component{
             this.setState({ category: input });
         } else {
             // Parse item value if item category is already selected
-            var name = '';
-            var id = '';
-            // Second check is required to prevent input from getting stuck on 'item'
+            // *~something used to be here~* check is required to prevent input from getting stuck on 'item'
             // if switching from item to another category
-            if(this.state.category === 'item' && inputType !== 'category'){
-                // Special handling required for item purchases due to value syntax
-                [name, id] = input.split('|');
-                this.setState({ item: input, item_name: name, item_id: id });
-            } else if(input === 'life' || input === 'immunity'){
+            if(input === 'life' || input === 'immunity'){
                 // No secondary input is needed, so item name is set to match category
                 this.setState({ category: input, item_name: input });
-            } else {
-                // Fallback case for resource purchases
-                this.setState({ item_name: input });
             }
 
+            var id = '';
             switch(input){
                 case 'life':
                     id = 100;
                     break;
                 case 'immunity':
                     id = 200;
-                    break;
-                case 'golden':
-                    id = 300;
-                    break;
-                case 'food':
-                    id = 301;
-                    break;
-                case 'water':
-                    id = 302;
-                    break;
-                case 'medicine':
-                    id = 303;
                     break;
                 default:
                     break;
@@ -242,6 +214,51 @@ class PurchaseForm extends React.Component{
     
             this.setState({ item_id: item.id, cost: this.fetchCurrentPrice(item) * this.state.quantity });
         }
+    }
+    async handleItem(event){
+        const input = event.target.value;
+
+        // Validation
+        if(input === ''){
+            this.setState({ itemValid: 2 });
+        } else {
+            this.setState({ itemValid: 0 });
+        }
+
+        // Input handling
+        var id = '';
+        if(this.state.category === 'item'){
+            var name = '';
+            // Special handling required for item purchases due to value syntax
+            [name, id] = input.split('|');
+            this.setState({ item: input, item_name: name, item_id: id });
+        } else if(this.state.category === 'resource'){
+            this.setState({ item: input, item_name: input });
+            switch(input){
+                case 'golden':
+                    id = 300;
+                    break;
+                case 'food':
+                    id = 301;
+                    break;
+                case 'water':
+                    id = 302;
+                    break;
+                case 'medicine':
+                    id = 303;
+                    break;
+            }
+        }
+
+        // Need to fetch item ID to properly update quantity and fetch costs
+        const response = await this.props.fetchItem(id);
+        if(!response){
+            this.setState({ apiError: true });
+            return null;
+        }
+        const item = this.props.selectedItem;
+
+        this.setState({ item_id: item.id, cost: this.fetchCurrentPrice(item) * this.state.quantity });
     }
     handleQuantity(event){
         const input = event.target.value;
@@ -336,13 +353,37 @@ class PurchaseForm extends React.Component{
             return null;
         }
 
+        var newPriceTier = await this.props.fetchGameStatePriceTier();
+        switch (newPriceTier){
+            case 1:
+                newPriceTier = 'tier1_cost';
+                break;
+            case 2:
+                newPriceTier = 'tier2_cost';
+                break;
+            case 3:
+                newPriceTier = 'tier3_cost';
+                break;
+            case 4:
+                newPriceTier = 'tier4_cost';
+                break;
+            default:
+                newPriceTier = null;
+                break;
+        }
+        if(newPriceTier !== this.state.originalPriceTier){
+            this.setState({ formValid: 4 });
+            return null;
+        }
+
         if(!this.state.firstConfirm){
             this.setState({ firstConfirm: true });
             return null;
         }
 
-        const now = new Date();
-        const time = now.getHours() * 60 + now.getMinutes();
+        const dateString = await this.props.fetchServerTime();
+        const date = new Date(Date.parse(dateString));
+        const time = date.getHours() * 60 + date.getMinutes();
 
         const purchaseRequest = {
             time: time,
@@ -537,7 +578,7 @@ class PurchaseForm extends React.Component{
                         <Form.Label>Select a Category...*</Form.Label>
                         <Form.Control
                             value={this.state.category}
-                            onChange={this.handleCategoryItem}
+                            onChange={this.handleCategory}
                             as="select"
                         >
                             {this.renderCategoryChoices()}
@@ -692,6 +733,12 @@ class PurchaseForm extends React.Component{
                     {this.getTributeName(this.state.payer_email)} has insufficient funds (current total: ${this.state.currentFunds})
                 </p>
             );
+        } else if(this.state.formValid === 4){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Pricing has changed. Please close the form and try again.
+                </p>
+            );
         } else if(this.state.firstConfirm || this.state.payerValid + this.state.receiverValid + 
             this.state.categoryValid + this.state.itemValid + this.state.costValid === 15){
                 return null;
@@ -783,7 +830,7 @@ class PurchaseForm extends React.Component{
                         <Form.Label>{message}*</Form.Label>
                         <Form.Control
                             value={this.state.item}
-                            onChange={this.handleCategoryItem}
+                            onChange={this.handleItem}
                             as="select"
                         >
                             {this.renderItemChoices(category)}
@@ -803,7 +850,7 @@ class PurchaseForm extends React.Component{
                     <option value="">Please choose an item...</option>
                     {items.map(item => {
                         // ID <= 1000 reserved for special items (lives, resources, etc.)
-                        if(item.id <= 1000) return null;
+                        if(item.id <= 1000 || item.quantity <= 0) return null;
                         else {
                             return(
                             <option key={item.id} 
@@ -945,5 +992,6 @@ export default connect(mapStateToProps,
         purchaseUpdateItemQuantity,
         fetchAllItems,
         fetchItem,
-        fetchGameStatePriceTier
+        fetchGameStatePriceTier,
+        fetchServerTime
     })(PurchaseForm);

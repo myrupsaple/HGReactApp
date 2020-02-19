@@ -38,6 +38,7 @@ import {
     FETCH_TRIBUTE_STAT,
     FETCH_TRIBUTE_STATS,
     FETCH_ALL_TRIBUTE_STATS,
+    FETCH_ALL_TRIBUTE_STATS_LIMITED,
     FETCH_GLOBAL_EVENT,
     FETCH_GLOBAL_EVENTS
 } from './types';
@@ -1413,10 +1414,19 @@ export const updateGameStartTime = time => async () => {
     return response;
 }
 
-export const updateGameState = (maxDistricts, areas) => async () => {
-    console.log(`Actions: Set Max Districts initiated: ${maxDistricts} districts and areas: ${areas}`);
+export const updateGameState = (gameState) => async () => {
+    const {
+        max_districts,
+        areas,
+        food_required,
+        water_required,
+        medicine_required,
+        current_price_tier,
+        game_active
+    } = gameState;
+    console.log(`Actions: Update Game State initiated`);
     var response = null;
-    await app.put(`/game-state/put/${maxDistricts}/${areas}`)
+    await app.put(`/game-state/put/${max_districts}/${areas}/${food_required}/${water_required}/${medicine_required}/${current_price_tier}/${game_active}`)
         .then(res => {
             console.log(`Successfully updated game state`);
             response = res;
@@ -1429,10 +1439,10 @@ export const updateGameState = (maxDistricts, areas) => async () => {
 
 //##################### (9) Tribute Stats and Dashboard ######################//
 
-export const fetchTributeStats = email => async (dispatch) => {
-    console.log(`Actions: Fetch tribute stats for ${email}`);
+export const fetchTributeStat = id => async (dispatch) => {
+    console.log(`Actions: Fetch tribute stats with id: ${id}`);
     var response = null;
-    await app.get(`/tribute-stats/get/${email}`)
+    await app.get(`/tribute-stats/get/single/${id}`)
         .then(res => {
             console.log(`Successfully fetched tribute stats`);
             response = res;
@@ -1442,6 +1452,91 @@ export const fetchTributeStats = email => async (dispatch) => {
         });
     if(response && response.data){
         dispatch ({ type: FETCH_TRIBUTE_STAT, payload: response.data[0] });
+    }
+    return response;
+}
+
+export const fetchTributeStatEmail = email => async (dispatch) => {
+    console.log(`Actions: Fetch tribute stats with email: ${email}`);
+    var response = null;
+    await app.get(`/tribute-stats/get/single/email/${email}`)
+        .then(res => {
+            console.log(`Successfully fetched tribute stats`);
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    if(response && response.data){
+        dispatch ({ type: FETCH_TRIBUTE_STAT, payload: response.data[0] });
+    }
+    return response;
+}
+
+export const fetchTributeStats = email => async (dispatch) => {
+    console.log(`Actions: Fetch tribute stats for mentor ${email}`);
+    var response = null;
+    await app.get(`/tribute-stats/get/list/${email}`)
+        .then(res => {
+            console.log(`Successfully fetched tribute stats`);
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    if(response && response.data){
+        dispatch ({ type: FETCH_TRIBUTE_STATS, payload: response.data });
+    }
+    return response;
+}
+
+export const fetchAllTributeStats = () => async (dispatch) => {
+    console.log(`Actions: Fetch all tribute stats`);
+    var response = null;
+    await app.get(`/tribute-stats/get/all/`)
+        .then(res => {
+            console.log(`Successfully fetched all tribute stats`);
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    if(response && response.data){
+        dispatch ({ type: FETCH_ALL_TRIBUTE_STATS, payload: response.data });
+    }
+    return response;
+}
+
+export const fetchAllTributeStatsLimited = () => async (dispatch) => {
+    console.log(`Actions: Fetch all tribute stats (limited)`);
+    var response = null;
+    await app.get(`/tribute-stats/get/limited/`)
+        .then(res => {
+            console.log(`Successfully fetched all tribute stats (limited)`);
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    if(response && response.data){
+        dispatch ({ type: FETCH_ALL_TRIBUTE_STATS_LIMITED, payload: response.data });
+    }
+    return response;
+}
+
+export const updateTributeStats = t => async (dispatch) => {
+    console.log(`Actions: Update tribute stats`);
+    var response = null;
+    await app.put(`/tribute-stats/put/${t.id}/${t.food_used}/${t.food_missed}/${t.water_used}/${t.water_missed}/${t.medicine_used}/${t.medicine_missed}/${t.roulette_used}/${t.golden_used}/${t.lives_remaining}/${t.life_resources}/${t.lives_exempt}/${t.lives_purchased}/${t.lives_lost}/${t.kill_count}/${t.has_immunity}`)
+        .then(res => {
+            console.log(`Successfully updated tribute stats`);
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    if(response && response.data){
+        dispatch ({ type: FETCH_ALL_TRIBUTE_STATS, payload: response.data });
     }
     return response;
 }
@@ -1484,11 +1579,29 @@ export const fetchGlobalEvents = () => async (dispatch) => {
     return response;
 }
 
+// FETCH_GLOBAL_EVENTS_BY_STATUS
+export const fetchGlobalEventsByStatus = () => async (dispatch) => {
+    console.log(`Actions: Fetch global events`);
+    var response = null;
+    await app.get(`/global-events/get/list`)
+        .then(res => {
+            console.log(`Successfully fetched global events`);
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    if(response && response.data){
+        dispatch ({ type: FETCH_GLOBAL_EVENTS, payload: response.data });
+    }
+    return response;
+}
+
 // CREATE_GLOBAL_EVENT
 export const createGlobalEvent = (event) => async () => {
     console.log(`Actions: Create global event`);
     var response = null;
-    await app.post(`/global-events/post/${event.type}/${event.description}/${event.message}/${event.notification_time}/${event.event_end_time}/${event.start_action_code}/${event.end_action_code}`)
+    await app.post(`/global-events/post/${event.type}/${event.description}/${event.message}/${event.notification_time}/${event.event_end_time}/${event.action_code}`)
         .then(res => {
             console.log(`Successfully created global event`);
             response = res;
@@ -1503,7 +1616,7 @@ export const createGlobalEvent = (event) => async () => {
 export const updateGlobalEvent = (event) => async () => {
     console.log(`Actions: Update global event`);
     var response = null;
-    await app.put(`/global-events/put/${event.id}/${event.type}/${event.description}/${event.message}/${event.notification_time}/${event.event_end_time}/${event.start_action_code}/${event.end_action_code}/${event.status}`)
+    await app.put(`/global-events/put/${event.id}/${event.type}/${event.description}/${event.message}/${event.notification_time}/${event.event_end_time}/${event.action_code}`)
         .then(res => {
             console.log(`Successfully updated global event`);
             response = res;

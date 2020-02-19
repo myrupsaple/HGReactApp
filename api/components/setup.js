@@ -37,6 +37,7 @@ const runSetup = async (connection) => {
                 first_name VARCHAR(20),
                 last_name VARCHAR(20),
                 email VARCHAR(40),
+                mentor_email VARCHAR(40),
                 funds_remaining INT DEFAULT 0,
                 total_donations INT DEFAULT 0,
                 total_purchases INT DEFAULT 0,
@@ -156,8 +157,7 @@ const runSetup = async (connection) => {
                 message VARCHAR(200),
                 notification_time INT,
                 event_end_time INT,
-                start_action_code TINYINT,
-                end_action_code TINYINT,
+                action_code TINYINT,
                 status VARCHAR(10)
             )`;
 
@@ -165,17 +165,17 @@ const runSetup = async (connection) => {
             const time = 660;
 
             const createSpecialEvents = `INSERT INTO global_events (type, description, message,
-                notification_time, event_end_time, start_action_code, end_action_code, status) VALUES ('tier1_cost_start',
-                'Time when tier 1 prices kick in', 'Tier 1 prices active', ${time}, ${time} + 60, 
-                101, 0, 'hidden'), ('tier2_cost_start', 'Time when tier 2 prices kick in', 'Tier 2 prices active', 
-                ${time} + 60, ${time} + 120, 102, 0, 'hidden'), ('tier3_cost_start', 'Time when tier 3 prices kick in', 
-                'Tier 3 prices active', ${time} + 120, ${time} + 210, 103, 0, 'hidden'), ('tier4_cost_start',
-                'Time when tier 4 prices kick in', 'Tier 4 prices active', ${time} + 210, ${time} + 1440, 
-                104, 0, 'hidden')`;
+                notification_time, event_end_time, action_code, status) VALUES ('tier1_cost_start',
+                'Time when tier 1 prices kick in', 'Tier 1 prices active', ${time}, ${time}, 
+                101, 'hidden'), ('tier2_cost_start', 'Time when tier 2 prices kick in', 'Tier 2 prices active', 
+                ${time}, ${time} + 60, 102, 'hidden'), ('tier3_cost_start', 'Time when tier 3 prices kick in', 
+                'Tier 3 prices active', ${time} + 60, ${time} + 150, 103, 'hidden'), ('tier4_cost_start',
+                'Time when tier 4 prices kick in', 'Tier 4 prices active', ${time} + 150, ${time} + 210, 
+                104, 'hidden')`;
 
             const createSpecialEventsPlaceholder = `INSERT INTO global_events (id, type, description, message,
-                notification_time, event_end_time, start_action_code, end_action_code, status) VALUES (10, 'PLACEHOLDER', 'NULL',
-                'NULL', 0, 0, 0, 0, 'hidden')`;
+                notification_time, event_end_time, action_code, status) VALUES (10, 'PLACEHOLDER', 'NULL',
+                'NULL', 10000, 10000, 0, 'hidden')`;
 
             res = results.map(table => {
                 return table.Tables_in_hgapp;

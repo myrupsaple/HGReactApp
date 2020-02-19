@@ -32,6 +32,7 @@ class ResourceEventForm extends React.Component {
             // Used to log which tribute used a resource
             tributeName: '',
             type: 'food',
+            typeSecondary: 'food',
             method: 'code',
             time: time,
             timeFormatted: `${hours}:${minutes}`,
@@ -102,16 +103,16 @@ class ResourceEventForm extends React.Component {
     handleType(event){
         const input = event.target.value;
         if(input === 'golden'){
-            this.setState({ type: `golden-food`, method: 'code' })
+            this.setState({ type: 'golden', typeSecondary: 'golden-food', method: 'code' })
         } else {
-            this.setState({ type: input });
+            this.setState({ type: input, typeSecondary: input });
         }
     }
     handleMethod(event){
         const input = event.target.value;
-        if(this.state.type.includes('golden')){
+        if(this.state.type === 'golden'){
             // Method pre-set to 'code' when 'golden' was selected as the type
-            this.setState({ type: `golden-${input}` })
+            this.setState({ typeSecondary: `golden-${input}` })
         } else {
             this.setState({ method: input });
         }
@@ -142,7 +143,7 @@ class ResourceEventForm extends React.Component {
 
         const resourceEventObject = {
             email: this.state.tribute_email,
-            type: this.state.type,
+            type: this.state.secondaryType,
             method: this.state.method,
             time: this.state.time,
             notes: encodeURIComponent(this.state.notes)
@@ -160,7 +161,6 @@ class ResourceEventForm extends React.Component {
                 } else {
                     this.setState({ apiError: false });
                 }
-                console.log(resourceEventObject.type);
                 // If empty, code was invalid
                 if(Object.keys(this.props.code).length === 0){
                     this.setState({ formValid: 3 });
@@ -176,7 +176,7 @@ class ResourceEventForm extends React.Component {
 
             if(resourceEventObject.type.includes('golden')){
                 resourceEventObject.type = resourceEventObject.type.split('-')[1];
-                resourceEventObject.notes = resourceEventObject.notes + ' (golden used)';
+                resourceEventObject.notes = resourceEventObject.notes + ' (golden)';
             }
         }
         
@@ -184,6 +184,7 @@ class ResourceEventForm extends React.Component {
             resourceEventObject.notes = 'none';
         }
 
+        // Give an error if an identical life event is found since this is the only way of accessing the paired event
         const response = await this.props.fetchLifeEventByTerms(resourceEventObject.email, resourceEventObject.time, resourceEventObject.notes);
         if(!response){
             this.setState({ apiError: true });
@@ -328,6 +329,13 @@ class ResourceEventForm extends React.Component {
     }
 
     renderForm = () => {
+        const gameTime = new Date(Date.parse(this.props.gameState.start_time));
+        const date1 = new Date();
+        date1.setHours(gameTime.getHours());
+        date1.setMinutes(gameTime.getMinutes());
+        const date2 = new Date();
+        date2.setHours(gameTime.getHours() + 5);
+        date2.setMinutes(gameTime.getMinutes());
         return(
             <Form>
                 <Form.Row>
@@ -336,6 +344,9 @@ class ResourceEventForm extends React.Component {
                         <DatePicker
                             showTimeSelect
                             showTimeSelectOnly
+                            minTime={date1}
+                            maxTime={date2}
+                            timeIntervals={2}
                             value={this.state.timeFormatted}
                             onChange={this.time}
                             dateFormat="hh:mm aa"
@@ -575,7 +586,7 @@ const mapStateToProps = state => {
     return {
         resourceEvent: state.selectedResourceEvent,
         lifeEvent: state.selectedLifeEvent,
-        code: state.selectedResource
+        code: state.selectedResource,
     };
 }
 

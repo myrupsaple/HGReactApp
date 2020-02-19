@@ -15,8 +15,7 @@ export default (state = {}, action) => {
                 message: globalEvent.message,
                 notification_time: globalEvent.notification_time,
                 event_end_time: globalEvent.event_end_time,
-                start_action_code: globalEvent.start_action_code,
-                end_action_code: globalEvent.end_action_code,
+                action_code: globalEvent.action_code,
                 status: globalEvent.status
             };
         default:

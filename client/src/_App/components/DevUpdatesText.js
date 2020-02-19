@@ -5,6 +5,19 @@ const DevUpdatesText = () =>{
         <>
         <h1>Development Updates and Things to Look Out For</h1>
         <h5>If you run into any errors, please notify me by sending a screenshot and a description of how you got to the error. Thanks!</h5>
+        <h4>February 18</h4>
+        <ol>
+            <li>Completed server-side game event handling</li>
+            <li>Game managment page now allows for direct tribute stat modification</li>
+            <li>Added appropriate warnings when user attempts to add game events with a time that has already passed</li>
+            <li>Tribute dashboard now displays personalized stats and allows for resource code submission</li>
+        </ol>
+        <h4>February 17</h4>
+        <ol>
+            <li>Global events can now be created, modified, and deleted from the game management page</li>
+            <li>Added features to the game management page allowing game state to be modified</li>
+            <li>Added server-side features to deal with game events</li>
+        </ol>
         <h4>February 15</h4>
         <ol>
             <li>Began implementing game events (food required, mutts released, etc.)</li>
