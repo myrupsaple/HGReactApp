@@ -247,6 +247,8 @@ class PurchaseForm extends React.Component{
                 case 'medicine':
                     id = 303;
                     break;
+                default:
+                    break;
             }
         }
 

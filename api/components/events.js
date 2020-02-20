@@ -6,14 +6,17 @@ const checkForEvents = async (connection) => {
     var counter = 1;
     while(1){
         if(!eventsCreated || !gameStateCreated || !gameActive){
-            await connection.query(`SHOW TABLES`, (err, results, fields) => {
+            await connection.query(`SHOW TABLES`, async (err, results, fields) => {
                 if(err){
                     console.log('Failed to query for tables: ' + err);
                     return;
                 }
                 const res = results.map(table => {
-                    return table.Tables_in_hgapp;
+                    return Object.values(table)[0];
                 });
+                
+                await Wait (5000);
+
                 if(res.includes('global_events')){
                     eventsCreated = true;
                 } else {
