@@ -186,6 +186,14 @@ const runSetup = (connection) => {
         const createSpecialEventsPlaceholder = `INSERT INTO global_events (id, type, description, message,
             notification_time, event_end_time, action_code, status) VALUES (10, 'PLACEHOLDER', 'NULL',
             'NULL', 10000, 10000, 0, 'hidden')`;
+        
+        const createComments = `CREATE TABLE comments(
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            name VARCHAR(30),
+            contents VARCHAR(300),
+            date DATETIME,
+            edited BOOL DEFAULT 0
+        )`
 
         const tableList = {
             users: false,
@@ -198,7 +206,8 @@ const runSetup = (connection) => {
             item_list: false,
             purchases: false,
             game_state: false,
-            global_events: false
+            global_events: false,
+            comments: false
         }
         
         for(let table of res){
@@ -235,6 +244,9 @@ const runSetup = (connection) => {
                     break;
                 case 'global_events':
                     tableList.global_events = true;
+                    break;
+                case 'comments':
+                    tableList.comments = true;
                     break;
                 default:
                     break;
@@ -333,6 +345,13 @@ const runSetup = (connection) => {
                 }
             });
             connection.query(createSpecialEventsPlaceholder, (err, results, fields) => {
+                if(err) {
+                    console.log(err.message);
+                }
+            });
+        }
+        if(!tableList.comments){
+            connection.query(createComments, (err, results, fields) => {
                 if(err) {
                     console.log(err.message);
                 }

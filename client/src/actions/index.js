@@ -71,7 +71,7 @@ export const signIn = (userEmail) => async (dispatch) => {
             response = res;
         })
         .catch(err =>{
-            // console.log(err);
+            console.log(err);
         });
 
     var id = null;
@@ -139,7 +139,7 @@ export const fetchUser = (email) => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
 
     if(response && response.data){
@@ -160,7 +160,7 @@ export const fetchUsers = (type, query) => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
 
     if(response && response.data){
@@ -179,7 +179,7 @@ export const fetchAllUsers = () => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     
     if(response && response.data){
@@ -198,7 +198,7 @@ export const updateUser = user => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -212,7 +212,7 @@ export const createUser = user => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         })
     return response;
 }
@@ -226,7 +226,7 @@ export const deleteUser = id => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         })
     return response;
 }
@@ -242,7 +242,7 @@ export const fetchTribute = (email, id) => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         })
     if(response && response.data){
         // console.log(`Successfully fetched tribute ${email}`);
@@ -262,7 +262,7 @@ export const fetchTributes = () => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         })
     if(response && response.data){
         // console.log('Successfully fetched tributes');
@@ -280,7 +280,7 @@ export const createTribute = tribute => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         })
     return response;
 }
@@ -294,7 +294,7 @@ export const updateTribute = tribute => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -308,7 +308,7 @@ export const deleteTribute = id => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         })
     return response;
 }
@@ -322,7 +322,7 @@ export const deleteTributeDeleteStats = email => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         })
     return response;
 }
@@ -338,7 +338,7 @@ export const fetchDonation = id => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
 
     if(response && response.data){
@@ -359,7 +359,7 @@ export const fetchDonations = (type, query) => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
 
     if(response && response.data){
@@ -378,7 +378,7 @@ export const fetchDonationsRange = (type, query1, query2) => async (dispatch) =>
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
 
     if(response && response.data){
@@ -397,7 +397,7 @@ export const fetchAllDonations = () => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     
     if(response && response.data){
@@ -416,7 +416,7 @@ export const createDonation = donation => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -430,7 +430,7 @@ export const updateDonation = donation => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -444,7 +444,7 @@ export const deleteDonation = id => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -462,7 +462,7 @@ export const donationUpdateTributeStats = (email, amount) => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -477,7 +477,7 @@ export const fetchResourceListItem = id => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     if(response && response.data){
         // console.log(`Successfully retrieved resource list item ${id}`);
@@ -497,7 +497,7 @@ export const fetchResourceListItemByCode = (code) => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
 
     if(response && response.data){
@@ -518,7 +518,7 @@ export const fetchResourceListItems = (type, query) => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
 
     if(response && response.data){
@@ -538,7 +538,7 @@ export const fetchAllResourceListItems = () => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     
     if(response && response.data){
@@ -557,7 +557,7 @@ export const createResourceListItem = item => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -571,7 +571,7 @@ export const updateResourceListItem = item => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -585,7 +585,7 @@ export const deleteResourceListItem = id => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -604,7 +604,7 @@ export const fetchResourceEvent = id => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
 
     if(response && response.data){
@@ -625,7 +625,7 @@ export const fetchResourceEvents = (type, query) => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
 
     if(response && response.data){
@@ -644,7 +644,7 @@ export const fetchResourceEventsRange = (type, query1, query2) => async (dispatc
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
 
     if(response && response.data){
@@ -663,7 +663,7 @@ export const fetchAllResourceEvents = () => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     
     if(response && response.data){
@@ -682,7 +682,7 @@ export const createResourceEvent = item => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -696,7 +696,7 @@ export const updateResourceEvent = item => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -710,7 +710,7 @@ export const deleteResourceEvent = id => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -728,7 +728,7 @@ export const resourceEventUpdateTributeStats = (email, type, mode) => async () =
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -742,7 +742,7 @@ export const resourceEventCreateLifeEvent = (email, time, notes) => async () => 
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -756,7 +756,7 @@ export const resourceEventUpdateLifeEvent = (email1, email2, time, notes) => asy
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -770,7 +770,7 @@ export const resourceEventDeleteLifeEvent = (email, time, notes) => async () => 
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -784,7 +784,7 @@ export const resourceEventUpdateResourceList = (name, code, mode) => async () =>
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -800,7 +800,7 @@ export const fetchLifeEvent = id => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     
     if(response && response.data){
@@ -818,7 +818,7 @@ export const fetchLifeEventByTerms = (email, time, notes) => async (dispatch) =>
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     
     if(response && response.data){
@@ -836,7 +836,7 @@ export const fetchLifeEvents = (type, query) => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     
     if(response && response.data){
@@ -854,7 +854,7 @@ export const fetchLifeEventsRange = (type, queryLower, queryUpper) => async (dis
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     
     if(response && response.data){
@@ -872,7 +872,7 @@ export const fetchAllLifeEvents = () => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     
     if(response && response.data){
@@ -890,7 +890,7 @@ export const createLifeEvent = (lifeEvent) => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -904,7 +904,7 @@ export const updateLifeEvent = (lifeEvent) => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -918,7 +918,7 @@ export const deleteLifeEvent = (id) => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -936,7 +936,7 @@ export const lifeEventUpdateTributeStatsLives = (email, type, method, mode) => a
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -950,7 +950,7 @@ export const lifeEventUpdateTributeStatsKills = (email, mode) => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -966,7 +966,7 @@ export const fetchItem = id => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     
     if(response && response.data){
@@ -984,7 +984,7 @@ export const fetchItems = (query) => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     
     if(response && response.data){
@@ -1002,7 +1002,7 @@ export const fetchAllItems = () => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     
     if(response && response.data){
@@ -1020,7 +1020,7 @@ export const createItem = (item) => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -1034,7 +1034,7 @@ export const updateItem = (item) => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -1048,7 +1048,7 @@ export const deleteItem = (id) => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -1064,7 +1064,7 @@ export const fetchMentors = () => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     
     if(response && response.data){
@@ -1082,7 +1082,7 @@ export const fetchPurchaseRequest = (id) => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     
     if(response && response.data){
@@ -1100,7 +1100,7 @@ export const fetchPurchaseRequests = (email) => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     
     if(response && response.data){
@@ -1118,7 +1118,7 @@ export const fetchAllPurchaseRequests = () => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
 
     if(response && response.data){
@@ -1148,7 +1148,7 @@ export const createPurchaseRequest = (purchase) => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
 
     if(response && response.data){
@@ -1180,7 +1180,7 @@ export const updatePurchaseRequest = (purchase) => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
 
     if(response && response.data){
@@ -1198,7 +1198,7 @@ export const purchaseUpdateStatus = (id, status, notes) => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -1212,7 +1212,7 @@ export const deletePurchaseRequest = (id) => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -1230,7 +1230,7 @@ export const purchaseCheckFunds = email => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -1244,7 +1244,7 @@ export const purchaseUpdateFunds = (email, amount) => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -1258,7 +1258,7 @@ export const purchaseUpdateItemQuantity = (id, quantity) => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -1272,7 +1272,7 @@ export const purchaseCreateLifeEvent = (email, time) => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -1286,7 +1286,7 @@ export const purchaseUpdateTributeLives = (email) => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -1300,7 +1300,7 @@ export const purchaseCreateResourceEvent = (email, type, time) => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -1314,7 +1314,7 @@ export const purchaseUpdateTributeResources = (email, formattedType) => async ()
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -1328,7 +1328,7 @@ export const purchaseGiveImmunity = email => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -1342,7 +1342,7 @@ export const transferFunds = (emailFrom, emailTo, amount) => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -1358,7 +1358,7 @@ export const fetchServerTime = () => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     if(response && response.data && response.data[0]){
         return response.data[0].CURRENT_TIMESTAMP;
@@ -1376,7 +1376,7 @@ export const fetchGameState = () => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     
     if(response && response.data){
@@ -1394,7 +1394,7 @@ export const fetchGameStatePriceTier = () => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     
     return response.data[0].current_price_tier;
@@ -1409,7 +1409,7 @@ export const updateGameStartTime = time => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -1432,7 +1432,7 @@ export const updateGameState = (gameState) => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -1448,7 +1448,7 @@ export const fetchTributeStat = id => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     if(response && response.data){
         dispatch ({ type: FETCH_TRIBUTE_STAT, payload: response.data[0] });
@@ -1465,7 +1465,7 @@ export const fetchTributeStatEmail = email => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     if(response && response.data){
         dispatch ({ type: FETCH_TRIBUTE_STAT, payload: response.data[0] });
@@ -1482,7 +1482,7 @@ export const fetchTributeStats = email => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     if(response && response.data){
         dispatch ({ type: FETCH_TRIBUTE_STATS, payload: response.data });
@@ -1499,7 +1499,7 @@ export const fetchAllTributeStats = () => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     if(response && response.data){
         dispatch ({ type: FETCH_ALL_TRIBUTE_STATS, payload: response.data });
@@ -1516,7 +1516,7 @@ export const fetchAllTributeStatsLimited = () => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     if(response && response.data){
         dispatch ({ type: FETCH_ALL_TRIBUTE_STATS_LIMITED, payload: response.data });
@@ -1533,7 +1533,7 @@ export const updateTributeStats = t => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     if(response && response.data){
         dispatch ({ type: FETCH_ALL_TRIBUTE_STATS, payload: response.data });
@@ -1553,7 +1553,7 @@ export const fetchGlobalEvent = id => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     if(response && response.data){
         dispatch ({ type: FETCH_GLOBAL_EVENT, payload: response.data[0] });
@@ -1571,7 +1571,7 @@ export const fetchGlobalEvents = () => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     if(response && response.data){
         dispatch ({ type: FETCH_GLOBAL_EVENTS, payload: response.data });
@@ -1589,7 +1589,7 @@ export const fetchGlobalEventsByStatus = () => async (dispatch) => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     if(response && response.data){
         dispatch ({ type: FETCH_GLOBAL_EVENTS, payload: response.data });
@@ -1607,7 +1607,7 @@ export const createGlobalEvent = (event) => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -1622,7 +1622,7 @@ export const updateGlobalEvent = (event) => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
         });
     return response;
 }
@@ -1637,7 +1637,84 @@ export const deleteGlobalEvent = id => async () => {
             response = res;
         })
         .catch(err => {
-            // console.log(err);
+            console.log(err);
+        });
+    return response;
+}
+
+//############################## (11) Comments ###############################//
+
+// FETCH_COMMENT
+export const fetchComment = (id) => async () => {
+    // console.log(`Actions: Fetch comment with id ${id}`);
+    var response = null;
+    await app.get(`/comments/get/single/${id}`)
+        .then(res => {
+            // console.log(`Successfully fetched comment`);
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    return response;
+}
+
+// FETCH_ALL_COMMENTS
+export const fetchAllComments = () => async () => {
+    // console.log(`Actions: Fetch all comments`);
+    var response = null;
+    await app.get(`/comments/get/all`)
+        .then(res => {
+            // console.log(`Successfully fetched all comments`);
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    return response.data;
+}
+
+// CREATE_COMMENT
+export const createComment = (name, contents, date) => async () => {
+    // console.log(`Actions: Create comment`);
+    var response = null;
+    await app.post(`/comments/post/${name}/${contents}/${date}`)
+        .then(res => {
+            // console.log(`Successfully created comment`);
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    return response;
+}
+
+// UPDATE_COMMENT
+export const updateComment = (id, name, contents, date) => async () => {
+    // console.log(`Actions: Update comment`);
+    var response = null;
+    await app.put(`/comments/put/${id}/${name}/${contents}/${date}`)
+        .then(res => {
+            // console.log(`Successfully updated comment`);
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    return response;
+}
+
+// DELETE_COMMENT
+export const deleteComment = (id) => async () => {
+    // console.log(`Actions: Delete comment with id ${id}`);
+    var response = null;
+    await app.delete(`/comments/delete/${id}`)
+        .then(res => {
+            // console.log(`Successfully deleted comment`);
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
         });
     return response;
 }

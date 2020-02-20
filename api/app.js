@@ -2002,6 +2002,104 @@ app.delete(`/global-events/delete/:id`, (req, res) => {
     })
 })
 
+//############################## (11) Comments ###############################//
+
+// FETCH_COMMENT
+app.get(`/comments/get/single/:id`, (req, res) => {
+    const id = req.params.id;
+    const queryStringGetComment = `SELECT * FROM comments WHERE id = ${id}`;
+    console.log(queryStringGetComment);
+    connection.query(queryStringGetComment, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for comments: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    })
+})
+
+// FETCH_ALL_COMMENTS
+app.get(`/comments/get/all`, (req, res) => {
+    const queryStringGetAllComments = `SELECT * FROM comments`;
+    console.log(queryStringGetAllComments);
+    connection.query(queryStringGetAllComments, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for comments: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    })
+})
+
+// CREATE_COMMENT
+app.post(`/comments/post/:name/:contents/:date`, (req, res) => {
+    const { name, contents, date } = req.params;
+    const queryStringCreateComment = `INSERT INTO comments (name, contents, date) VALUES
+    ('${name}', '${contents}', '${date}')`;
+    console.log(queryStringCreateComment);
+    connection.query(queryStringCreateComment, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for comments: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    })
+})
+
+// UPDATE_COMMENT
+app.put(`/comments/put/:id/:name/:contents/:date`, (req, res) => {
+    const { id, name, contents, date } = req.params;
+    const queryStringUpdateComment = `UPDATE comments SET name = '${name}',
+    contents = '${contents}', date = '${date}', edited = 1 WHERE id = ${id}`;
+    console.log(queryStringUpdateComment);
+    connection.query(queryStringUpdateComment, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for comments: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    })
+})
+
+// FETCH_COMMENT
+app.delete(`/comments/delete/:id`, (req, res) => {
+    const id = req.params.id;
+    const queryStringDeleteComment = `DELETE FROM comments WHERE id = ${id}`;
+    console.log(queryStringDeleteComment);
+    connection.query(queryStringDeleteComment, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for comments: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    })
+})
+
 //########################### RUNS THE API SERVER ############################//
 app.listen(3001, () => {
     console.log('Server is up and listening on port 3001...');
