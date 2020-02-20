@@ -1,15 +1,16 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { Form } from 'react-bootstrap';
 
-import { setNavBar } from '../../actions';
-import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../components/AuthMessages';
-import Wait from '../../components/Wait';
+import { setNavBar } from '../../../actions';
+import { OAuthFail, NotSignedIn, NotAuthorized, Loading } from '../../components/AuthMessages';
+import Wait from '../../../components/Wait';
 import {
     fetchServerTime,
     fetchGameState,
-    fetchAllTributeStatsLimited,
+    fetchTributeStats,
     fetchGlobalEventsByStatus
-} from '../../actions';
+} from '../../../actions';
 
 class GameStatus extends React.Component {
     _isMounted = false;
@@ -26,9 +27,16 @@ class GameStatus extends React.Component {
                 seconds: 0
             },
             serverTime: null,
-            
+            viewMode: 'overview',
+            foodPending: 0,
+            waterPending: 0,
+            medicinePending: 0,
+            resourceEventExists: false,
+            specialEventExists: false,
             apiError: false
         };
+
+        this.handleViewMode = this.handleViewMode.bind(this);
     }
 
     checkAuth = async () => {
@@ -84,11 +92,36 @@ class GameStatus extends React.Component {
         }
 
         const response = await this.props.fetchGameState();
-        const response2 = await this.props.fetchAllTributeStatsLimited();
+        const response2 = await this.props.fetchTributeStats(this.props.userEmail);
         const response3 = await this.props.fetchGlobalEventsByStatus();
         if(!response || !response2 || !response3){
             this.setState({ apiError: true });
         }
+
+        var resourceEventExists = false;
+        var specialEventExists = false;
+        for(let event of this.props.globalEvents){
+            if(event.status === 'active'){
+                if(event.type === 'food_required'){
+                    const foodPending = this.state.foodPending + 1;
+                    this.setState({ foodPending: foodPending });
+                } else if(event.type === 'water_required'){
+                    const waterPending = this.state.waterPending + 1;
+                    this.setState({ waterPending: waterPending });
+                } else if(event.type === 'medicine_required'){
+                    const medicinePending = this.state.medicinePending + 1;
+                    this.setState({ medicinePending: medicinePending });
+                }
+
+                if(['food_required', 'water_required', 'medicine_required'].includes(event.type)){
+                    resourceEventExists = true
+                } else {
+                    specialEventExists = true;
+                }
+            }
+        }
+        this.setState({ resourceEventExists, specialEventExists })
+
         const startTime = new Date(Date.parse(this.props.gameState.start_time));
         if(this._isMounted){
             this.setState({
@@ -174,6 +207,11 @@ class GameStatus extends React.Component {
         }, 1000);
     }
 
+    handleViewMode(event){
+        const input = event.target.id;
+        this.setState({ viewMode: input });
+    }
+
     getStartTime = () => {
         return(this.state.gameStart.hours.toLocaleString(undefined,{minimumIntegerDigits: 2}) +
             ':' + this.state.gameStart.minutes.toLocaleString(undefined,{minimumIntegerDigits: 2}) +
@@ -193,6 +231,9 @@ class GameStatus extends React.Component {
     }
 
     renderResourcesNeeded = () => {
+        if(!this.state.resourceEventExists){
+            return <h5>None</h5>;
+        }
         return(
             <ul className="list-group">
                 {this.props.globalEvents.map(event => {
@@ -227,6 +268,9 @@ class GameStatus extends React.Component {
         );
     }
     renderSpecialEvents = () => {
+        if(!this.state.specialEventExists){
+            return <h5>None</h5>;
+        }
         return(
             <ul className="list-group">
                 {this.props.globalEvents.map(event => {
@@ -258,37 +302,212 @@ class GameStatus extends React.Component {
         );
     }
 
-    renderScoreBoard = () => {
+    renderViewModeChanger(){
         return(
-            <>
-            <h2>Scoreboard</h2>
-            <ul className="list-group">
-                <h4 className="row">
-                    <div className="col">Tribute</div>
-                    <div className="col">Funds Remaining</div>
-                    <div className="col">Lives Remaining</div>
-                    <div className="col">Total Lives Lost</div>
-                    <div className="col">Kill Count</div>
-                </h4>
-                {this.props.stats.map(tribute => {
-                    var bgCoolor = 'coolor-bg-green-lighten-4';
-                    if(tribute.lives_remaining === 1) bgCoolor = 'coolor-bg-yellow-lighten-4';
-                    else if(tribute.lives_remaining === 0) bgCoolor = 'coolor-bg-red-lighten-4';
-                    return(
-                        <li className={`list-group-item ${bgCoolor}`} key={tribute.id}>
-                            <div className="row">
-                                <div className="col">{tribute.first_name} {tribute.last_name}</div>
-                                <div className="col">${tribute.funds_remaining}</div>
-                                <div className="col">{tribute.lives_remaining}</div>
-                                <div className="col">{tribute.lives_lost}</div>
-                                <div className="col">{tribute.kill_count}</div>
-                            </div>
-                        </li>
-                    );
-                })}
-            </ul>
-            </>
+            <div className="col-">
+                <Form.Label>View Mode:</Form.Label>
+                <Form.Group controlId="view-mode">
+                <Form.Check
+                    defaultChecked
+                    type="radio"
+                    name="view-mode"
+                    label="Overview"
+                    id="overview"
+                    onChange={this.handleViewMode}
+                />
+                <Form.Check
+                    type="radio"
+                    name="view-mode"
+                    label="Resources"
+                    id="resources"
+                    onChange={this.handleViewMode}
+                />
+                <Form.Check
+                    type="radio"
+                    name="view-mode"
+                    label="Lives"
+                    id="lives"
+                    onChange={this.handleViewMode}
+                />
+                </Form.Group>
+            </div>
         );
+    }
+    renderLegend(){
+        return(
+            <p>
+                FU = Food Used; FM = Food Missed; WU = Water Used; WM = Water Missed; MU = Medicine Used;
+                &nbsp;MM = Medicine Missed; RU = Roulette Used; GU = Golden Used; LRem = Lives Remaining;
+                &nbsp;LRU = Life Resources Used; LE = Lives Exempt From Pricing Tiers;
+                &nbsp;LLo = Lives Lost; K = Kills; IMM = Immunity;
+            </p>
+        )
+    }
+    renderTributeStats(){
+        const stats = this.props.stats;
+        stats.sort((a, b) => {
+            if(a.first_name < b.first_name){
+                return -1;
+            } else if(a.first_name > b.first_name){
+                return 1;
+            } else {
+                return 0;
+            }
+        });
+
+        if(this.state.viewMode === 'overview'){
+            return(
+                <>
+                <ul className="list-group">
+                    {this.renderTableHeader()}
+                    {stats.map(tribute => {
+                        const [bgCoolor, warnings] = this.showTributeWarnings(tribute);
+
+                        return(
+                            <li className={`list-group-item ${bgCoolor}`} key={tribute.id}>
+                                <div className="row">
+                                    <div className="col">{tribute.first_name} {tribute.last_name}</div>
+                                    <div className="col">{tribute.funds_remaining}</div>
+                                    <div className="col">{tribute.total_donations}</div>
+                                    <div className="col">{tribute.total_purchases}</div>
+                                    <div className="col">{warnings}</div>
+                                </div>
+                            </li>
+                        );
+                    })}
+                </ul>
+                </>
+            );
+        } else if(this.state.viewMode === 'resources'){
+            return(
+                <>
+                <ul className="list-group">
+                    {this.renderTableHeader()}
+                    {stats.map(tribute => {
+                        const [bgCoolor] = this.showTributeWarnings(tribute);
+
+                        return(
+                            <li className={`list-group-item ${bgCoolor}`} key={tribute.id}>
+                                <div className="row">
+                                    <div className="col">{tribute.first_name} {tribute.last_name}</div>
+                                    <div className="col">{tribute.food_used}</div>
+                                    <div className="col">{tribute.food_missed}</div>
+                                    <div className="col">{tribute.water_used}</div>
+                                    <div className="col">{tribute.water_missed}</div>
+                                    <div className="col">{tribute.medicine_used}</div>
+                                    <div className="col">{tribute.medicine_missed}</div>
+                                    <div className="col">{tribute.roulette_used}</div>
+                                    <div className="col">{tribute.golden_used}</div>
+                                </div>
+                            </li>
+                        );
+                    })}
+                </ul>
+                </>
+            );
+        } else if(this.state.viewMode === 'lives'){
+            return(
+                <>
+                <ul className="list-group">
+                    {this.renderTableHeader()}
+                    {stats.map(tribute => {
+                        const [bgCoolor] = this.showTributeWarnings(tribute);
+
+                        return(
+                            <li className={`list-group-item ${bgCoolor}`} key={tribute.id}>
+                                <div className="row">
+                                    <div className="col">{tribute.first_name} {tribute.last_name}</div>
+                                    <div className="col">{tribute.lives_remaining}</div>
+                                    <div className="col">{tribute.life_resources}</div>
+                                    <div className="col">{tribute.lives_exempt}</div>
+                                    <div className="col">{tribute.lives_purchased}</div>
+                                    <div className="col">{tribute.lives_lost}</div>
+                                    <div className="col">{tribute.kill_count}</div>
+                                    <div className="col">{tribute.has_immunity ? 'Yes' : 'No'}</div>
+                                </div>
+                            </li>
+                        );
+                    })}
+                </ul>
+                </>
+            );   
+        }   
+    }
+    renderTableHeader = () => {
+        if(this.state.viewMode === 'overview'){
+            return (
+                <h4 className="row">
+                    <div className="col">Name</div>
+                    <div className="col">Funds Remaining</div>
+                    <div className="col">Total Donations</div>
+                    <div className="col">Total Purchases</div>
+                    <div className="col">Warnings</div>
+                </h4>
+            );
+        } else if(this.state.viewMode === 'resources'){
+            return (
+                <h4 className="row">
+                    <div className="col">Name</div>
+                    <div className="col">FU</div>
+                    <div className="col">FM</div>
+                    <div className="col">WU</div>
+                    <div className="col">WM</div>
+                    <div className="col">MU</div>
+                    <div className="col">MM</div>
+                    <div className="col">RU</div>
+                    <div className="col">GU</div>
+                </h4>
+            );
+        } else if(this.state.viewMode === 'lives'){
+            return(
+                <h4 className="row">
+                    <div className="col">Name</div>
+                    <div className="col">LRem</div>
+                    <div className="col">LRU</div>
+                    <div className="col">LE</div>
+                    <div className="col">LP</div>
+                    <div className="col">LLo</div>
+                    <div className="col">K</div>
+                    <div className="col">IMM</div>
+                </h4>
+            )
+        }
+    }
+    showTributeWarnings(tribute){
+        var bgCoolor = 'coolor-bg-white';
+        var warnings = '';
+        if(tribute.food_used + tribute.food_missed < this.props.gameState.food_required + this.state.foodPending){
+            warnings += ' ~ Food is needed by the deadline';
+            bgCoolor = 'coolor-bg-yellow-lighten-4';
+        }
+        if(tribute.water_used + tribute.water_missed < this.props.gameState.water_required + this.state.waterPending){
+            warnings += ' ~ Water is needed by the deadline';
+            bgCoolor = 'coolor-bg-yellow-lighten-4';
+        }
+        if(tribute.medicine_used + tribute.medicine_missed < this.props.gameState.medicine_required + this.state.medicinePending){
+            warnings += ' ~ Medicine is needed by the deadline';
+            bgCoolor = 'coolor-bg-yellow-lighten-4';
+        }
+        if(tribute.lives_remaining === 2){
+            warnings += ' ~ Tribute has 2 lives remaining';
+            bgCoolor = 'coolor-bg-yellow-lighten-4';
+        } else if(tribute.lives_remaining === 1){
+            warnings += ' ~ Tribute has 1 lives remaining';
+            bgCoolor = 'coolor-bg-red-lighten-4';
+        } else if(tribute.lives_remaining === 0){
+            warnings = 'Tribute has been eliminated';
+            bgCoolor = 'coolor-bg-red-lighten-1';
+        }
+        if(tribute.funds < 100){
+            warnings += ' ~ Tribute is running low on funds';
+            if(!bgCoolor.includes('coolor-bg-red-lighten')) bgCoolor = 'coolor-bg-orange-lighten-4';
+        }
+
+        warnings = warnings.replace(/~ /, '');
+        if(warnings === ''){
+            warnings = 'None';
+        }
+        return [bgCoolor, warnings];
     }
 
     renderContent = () => {
@@ -307,13 +526,16 @@ class GameStatus extends React.Component {
                 <>
                 <h1>Current Game Status</h1>
                 <div className="row">
-                    <div className="col-4">
+                    <div className="col-3">
                         {this.renderConditionalText()}
                         <h3>Resources Needed:</h3>{this.renderResourcesNeeded()}
                         <h3>Special Events:</h3>{this.renderSpecialEvents()}
                     </div>
-                    <div className="col-8">
-                        {this.renderScoreBoard()}
+                    <div className="col-9">
+                        <h3>Your Tributes:</h3>
+                        {this.renderViewModeChanger()}
+                        {this.renderLegend()}
+                        {this.renderTributeStats()}
                     </div>
                 </div>
                 </>
@@ -342,6 +564,7 @@ const mapStateToProps = state => {
         authLoaded: state.auth.loaded,
         isSignedIn: state.auth.isSignedIn,
         userPerms: state.auth.userPerms,
+        userEmail: state.auth.userEmail,
         gameState: state.gameState,
         stats: Object.values(state.tributeStats),
         globalEvents: Object.values(state.globalEvents)
@@ -353,6 +576,6 @@ export default connect(mapStateToProps,
         setNavBar,
         fetchServerTime,
         fetchGameState,
-        fetchAllTributeStatsLimited,
+        fetchTributeStats,
         fetchGlobalEventsByStatus
     })(GameStatus);

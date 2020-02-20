@@ -1825,10 +1825,10 @@ app.get(`/tribute-stats/get/all`, (req, res) => {
 
 // FETCH_ALL_TRIBUTE_STATS_LIMITED
 app.get(`/tribute-stats/get/limited`, (req, res) => {
-    const queryStringGetAllTributeStats = `SELECT first_name, last_name, funds_remaining,
+    const queryStringGetAllTributeStatsLimited = `SELECT id, first_name, last_name, funds_remaining,
     lives_remaining, lives_lost, kill_count FROM tribute_stats`;
-    console.log(queryStringGetAllTributeStats);
-    connection.query(queryStringGetAllTributeStats, (err, rows, fields) => {
+    console.log(queryStringGetAllTributeStatsLimited);
+    connection.query(queryStringGetAllTributeStatsLimited, (err, rows, fields) => {
         if(err){
             console.log('Failed to query for tribute stats: ' + err);
             res.sendStatus(500);

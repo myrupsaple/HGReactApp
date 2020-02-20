@@ -37,6 +37,7 @@ import TributeDashboard from '../_App/pages/tribute/TributeDashboard';
 import ViewLocations from '../_App/pages/helper/ViewLocations';
 // Mentor Tools
 import PurchaseReqests from '../_App/pages/mentor/PurchaseRequests';
+import MentorDashboard from '../_App/pages/mentor/MentorDashboard';
 // Gamemaker Tools
 import ManageGame from '../_App/pages/gamemaker/ManageGame';
 import TributeInfo from '../_App/pages/gamemaker/TributeInfo';
@@ -93,6 +94,7 @@ class App extends React.Component {
                     <Route path="/App/helper/locations" exact component={ViewLocations} />
                     {/* Mentor Tools */}
                     <Route path="/App/mentor/purchase-requests" exact component={PurchaseReqests} />
+                    <Route path="/App/mentor/dashboard" exact component={MentorDashboard} />
                     {/* Gamemaker Tools */}
                     <Route path="/App/gamemaker/manage-game" exact component={ManageGame} />
                     <Route path="/App/gamemaker/tribute-info" exact component={TributeInfo} />

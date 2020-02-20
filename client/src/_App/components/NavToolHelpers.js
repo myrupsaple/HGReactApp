@@ -72,6 +72,12 @@ const RequestPurchase = (
     </NavDropdown.Item>
 );
 
+const MentorDashboard = (
+    <NavDropdown.Item as={Nav.Link} href="/App/mentor/dashboard">
+        Mentor Dashboard
+    </NavDropdown.Item>
+);
+
 //---------------------------------TRIBUTES-----------------------------------//
 
 const TributeDashboard = (
@@ -113,6 +119,7 @@ export const OwnerTools = (
             {ManageItems}
             {/* {ViewLocations} */}
             {TributeDashboard}
+            {MentorDashboard}
         </>
 )
 
@@ -151,6 +158,7 @@ export const MentorTools = (
         <>
             {/* {Messaging} */}
             {RequestPurchase}
+            {MentorDashboard}
         </>
 );
 

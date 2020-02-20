@@ -74,6 +74,15 @@ const checkForEvents = async (connection) => {
             }
         });
 
+        // Zeroes out any negative life values
+        const queryStringZeroNegativeLives = `UPDATE tribute_stats SET lives_remaining = 0 WHERE lives_remaining < 0`;
+        connection.query(queryStringZeroNegativeLives, (err, results, fields) => {
+            if (err){
+                console.log('Failed to query tribute stats: ' + err);
+                return;
+            }
+        });
+
         console.log(`Checked for events (${counter}) (${currentTime})`);
         counter ++;
     }

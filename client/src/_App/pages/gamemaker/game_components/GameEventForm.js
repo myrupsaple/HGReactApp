@@ -172,11 +172,16 @@ class GameEventForm extends React.Component {
             time1Formatted: timeFormatted
         });
         if(time > this.state.time2){
-            this.setState({ time1Valid: 3 });
-        } else if(time <= this.state.serverTime){
-            this.setState({ time1Valid: 2 });
+            this.setState({ time1Valid: 3, time2Valid: 3 });
         } else {
-            this.setState({ time1Valid: 0 });
+            if(this.state.time2Valid === 3){
+                this.setState({ time2Valid: 0 })
+            }
+            if(time <= this.state.serverTime){
+                this.setState({ time1Valid: 2 });
+            } else {
+                this.setState({ time1Valid: 0 });
+            }
         }
     }
     handleTime2(date){
@@ -189,11 +194,16 @@ class GameEventForm extends React.Component {
             time2Formatted: timeFormatted
         });
         if(time < this.state.time1){
-            this.setState({ time2Valid: 3 });
-        } else if(time <= this.state.serverTime){
-            this.setState({ time2Valid: 2 });
+            this.setState({ time2Valid: 3, time1Valid: 3 });
         } else {
-            this.setState({ time2Valid: 0 });
+            if(this.state.time1Valid === 3){
+                this.setState({ time1Valid: 0 })
+            }
+            if(time <= this.state.serverTime){
+                this.setState({ time2Valid: 2 });
+            } else {
+                this.setState({ time2Valid: 0 });
+            }
         }
     }
 
@@ -391,8 +401,8 @@ class GameEventForm extends React.Component {
                         <DatePicker
                             showTimeSelect
                             showTimeSelectOnly
-                            minTime={date1}
-                            maxTime={date2}
+                            // minTime={date1}
+                            // maxTime={date2}
                             timeIntervals={2}
                             value={this.state.time1Formatted}
                             onChange={this.handleTime1}
@@ -406,13 +416,13 @@ class GameEventForm extends React.Component {
                         <DatePicker
                             showTimeSelect
                             showTimeSelectOnly
-                            minTime={date1}
-                            maxTime={date2}
+                            // minTime={date1}
+                            // maxTime={date2}
                             timeIntervals={2}
                             value={this.state.time2Formatted}
                             onChange={this.handleTime2}
                             dateFormat="hh:mm aa"
-                            disabled={this.state.disableTime}
+                            disabled={this.state.disableTime && !this.props.globalEvent.type.includes('_cost_start')}
                         />
                         {this.renderTime2Validation()}
                     </Form.Group></div>

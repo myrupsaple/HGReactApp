@@ -406,7 +406,7 @@ class ManageGame extends React.Component {
                                     <div className="col">{tribute.lives_purchased}</div>
                                     <div className="col">{tribute.lives_lost}</div>
                                     <div className="col">{tribute.kill_count}</div>
-                                    <div className="col">{tribute.has_immunity}</div>
+                                    <div className="col">{tribute.has_immunity ? 'Yes' : 'No'}</div>
                                     <div className="col">{this.renderAdmin(tribute)}</div>
                                 </div>
                             </li>
