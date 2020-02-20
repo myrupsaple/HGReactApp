@@ -1,14 +1,14 @@
 "use strict";
 const express = require('express');
 const cors = require('cors');
-const morgan = require('morgan');
+// const morgan = require('morgan');
 const mysql = require('mysql');
 
 const setup = require('./components/setup');
 const events = require('./components/events');
 
 const app = express();
-app.use(morgan('short'));
+// app.use(morgan('short'));
 
 const _currentOrigin = 'http://localhost:3000';
 

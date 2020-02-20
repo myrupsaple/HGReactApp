@@ -82,7 +82,6 @@ class PurchaseRequests extends React.Component {
         }
 
         const userPerms = this.props.userPerms;
-        console.log(userPerms);
         for (let group of allowedGroups){
             if(userPerms === group){
                 return null;
@@ -528,8 +527,7 @@ class PurchaseRequests extends React.Component {
         }
     }
 
-    render = () => {
-        console.log(this.state);
+    render(){
         const mode = this.state.displayMode === 'pending' ? ': Pending Requests' : ': Processed Requests';
         const message = this.state.auth.loading ? '' : mode;
         return(

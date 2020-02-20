@@ -217,7 +217,6 @@ class ResourceEventForm extends React.Component {
             
             // Life events updating
             if(resourceEventObject.type === 'life'){
-                console.log("UPDATED")
                 const response = await this.props.resourceEventUpdateLifeEvent(this.state.originalEmail, 
                     resourceEventObject.email, resourceEventObject.time, resourceEventObject.notes);
                 if(!response){
@@ -559,8 +558,7 @@ class ResourceEventForm extends React.Component {
         }
     }
 
-    render = () => {
-        console.log(this.state);
+    render(){
         return(
             <Modal show={this.state.showModal} onHide={this.handleClose}>
                 <Modal.Header>

@@ -79,7 +79,10 @@ class MapRules extends React.Component {
         }
         if(this.state.auth.payload === null){
             return(
-                <h3>Map Rules</h3>
+                <>
+                <h1>Map Rules</h1>
+                <h5>Map and Rules will be visible here later on</h5>
+                </>
             );
         } else {
             return (<h3>{this.state.auth.payload}</h3>);

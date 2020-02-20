@@ -545,8 +545,7 @@ class GameStatus extends React.Component {
         }
     }
 
-    render = () => {
-        console.log(this.state);
+    render(){
         return(
             <>
                 {this.renderContent()}

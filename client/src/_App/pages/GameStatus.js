@@ -99,7 +99,6 @@ class GameStatus extends React.Component {
                 }
             });
         }
-        console.log(this.state.gameStart);
 
         // Clock components
         const currentTimeRaw = await this.props.fetchServerTime();
@@ -323,8 +322,7 @@ class GameStatus extends React.Component {
         }
     }
 
-    render = () => {
-        console.log(this.state);
+    render(){
         return(
             <>
                 {this.renderContent()}

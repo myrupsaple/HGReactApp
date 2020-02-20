@@ -5,6 +5,12 @@ const DevUpdatesText = () =>{
         <>
         <h1>Development Updates and Things to Look Out For</h1>
         <h5>If you run into any errors, please notify me by sending a screenshot and a description of how you got to the error. Thanks!</h5>
+        <h4>February 19</h4>
+        <ol>
+            <li>Finished up game status page including a scoreboard with basic information on all tributes</li>
+            <li>Added life event viewing to the tribute dashboard page</li>
+            <li>Created mentor dashboard with warnings when a mentor's tributes are close to losing a life or being eliminated</li>
+        </ol>
         <h4>February 18</h4>
         <ol>
             <li>Completed server-side game event handling</li>

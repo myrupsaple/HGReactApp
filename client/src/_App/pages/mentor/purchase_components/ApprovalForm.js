@@ -94,7 +94,6 @@ class ApprovalForm extends React.Component{
     }
 
     capitalizeFirst(string){
-        console.log(string);
         return string.slice(0, 1).toUpperCase() + string.slice(1, string.length).toLowerCase();
     }
 

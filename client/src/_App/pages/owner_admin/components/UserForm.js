@@ -410,8 +410,7 @@ class UserForm extends React.Component {
         }
     }
 
-    render = () => {
-        console.log(this.state);
+    render(){
         return(
             <Modal show={this.state.showModal} onHide={this.handleClose}>
                 <Modal.Header>

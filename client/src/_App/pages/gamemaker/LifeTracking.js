@@ -732,8 +732,7 @@ class ManageFunds extends React.Component {
         }
     }
 
-    render = () => {
-        console.log(this.state);
+    render(){
         return(
             <>
                 <h3 style={{ padding: "10px" }}>Life Tracking</h3>

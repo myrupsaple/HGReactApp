@@ -607,8 +607,7 @@ class ManageGame extends React.Component {
         }
     }
     
-    render = () => {
-        console.log(this.state);
+    render(){
         return(
             <>
                 <h3>Manage Game Settings</h3>

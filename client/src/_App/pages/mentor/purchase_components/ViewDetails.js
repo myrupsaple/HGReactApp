@@ -30,7 +30,6 @@ class ViewDetails extends React.Component{
 
     renderModalBody = () => {
         const purchase = this.props.purchase;
-        console.log(purchase);
         if(!Object.keys(purchase).length){
             return 'Loading...';
         } else if(!purchase.payer_email){

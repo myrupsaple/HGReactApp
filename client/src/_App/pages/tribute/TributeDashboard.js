@@ -350,13 +350,11 @@ class SubmitResource extends React.Component {
                 );
             }
         } else {
-            console.log(this.state);
             return (<h3>{this.state.auth.payload}</h3>);
         }
     }
 
-    render = () =>{
-        console.log(this.state);
+    render(){
         return(
             <>
                 <h1>{this.props.stats.first_name} {this.props.stats.last_name}</h1>

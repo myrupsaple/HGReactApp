@@ -350,7 +350,6 @@ class GameEventForm extends React.Component {
         const date2 = new Date();
         date2.setHours(gameTime.getHours() + 5);
         date2.setMinutes(gameTime.getMinutes());
-        console.log(gameTime);
         return(
             <Form>
                 <Form.Row>
@@ -602,8 +601,7 @@ class GameEventForm extends React.Component {
         }
     }
 
-    render = () => {
-        console.log(this.state);
+    render(){
         return(
             <Modal show={this.state.showModal} onHide={this.handleClose}>
                 <Modal.Header>

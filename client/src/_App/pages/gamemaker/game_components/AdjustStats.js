@@ -586,8 +586,7 @@ class AdjustStats extends React.Component {
         this.props.onSubmitCallback();
     }
     
-    render = () => {
-        console.log(this.state);
+    render(){
         return(
             <>
                 {this.renderModal()}        

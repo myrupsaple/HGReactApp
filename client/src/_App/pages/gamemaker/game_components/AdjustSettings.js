@@ -585,8 +585,7 @@ class AdjustSettings extends React.Component {
         this.setState({ firstSubmit: false, finalConfirm: false, showModal: false });
     }
     
-    render = () => {
-        console.log(this.state);
+    render(){
         return(
             <>
                 {this.renderModal()}

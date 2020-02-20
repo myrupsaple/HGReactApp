@@ -67,7 +67,6 @@ class LifeEventForm extends React.Component {
             const minutes = (time % 60).toLocaleString(undefined, { minimumIntegerDigits: 2 });;
 
             const lifeEvent = this.props.lifeEvent;
-            console.log(lifeEvent);
             if(this._isMounted){
                 this.setState({
                     tribute_email: lifeEvent.tribute_email,
@@ -557,8 +556,7 @@ class LifeEventForm extends React.Component {
         }
     }
 
-    render = () => {
-        console.log(this.state);
+    render(){
         return(
             <Modal show={this.state.showModal} onHide={this.handleClose}>
                 <Modal.Header>

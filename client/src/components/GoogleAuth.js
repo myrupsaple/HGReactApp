@@ -44,10 +44,10 @@ class GoogleAuth extends React.Component {
         if(isSignedIn){
             // Upon sign in, load up user data given their email
             const userEmail = this.auth.currentUser.get().getBasicProfile().getEmail();
-            console.log('GoogleAuth: Sign in attempt');
+            // console.log('GoogleAuth: Sign in attempt');
             this.props.signIn(userEmail);
         } else {
-            console.log('GoogleAuth: Sign out attempt');
+            // console.log('GoogleAuth: Sign out attempt');
             this.props.signOut();
         }
     }
