@@ -29,7 +29,7 @@ class ManageGame extends React.Component {
             gameStateLoaded: false,
             startTimeAsDate: '',
             displayMode: 'global_events',
-            viewMode: '1',
+            viewMode: 'funds',
             queried: false,
             showCreate: false,
             showEdit: false,
@@ -199,7 +199,7 @@ class ManageGame extends React.Component {
     renderViewModeChanger = () => {
         if(this.state.displayMode === 'global_events'){
             return <Button onClick={() => this.setState({ showCreate: true })}>Create</Button>;
-        } else if(this.state.displaMode === 'tribute_stats'){
+        } else if(this.state.displayMode === 'tribute_stats'){
             return(
                 <div className="col-">
                     <Form.Label>View Mode:</Form.Label>
@@ -208,15 +208,22 @@ class ManageGame extends React.Component {
                         defaultChecked
                         type="radio"
                         name="view-mode"
-                        label="1"
-                        id="1"
+                        label="Funds"
+                        id="funds"
                         onChange={this.handleViewMode}
                     />
                     <Form.Check
                         type="radio"
                         name="view-mode"
-                        label="2"
-                        id="2"
+                        label="Resources"
+                        id="resources"
+                        onChange={this.handleViewMode}
+                    />
+                    <Form.Check
+                        type="radio"
+                        name="view-mode"
+                        label="Lives"
+                        id="lives"
                         onChange={this.handleViewMode}
                     />
                     </Form.Group>
@@ -361,11 +368,43 @@ class ManageGame extends React.Component {
                 return 0;
             }
         });
+        const legend = (
+            <p>
+                FU = Food Used; FM = Food Missed; WU = Water Used; WM = Water Missed; MU = Medicine Used;
+                &nbsp;MM = Medicine Missed; RU = Roulette Used; GU = Golden Used; LRem = Lives Remaining;
+                &nbsp;LRU = Life Resources Used; LE = Lives Exempt From Pricing Tiers;
+                &nbsp;LLo = Lives Lost; K = Kills; IMM = Immunity;
+            </p>
+        );
 
-        if(this.state.viewMode === '1'){
+        if(this.state.viewMode === 'funds'){
             return(
                 <>
                 <h3>Tribute Stats:</h3>
+                {legend}
+                <ul className="list-group">
+                    {this.renderTableHeader()}
+                    {tributeStats.map(tribute => {
+                        return(
+                            <li className="list-group-item" key={tribute.id}>
+                                <div className="row">
+                                    <div className="col">{tribute.first_name} {tribute.last_name}</div>
+                                    <div className="col">${tribute.funds_remaining}</div>
+                                    <div className="col">${tribute.total_donations}</div>
+                                    <div className="col">${tribute.total_purchases}</div>
+                                    <div className="col">{this.renderAdmin(tribute)}</div>
+                                </div>
+                            </li>
+                        );
+                    })}
+                </ul>
+                </>
+            );   
+        } else if(this.state.viewMode === 'resources'){
+            return(
+                <>
+                <h3>Tribute Stats:</h3>
+                {legend}
                 <ul className="list-group">
                     {this.renderTableHeader()}
                     {tributeStats.map(tribute => {
@@ -389,10 +428,11 @@ class ManageGame extends React.Component {
                 </ul>
                 </>
             );
-        } else if(this.state.viewMode === '2'){
+        } else if(this.state.viewMode === 'lives'){
             return(
                 <>
                 <h3>Tribute Stats:</h3>
+                {legend}
                 <ul className="list-group">
                     {this.renderTableHeader()}
                     {tributeStats.map(tribute => {
@@ -500,7 +540,17 @@ class ManageGame extends React.Component {
                 </h4>
             );
         } else if(this.state.displayMode === 'tribute_stats'){
-            if(this.state.viewMode === '1'){
+            if(this.state.viewMode === 'funds'){
+                return(
+                    <h4 className="row">
+                        <div className="col">Name</div>
+                        <div className="col">Funds Remaining</div>
+                        <div className="col">Total Donations</div>
+                        <div className="col">Total Purchases</div>
+                        <div className="col">Modify</div>
+                    </h4>
+                )
+            } else if(this.state.viewMode === 'resources'){
                 return (
                     <h4 className="row">
                         <div className="col">Name</div>
@@ -515,7 +565,7 @@ class ManageGame extends React.Component {
                         <div className="col">Mod.</div>
                     </h4>
                 );
-            } else if(this.state.viewMode === '2'){
+            } else if(this.state.viewMode === 'lives'){
                 return(
                     <h4 className="row">
                         <div className="col">Name</div>

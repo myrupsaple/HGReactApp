@@ -233,7 +233,7 @@ export const deleteUser = id => async () => {
 
 //######################### (2) TRIBUTE MANAGEMENT ###########################//
 
-export const fetchTribute = (email, id) => async (dispatch) => {
+export const fetchTribute = (email) => async (dispatch) => {
     // console.log(`Actions: Fetch tribute initiated with email ${email}`);
     var response = null;
     await app.get(`/tribute/info/get/${email}`)
@@ -1150,10 +1150,6 @@ export const createPurchaseRequest = (purchase) => async (dispatch) => {
         .catch(err => {
             console.log(err);
         });
-
-    if(response && response.data){
-        dispatch ({ type: FETCH_ALL_PURCHASES, payload: response.data });
-    }
     return response;
 }
 
@@ -1182,10 +1178,6 @@ export const updatePurchaseRequest = (purchase) => async (dispatch) => {
         .catch(err => {
             console.log(err);
         });
-
-    if(response && response.data){
-        dispatch ({ type: FETCH_ALL_PURCHASES, payload: response.data });
-    }
     return response;
 }
 
@@ -1527,7 +1519,7 @@ export const fetchAllTributeStatsLimited = () => async (dispatch) => {
 export const updateTributeStats = t => async (dispatch) => {
     // console.log(`Actions: Update tribute stats`);
     var response = null;
-    await app.put(`/tribute-stats/put/${t.id}/${t.food_used}/${t.food_missed}/${t.water_used}/${t.water_missed}/${t.medicine_used}/${t.medicine_missed}/${t.roulette_used}/${t.golden_used}/${t.lives_remaining}/${t.life_resources}/${t.lives_exempt}/${t.lives_purchased}/${t.lives_lost}/${t.kill_count}/${t.has_immunity}`)
+    await app.put(`/tribute-stats/put/${t.id}/${t.funds_remaining}/${t.total_donations}/${t.total_purchases}/${t.food_used}/${t.food_missed}/${t.water_used}/${t.water_missed}/${t.medicine_used}/${t.medicine_missed}/${t.roulette_used}/${t.golden_used}/${t.lives_remaining}/${t.life_resources}/${t.lives_exempt}/${t.lives_purchased}/${t.lives_lost}/${t.kill_count}/${t.has_immunity}`)
         .then(res => {
             // console.log(`Successfully updated tribute stats`);
             response = res;

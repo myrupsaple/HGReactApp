@@ -108,13 +108,10 @@ class PurchaseForm extends React.Component{
                     itemValid: 0
                 })
 
-                if(this.state.category === 'item'){
-                    this.setState({ item: `${purchase.item_name}|${purchase.item_id}` });
-                    const response = await this.props.fetchItem(purchase.item_id);
-                    if(!response){
-                        this.setState({ apiError: true });
-                        return null;
-                    }
+                const response = await this.props.fetchItem(purchase.item_id);
+                if(!response){
+                    this.setState({ apiError: true });
+                    return null;
                 }
             }
         }
@@ -167,6 +164,9 @@ class PurchaseForm extends React.Component{
                     this.setState({ receiverValid: 4 });
                 }
             }
+        }
+        if(input !== 'transfer' && this.state.purchasingTribute === this.state.receivingTribute){
+            this.setState({ receiverValid: 0, costValid: 0 });
         }
 
         // Input handling
@@ -378,11 +378,6 @@ class PurchaseForm extends React.Component{
             return null;
         }
 
-        if(!this.state.firstConfirm){
-            this.setState({ firstConfirm: true });
-            return null;
-        }
-
         const dateString = await this.props.fetchServerTime();
         const date = new Date(Date.parse(dateString));
         const time = date.getHours() * 60 + date.getMinutes();
@@ -400,13 +395,18 @@ class PurchaseForm extends React.Component{
             quantity: this.state.quantity
         }
 
-        const response = await this.props.purchaseCheckFunds('michaelcuc24@gmail.com');
+        const response = await this.props.purchaseCheckFunds(this.state.payer_email);
         if(!response){
             this.setState({ apiError: true });
             return null;
         }
         if(response.data[0].funds_remaining < this.state.cost - this.state.originalCost){
             this.setState({ formValid: 3, currentFunds: response.data[0].funds_remaining });
+            return null;
+        }
+
+        if(!this.state.firstConfirm){
+            this.setState({ firstConfirm: true });
             return null;
         }
 
@@ -442,7 +442,7 @@ class PurchaseForm extends React.Component{
 
         this.setState({ submitted: true });
 
-        setTimeout(() => this.handleClose(), 1000);
+        await setTimeout(() => this.handleClose(), 1000);
     }
 
     renderModalHeader = () => {
@@ -486,9 +486,9 @@ class PurchaseForm extends React.Component{
 
             var message = '';
             var extraText = '';
-            if(diff > 0){
+            if(diff < 0){
                 extraText = `${purchasingTribute} will be refunded the difference of $${diff}.`;
-            } else if (diff < 0){
+            } else if (diff > 0){
                 extraText = `${purchasingTribute} will be charged the difference of $${diff}.`;
             } else {
                 extraText = `${purchasingTribute} will not be charged again.`
@@ -556,6 +556,7 @@ class PurchaseForm extends React.Component{
                             value={this.state.payer_email}
                             onChange={this.handlePayer}
                             as="select"
+                            disabled={this.props.mode === 'edit'}
                         >
                             {this.renderTributeChoices()}
                         </Form.Control>
@@ -728,7 +729,7 @@ class PurchaseForm extends React.Component{
         }
     }
     renderFormValidation = () => {
-        if(this.state.formValid === 3 && this.state.firstConfirm){
+        if(this.state.formValid === 3 && !this.state.firstConfirm){
             return(
                 <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
                     <span role="img" aria-label="check/x">&#10071;</span> 
@@ -754,7 +755,7 @@ class PurchaseForm extends React.Component{
         } else if(this.state.formValid === 2){
             return(
                 <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> All fields are required
+                    <span role="img" aria-label="check/x">&#10071;</span> Please correct the indicated fields
                 </p>
             );
         } else {
@@ -950,7 +951,8 @@ class PurchaseForm extends React.Component{
         }
     }
 
-    render(){
+    render = () => {
+        console.log(this.state);
         return(
             <>
                 <Modal show={this.state.showModal} onHide={this.handleClose}>

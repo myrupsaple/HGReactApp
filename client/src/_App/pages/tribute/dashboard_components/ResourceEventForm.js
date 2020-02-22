@@ -59,7 +59,9 @@ class ResourceEventForm extends React.Component {
         this.setState({ code: event.target.value });
     }
 
-    handleFormSubmit = async () => {
+    handleFormSubmit = async (event) => {
+        event.preventDefault()
+
         const dateString = await this.props.fetchServerTime();
         const time = new Date(Date.parse(dateString));
         const timeAsInt = time.getHours() * 60 + time.getMinutes();
@@ -201,7 +203,7 @@ class ResourceEventForm extends React.Component {
 
     renderForm = () => {
         return(
-            <Form>
+            <Form onSubmit={this.handleFormSubmit}>
                 <Form.Row>
                     <div className="col-6"><Form.Group controlId="type">
                         <Form.Label>Resource Type*</Form.Label>    

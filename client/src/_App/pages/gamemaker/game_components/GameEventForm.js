@@ -327,7 +327,8 @@ class GameEventForm extends React.Component {
                 <h5 className="coolor-text-red">
                     Warning: The end time for this event has already passed.
                     Proceeding will cause immediate execution of the action without
-                    prior notice to the tributes.
+                    prior notice to the tributes. Furthermore, this action cannot
+                    be revoked as the deletion of completed events is disabled.
                 </h5>
             );
         } else if(this.state.serverTime > this.state.time1){
@@ -359,7 +360,7 @@ class GameEventForm extends React.Component {
                             value={this.state.type}
                             onChange={this.handleType}
                             as="select"
-                            disabled={this.state.type.includes('_cost_start')}
+                            disabled={this.state.type.includes('_cost_start') || this.state.status === 'completed'}
                         >
                             <option value="">Please select an event...</option>
                             <option value="food_required">Require Food Resource</option>
@@ -406,7 +407,7 @@ class GameEventForm extends React.Component {
                             value={this.state.time1Formatted}
                             onChange={this.handleTime1}
                             dateFormat="hh:mm aa"
-                            disabled={this.state.disableTime}
+                            disabled={this.state.disableTime || this.state.status === 'active'}
                         />
                         {this.renderTime1Validation()}
                     </Form.Group></div>

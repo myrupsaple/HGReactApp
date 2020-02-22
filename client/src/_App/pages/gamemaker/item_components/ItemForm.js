@@ -97,6 +97,8 @@ class ItemForm extends React.Component {
             this.setState({ quantityValid: 3 });
         } else if(input <= 0){
             this.setState({ quantityValid: 4 });
+        } else if(input > 30){
+            this.setState({ quantityValid: 5 });
         } else {
             this.setState({ quantityValid: 0 });
         }
@@ -360,6 +362,12 @@ class ItemForm extends React.Component {
             return(
                 <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
                     <span role="img" aria-label="check/x">&#10071;</span> Quantity must be positive
+                </p>
+            );
+        } else if (this.state.quantityValid === 5){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Quantity cannot exceed 30
                 </p>
             );
         } else if(this.state.quantityValid === 0) {

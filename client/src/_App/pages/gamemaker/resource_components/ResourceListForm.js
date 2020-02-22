@@ -82,6 +82,8 @@ class ResourceListForm extends React.Component {
             this.setState({ maxUsesValid: 3 });
         } else if(Math.floor(input) <= 0){
             this.setState({ maxUsesValid: 4 });
+        } else if(input > 10){
+            this.setState({ maxUsesValid: 5 });
         } else {
             this.setState({ maxUsesValid: 0 });
         }
@@ -268,6 +270,12 @@ class ResourceListForm extends React.Component {
             return(
                 <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
                     <span role="img" aria-label="check/x">&#10071;</span> Max uses must be positive
+                </p>
+            );
+        } else if (this.state.maxUsesValid === 5){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Max uses cannot exceed 10
                 </p>
             );
         } else if(this.state.maxUsesValid === 0) {

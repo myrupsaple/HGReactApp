@@ -24,6 +24,11 @@ class DeleteRequest extends React.Component {
 
     componentDidMount = async () => {
         this._isMounted = true;
+        const response = await this.props.fetchPurchaseRequest(this.props.id);
+        if(!response){
+            this.setState({ apiError: true });
+            return null;
+        }
     }
 
     handleClose = () => {
@@ -34,14 +39,8 @@ class DeleteRequest extends React.Component {
     }
 
     onConfirm = async () => {
-        const response = await this.props.fetchPurchaseRequest(this.props.id);
+        const response = await this.props.deletePurchaseRequest(this.props.id);
         if(!response){
-            this.setState({ apiError: true });
-            return null;
-        }
-
-        const response2 = await this.props.deletePurchaseRequest(this.props.id);
-        if(!response2){
             this.setState({ apiError: true });
             return null;
         }
@@ -52,8 +51,8 @@ class DeleteRequest extends React.Component {
 
         const purchase = this.props.selectedPurchase;
 
-        const response3 = await this.props.purchaseUpdateFunds(purchase.payer_email, purchase.cost);
-        if(!response3){
+        const response2 = await this.props.purchaseUpdateFunds(purchase.payer_email, purchase.cost);
+        if(!response2){
             this.setState({ apiError: true });
             return null;
         }
@@ -74,13 +73,55 @@ class DeleteRequest extends React.Component {
             return 'An error occurred. Please try again later.'
         } else if(this.state.confirmed){
             return 'Entry deleted successfully';
+        } else if (Object.keys(this.props.selectedPurchase).length === 0){
+            return 'Attempting to load purchase info...';
         } else {
+            const purchase = this.props.selectedPurchase;
+            console.log(purchase);
             return(
                 <>
-                    <div>Are you sure you would like to delete this item?</div>
+                    <div>
+                        Are you sure you would like to delete this purchase request?
+                        <div style={{ marginLeft: "20px" }}>
+                            <div className="row"><span className="font-weight-bold">Purchasing Tribute:</span><span>&nbsp;{this.getTributeName(purchase.payer_email)}</span></div>
+                            <div className="row"><span className="font-weight-bold">Receiving Tribute:</span><span>&nbsp;{this.getTributeName(purchase.receiver_email)}</span></div>
+                            <div className="row"><span className="font-weight-bold">District:</span><span>&nbsp;{this.getMentorName(purchase.mentor_email)}</span></div>
+                            <div className="row"><span className="font-weight-bold">Time of Request:</span><span>&nbsp;{this.formatTimeFromInt(purchase.time)}</span></div>
+                            <div className="row"><span className="font-weight-bold">Category:</span><span>&nbsp;{this.capitalizeFirst(purchase.category)}</span></div>
+                            <div className="row"><span className="font-weight-bold">Item:</span><span>&nbsp;{this.capitalizeFirst(purchase.item_name)}</span></div>
+                            <div className="row"><span className="font-weight-bold">Cost:</span><span>&nbsp;${purchase.cost}</span></div>
+                            <div className="row"><span className="font-weight-bold">Quantity:</span><span>&nbsp;{purchase.quantity}</span></div>
+                            <div className="row"><span className="font-weight-bold">Status:</span><span>&nbsp;{this.capitalizeFirst(purchase.status)}</span></div>
+                        </div>
+                        {this.getTributeName(purchase.payer_email)} will be refunded ${purchase.cost}.
+                    </div>
                 </>
             );
         }
+    }
+    capitalizeFirst(string){
+        return string.slice(0, 1).toUpperCase() + string.slice(1, string.length).toLowerCase();
+    }
+    getTributeName = (email) => {
+        for (let tribute of this.props.tributes){
+            if(email === tribute.email){
+                return (tribute.first_name + ' ' + tribute.last_name);
+            }
+        }
+        return 'Unrecognized Tribute';
+    }
+    getMentorName = (email) => {
+        for (let user of this.props.mentors){
+            if(email === user.email){
+                return (user.first_name + ' ' + user.last_name);
+            }
+        }
+        return 'Unrecognized Tribute';
+    }
+    formatTimeFromInt(time){
+        const hours = Math.floor(time / 60);
+        const minutes = (time % 60).toLocaleString(undefined, { minimumIntegerDigits: 2 });
+        return(`${hours}:${minutes}`);
     }
 
     renderFooter = () => {

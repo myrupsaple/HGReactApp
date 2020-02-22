@@ -4,7 +4,8 @@ import { Form, Button, Modal } from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 
 import { 
-    fetchLifeEvent, 
+    fetchLifeEvent,
+    fetchTribute, 
     createLifeEvent,
     updateLifeEvent,
     lifeEventUpdateTributeStatsLives,
@@ -38,6 +39,7 @@ class LifeEventForm extends React.Component {
             // Form validation
             emailValid: 1,
             secondaryValid: 0,
+            showMethodWarning: 0,
             formValid: 1,
             // Modal handling
             showModal: true,
@@ -58,7 +60,8 @@ class LifeEventForm extends React.Component {
         this._isMounted = true;
         if(this.props.mode === 'edit'){
             const response = await this.props.fetchLifeEvent(this.props.id);
-            if(!response){
+            const response2 = await this.props.fetchTribute(this.props.lifeEvent.tribute_email);
+            if(!response || !response2){
                 return null;
             }
             
@@ -67,9 +70,11 @@ class LifeEventForm extends React.Component {
             const minutes = (time % 60).toLocaleString(undefined, { minimumIntegerDigits: 2 });;
 
             const lifeEvent = this.props.lifeEvent;
+            const tribute = this.props.tribute;
             if(this._isMounted){
                 this.setState({
                     tribute_email: lifeEvent.tribute_email,
+                    tributeName: `${tribute.first_name} ${tribute.last_name}`,
                     originalEmail: lifeEvent.tribute_email,
                     type: lifeEvent.type,
                     originalType: lifeEvent.type,
@@ -80,11 +85,10 @@ class LifeEventForm extends React.Component {
                     notes: lifeEvent.notes,
                     emailValid: 0
                 })
-                // if(lifeEvent.method === 'combat'){
-                //     this.setState({
+            }
 
-                //     })
-                // }
+            if(lifeEvent.method === 'combat'){
+                this.setState({ showMethodWarning: true });
             }
         }
     }
@@ -126,7 +130,7 @@ class LifeEventForm extends React.Component {
                 method: 'combat', 
                 notes: 'Combat notes will be automatically generated on form submission', 
                 allowNotes: false,
-                secondaryValid: 1
+                secondaryValid: 1,
             }) 
         };
     }
@@ -140,13 +144,15 @@ class LifeEventForm extends React.Component {
             this.setState({ 
                 notes: 'Combat notes will be automatically generated on form submission',
                 allowNotes: false,
-                secondaryValid: 1
+                secondaryValid: 1,
+                showMethodWarning: true
             });
         } else {
             this.setState({ 
                 notes: 'None',
                 allowNotes: true,
-                secondaryValid: 0
+                secondaryValid: 0,
+                showMethodWarning: false
             });
         }
     }
@@ -231,15 +237,21 @@ class LifeEventForm extends React.Component {
 
             if(this.state.method === 'combat'){
                 lifeEventSecondary.id = this.props.id + 1;
-                const response = await this.props.updateLifeEvent(lifeEventSecondary);
-                if(!response){
+                // Fetch the original slayer from the paired life event so that we can reduce their kill count
+                const response = await this.props.fetchLifeEvent(lifeEventSecondary.id);
+                // These two items must be processed, even if the paired life event does not exist
+                const response2 = await this.props.updateLifeEvent(lifeEventSecondary);
+                const response3 = await this.props.lifeEventUpdateTributeStatsKills(
+                    lifeEventSecondary.email, 'create');
+                if(!response || !response2 || !response3){
                     this.setState({ apiError: true });
                     return null;
                 }
 
-                const response2 = await this.props.lifeEventUpdateTributeStatsKills(
-                    lifeEventSecondary.email, 'create');
-                if(!response2){
+                // Reduce the kill count if the paired life event has not yet been deleted.
+                const response4 = await this.props.lifeEventUpdateTributeStatsKills(
+                    this.props.lifeEvent.tribute_email, 'delete');
+                if(!response3 || !response4){
                     this.setState({ apiError: true });
                     return null;
                 }
@@ -333,7 +345,7 @@ class LifeEventForm extends React.Component {
                     <div className="col-12"><Form.Group controlId="tribute">
                         <Form.Label>Tribute Name*</Form.Label>    
                         <Form.Control 
-                            defaultValue={this.state.tribute_email} 
+                            value={`${this.state.tributeName} || ${this.state.tribute_email}`} 
                             onChange={this.handleTribute} 
                             as="select" autoComplete="off"
                         >
@@ -357,6 +369,7 @@ class LifeEventForm extends React.Component {
                     <div className="col-6"><Form.Group controlId="method">
                         <Form.Label>Method*</Form.Label>    
                             {this.renderMethodChoices()}
+                            {this.showMethodWarning()}
                     </Form.Group></div>
                 </Form.Row>
                 {this.renderSecondaryChoices()}
@@ -412,6 +425,15 @@ class LifeEventForm extends React.Component {
             );
         } else {
             return null;
+        }
+    }
+    showMethodWarning(){
+        if(this.state.showMethodWarning){
+            return(
+                <p className="coolor-text-yellow-darken-3" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#9888;</span> If set to 'combat', the method of this life event cannot be edited later on.
+                </p>
+            );
         }
     }
     renderFormValidation = () => {
@@ -480,6 +502,7 @@ class LifeEventForm extends React.Component {
                     value={this.state.method}
                     onChange={this.handleMethod}
                     as="select"
+                    disabled={this.props.mode === 'edit' && this.props.lifeEvent.method === 'combat'}
                 >
                     <option value="combat">Combat</option>
                     <option value="food_resource">Food Resource</option>
@@ -556,7 +579,8 @@ class LifeEventForm extends React.Component {
         }
     }
 
-    render(){
+    render = () => {
+        console.log(this.state);
         return(
             <Modal show={this.state.showModal} onHide={this.handleClose}>
                 <Modal.Header>
@@ -581,13 +605,15 @@ class LifeEventForm extends React.Component {
 const mapStateToProps = state => {
     return {
         lifeEvent: state.selectedLifeEvent,
-        gameState: state.gameState
+        gameState: state.gameState,
+        tribute: state.selectedTribute
     };
 }
 
 export default connect(mapStateToProps, 
 { 
     fetchLifeEvent,
+    fetchTribute,
     createLifeEvent,
     updateLifeEvent,
     lifeEventUpdateTributeStatsLives,

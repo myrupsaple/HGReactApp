@@ -15,6 +15,9 @@ class AdjustStats extends React.Component {
 
         this.state = { 
             name: '',
+            funds_remaining: 0,
+            total_donations: 0,
+            total_purchases: 0,
             food_used: 0,
             food_missed: 0,
             water_used: 0,
@@ -34,6 +37,10 @@ class AdjustStats extends React.Component {
             showModal: true,
             firstSubmit: false,
             finalConfirm: false,
+            // Validation
+            fundsRemainingValid: 1,
+            totalDonationsValid: 1,
+            totalPurchasesValid: 1,
             foodUsedValid: 1,
             foodMissedValid: 1,
             waterUsedValid: 1,
@@ -52,6 +59,9 @@ class AdjustStats extends React.Component {
             apiError: false
         };
 
+        this.handleFundsRemaining = this.handleFundsRemaining.bind(this);
+        this.handleTotalDonations = this.handleTotalDonations.bind(this);
+        this.handleTotalPurchases = this.handleTotalPurchases.bind(this);
         this.handleFoodUsed = this.handleFoodUsed.bind(this);
         this.handleFoodMissed = this.handleFoodMissed.bind(this);
         this.handleWaterUsed = this.handleWaterUsed.bind(this);
@@ -80,6 +90,9 @@ class AdjustStats extends React.Component {
         const tributeStats = this.props.tributeStats;
         this.setState({
             name: `${tributeStats.first_name} ${tributeStats.last_name}`,
+            funds_remaining: tributeStats.funds_remaining,
+            total_donations: tributeStats.total_donations,
+            total_purchases: tributeStats.total_purchases,
             food_used: tributeStats.food_used,
             food_missed: tributeStats.food_missed,
             water_used: tributeStats.water_used,
@@ -95,6 +108,10 @@ class AdjustStats extends React.Component {
             lives_lost: tributeStats.lives_lost,
             kill_count: tributeStats.kill_count,
             has_immunity: tributeStats.has_immunity,
+
+            fundsRemainingValid: 0,
+            totalDonationsValid: 0,
+            totalPurchasesValid: 0,
             foodUsedValid: 0,
             foodMissedValid: 0,
             waterUsedValid: 0,
@@ -112,80 +129,95 @@ class AdjustStats extends React.Component {
         });
     }
 
+    handleFundsRemaining(event) {
+        const input = event.target.value;
+        this.setState({ funds_remaining: input });
+        this.handleValidationState(input, 'fundsRemainingValid', 500, 3000);
+    }
+    handleTotalDonations(event) {
+        const input = event.target.value;
+        this.setState({ total_donations: input });
+        this.handleValidationState(input, 'totalDonationsValid', 500, 3000);
+    }
+    handleTotalPurchases(event) {
+        const input = event.target.value;
+        this.setState({ total_purchases: input });
+        this.handleValidationState(input, 'totalPurchasesValid', 500, 3000);
+    }
     handleFoodUsed(event) {
         const input = event.target.value;
         this.setState({ food_used: input });
-        this.handleValidationState(input, 'foodUsedValid', 10);
+        this.handleValidationState(input, 'foodUsedValid', 5, 10);
     }
     handleFoodMissed(event) {
         const input = event.target.value;
         this.setState({ food_missed: input });
-        this.handleValidationState(input, 'foodMissedValid', 10);
+        this.handleValidationState(input, 'foodMissedValid', 5, 10);
     }
     handleWaterUsed(event) {
         const input = event.target.value;
         this.setState({ water_used: input });
-        this.handleValidationState(input, 'waterUsedValid', 10);
+        this.handleValidationState(input, 'waterUsedValid', 5, 10);
     }
     handleWaterMissed(event) {
         const input = event.target.value;
         this.setState({ water_missed: input });
-        this.handleValidationState(input, 'waterMissedValid', 10);
+        this.handleValidationState(input, 'waterMissedValid', 5, 10);
     }
     handleMedicineUsed(event) {
         const input = event.target.value;
         this.setState({ medicine_used: input });
-        this.handleValidationState(input, 'medicineUsedValid', 10);
+        this.handleValidationState(input, 'medicineUsedValid', 5, 10);
     }
     handleMedicineMissed(event) {
         const input = event.target.value;
         this.setState({ medicine_missed: input });
-        this.handleValidationState(input, 'medicineMissedValid', 10);
+        this.handleValidationState(input, 'medicineMissedValid', 5, 10);
     }
     handleRouletteUsed(event) {
         const input = event.target.value;
         this.setState({ roulette_used: input });
-        this.handleValidationState(input, 'rouletteUsedValid', 10);
+        this.handleValidationState(input, 'rouletteUsedValid', 5, 10);
     }
     handleGoldenUsed(event) {
         const input = event.target.value;
         this.setState({ golden_used: input });
-        this.handleValidationState(input, 'goldenUsedValid', 10);
+        this.handleValidationState(input, 'goldenUsedValid', 5, 10);
     }
     handleLivesRemaining(event) {
         const input = event.target.value;
         this.setState({ lives_remaining: input });
-        this.handleValidationState(input, 'livesRemainingValid', 10);
+        this.handleValidationState(input, 'livesRemainingValid', 5, 10);
     }
     handleLifeResources(event) {
         const input = event.target.value;
         this.setState({ life_resources: input });
-        this.handleValidationState(input, 'lifeResourcesValid', 10);
+        this.handleValidationState(input, 'lifeResourcesValid', 5, 10);
     }
     handleLivesExempt(event) {
         const input = event.target.value;
         this.setState({ lives_exempt: input });
-        this.handleValidationState(input, 'livesExemptValid', 10);
+        this.handleValidationState(input, 'livesExemptValid', 5, 10);
     }
     handleLivesPurchased(event) {
         const input = event.target.value;
         this.setState({ lives_purchased: input });
-        this.handleValidationState(input, 'livesPurchasedValid', 10);
+        this.handleValidationState(input, 'livesPurchasedValid', 5, 10);
     }
     handleLivesLost(event) {
         const input = event.target.value;
         this.setState({ lives_lost: input });
-        this.handleValidationState(input, 'livesLostValid', 10);
+        this.handleValidationState(input, 'livesLostValid', 5, 10);
     }
     handleKillCount(event) {
         const input = event.target.value;
         this.setState({ kill_count: input });
-        this.handleValidationState(input, 'killCountValid', 20);
+        this.handleValidationState(input, 'killCountValid', 10, 20);
     }
     handleImmunity(event){
         this.setState({ has_immunity: event.target.value });
     }
-    handleValidationState(input, key, warnThreshold){
+    handleValidationState(input, key, warnThreshold, absThreshold){
         var stateObject = {};
         if(input === ''){
             stateObject[key] = 2;
@@ -193,9 +225,9 @@ class AdjustStats extends React.Component {
             stateObject[key] = 3;
         } else if(input < 0){
             stateObject[key] = 4;
-        } else if(Math.floor(input) > warnThreshold && Math.floor(input) <= 50){
+        } else if(Math.floor(input) >= warnThreshold && Math.floor(input) <= absThreshold){
             stateObject[key] = 5;
-        } else if(Math.floor(input) > 50){
+        } else if(Math.floor(input) > absThreshold){
             stateObject[key] = 6;
         } else if(input % 1 !== 0){
             stateObject[key] = 7;
@@ -206,10 +238,11 @@ class AdjustStats extends React.Component {
     }
 
     handleSubmit = async () => {
-        const indicators = ['foodUsedValid', 'foodMissedValid', 'waterUsedValid', 
-        'waterMissedValid', 'medicineUsedValid', 'medicineMissedValid', 'rouletteUsedValid',
-        'goldenUsedValid', 'livesRemainingValid', 'lifeResourcesValid', 'livesExemptValid',
-        'livesPurchasedValid', 'livesLostValid', 'killCountValid'];
+        const indicators = ['fundsRemainingValid', 'totalDonationsValid', 'totalPurchasesValid',
+        'foodUsedValid', 'foodMissedValid', 'waterUsedValid', 'waterMissedValid', 
+        'medicineUsedValid', 'medicineMissedValid', 'rouletteUsedValid', 'goldenUsedValid', 
+        'livesRemainingValid', 'lifeResourcesValid', 'livesExemptValid', 'livesPurchasedValid', 
+        'livesLostValid', 'killCountValid'];
 
         var validationCounter = 0;
 
@@ -231,6 +264,9 @@ class AdjustStats extends React.Component {
 
         const tributeStats = {
             id: this.props.id,
+            funds_remaining: this.state.funds_remaining,
+            total_donations: this.state.total_donations,
+            total_purchases: this.state.total_purchases,
             food_used: this.state.food_used,
             food_missed: this.state.food_missed,
             water_used: this.state.water_used,
@@ -323,6 +359,9 @@ class AdjustStats extends React.Component {
         return(
             <div style={{ marginLeft: "20px" }}>
                 <div className="row"><span className="font-weight-bold">Tribute Name:</span><span>&nbsp;{this.props.tributeStats.first_name} {this.props.tributeStats.last_name}</span></div>
+                <div className="row"><span className="font-weight-bold">Funds Remaining:</span><span>&nbsp;{this.state.funds_remaining}</span></div>
+                <div className="row"><span className="font-weight-bold">Total Donations:</span><span>&nbsp;{this.state.total_donations}</span></div>
+                <div className="row"><span className="font-weight-bold">Total Purchases:</span><span>&nbsp;{this.state.total_purchases}</span></div>
                 <div className="row"><span className="font-weight-bold">Food Used:</span><span>&nbsp;{this.state.food_used}</span></div>
                 <div className="row"><span className="font-weight-bold">Food Missed:</span><span>&nbsp;{this.state.food_missed}</span></div>
                 <div className="row"><span className="font-weight-bold">Water Used:</span><span>&nbsp;{this.state.water_used}</span></div>
@@ -346,6 +385,35 @@ class AdjustStats extends React.Component {
         return(
             <Form>
                 <Form.Row>
+                    <div className="col-4"><Form.Group controlId="setFundsRemaining">
+                        <Form.Label>Funds Remaining</Form.Label>
+                        <Form.Control
+                            value={this.state.funds_remaining}
+                            onChange={this.handleFundsRemaining}
+                            autoComplete="off"
+                        />
+                        {this.renderFieldValidation('fundsRemainingValid', 'Funds remaining', '$500', '$3000')}
+                    </Form.Group></div>
+                    <div className="col-4"><Form.Group controlId="setTotalDonations">
+                        <Form.Label>Total Donations</Form.Label>
+                        <Form.Control
+                            value={this.state.total_donations}
+                            onChange={this.handleTotalDonations}
+                            autoComplete="off"
+                        />
+                        {this.renderFieldValidation('totalDonationsValid', 'Total donations', '$500', '$3000')}
+                    </Form.Group></div>
+                    <div className="col-4"><Form.Group controlId="setTotalPurchases">
+                        <Form.Label>Total Purchases</Form.Label>
+                        <Form.Control
+                            value={this.state.total_purchases}
+                            onChange={this.handleTotalPurchases}
+                            autoComplete="off"
+                        />
+                        {this.renderFieldValidation('totalPurchasesValid', 'Total purchases', '$500', '$3000')}
+                    </Form.Group></div>
+                </Form.Row>
+                <Form.Row>
                     <div className="col-4"><Form.Group controlId="setFoodUsed">
                         <Form.Label>Food Used</Form.Label>
                         <Form.Control
@@ -353,7 +421,7 @@ class AdjustStats extends React.Component {
                             onChange={this.handleFoodUsed}
                             autoComplete="off"
                         />
-                        {this.renderFieldValidation('foodUsedValid', 'Food used', 10)}
+                        {this.renderFieldValidation('foodUsedValid', 'Food used', 5, 10)}
                     </Form.Group></div>
                     <div className="col-4"><Form.Group controlId="setFoodMissed">
                         <Form.Label>Food Missed</Form.Label>
@@ -362,7 +430,7 @@ class AdjustStats extends React.Component {
                             onChange={this.handleFoodMissed}
                             autoComplete="off"
                         />
-                        {this.renderFieldValidation('foodMissedValid', 'Food missed', 10)}
+                        {this.renderFieldValidation('foodMissedValid', 'Food missed', 5, 10)}
                     </Form.Group></div>
                     <div className="col-4"><Form.Group controlId="setWaterUsed">
                         <Form.Label>Water Used</Form.Label>
@@ -371,7 +439,7 @@ class AdjustStats extends React.Component {
                             onChange={this.handleWaterUsed}
                             autoComplete="off"
                         />
-                        {this.renderFieldValidation('waterUsedValid', 'Water used', 10)}
+                        {this.renderFieldValidation('waterUsedValid', 'Water used', 5, 10)}
                     </Form.Group></div>
                 </Form.Row>
                 <Form.Row>
@@ -382,7 +450,7 @@ class AdjustStats extends React.Component {
                             onChange={this.handleWaterMissed}
                             autoComplete="off"
                         />
-                        {this.renderFieldValidation('waterMissedValid', 'Water missed', 10)}
+                        {this.renderFieldValidation('waterMissedValid', 'Water missed', 5, 10)}
                     </Form.Group></div>
                     <div className="col-4"><Form.Group controlId="setMedicineUsed">
                         <Form.Label>Medicine Used</Form.Label>
@@ -391,7 +459,7 @@ class AdjustStats extends React.Component {
                             onChange={this.handleMedicineUsed}
                             autoComplete="off"
                         />
-                        {this.renderFieldValidation('medicineUsedValid', 'Medicine used', 10)}
+                        {this.renderFieldValidation('medicineUsedValid', 'Medicine used', 5, 10)}
                     </Form.Group></div>
                     <div className="col-4"><Form.Group controlId="setMedicineMissed">
                         <Form.Label>Medicine Missed</Form.Label>
@@ -400,7 +468,7 @@ class AdjustStats extends React.Component {
                             onChange={this.handleMedicineMissed}
                             autoComplete="off"
                         />
-                        {this.renderFieldValidation('medicineMissedValid', 'Medicine missed', 10)}
+                        {this.renderFieldValidation('medicineMissedValid', 'Medicine missed', 5, 10)}
                     </Form.Group></div>
                 </Form.Row>
                 <Form.Row>
@@ -411,7 +479,7 @@ class AdjustStats extends React.Component {
                             onChange={this.handleRouletteUsed}
                             autoComplete="off"
                         />
-                        {this.renderFieldValidation('rouletteUsedValid', 'Roulette used', 10)}
+                        {this.renderFieldValidation('rouletteUsedValid', 'Roulette used', 5, 10)}
                     </Form.Group></div>
                     <div className="col-4"><Form.Group controlId="setGoldenUsed">
                         <Form.Label>Golden Used</Form.Label>
@@ -420,7 +488,7 @@ class AdjustStats extends React.Component {
                             onChange={this.handleGoldenUsed}
                             autoComplete="off"
                         />
-                        {this.renderFieldValidation('goldenUsedValid', 'Golden used', 10)}
+                        {this.renderFieldValidation('goldenUsedValid', 'Golden used', 5, 10)}
                     </Form.Group></div>
                     <div className="col-4"><Form.Group controlId="setLivesRemaining">
                         <Form.Label>Lives Remaining</Form.Label>
@@ -429,7 +497,7 @@ class AdjustStats extends React.Component {
                             onChange={this.handleLivesRemaining}
                             autoComplete="off"
                         />
-                        {this.renderFieldValidation('livesRemainingValid', 'Lives remaining', 10)}
+                        {this.renderFieldValidation('livesRemainingValid', 'Lives remaining', 5, 10)}
                     </Form.Group></div>
                 </Form.Row>
                 <Form.Row>
@@ -440,7 +508,7 @@ class AdjustStats extends React.Component {
                             onChange={this.handleLifeResources}
                             autoComplete="off"
                         />
-                        {this.renderFieldValidation('lifeResourcesValid', 'Life resources', 10)}
+                        {this.renderFieldValidation('lifeResourcesValid', 'Life resources', 5, 10)}
                     </Form.Group></div>
                     <div className="col-4"><Form.Group controlId="setLivesExempt">
                         <Form.Label>Lives Exempt</Form.Label>
@@ -449,7 +517,7 @@ class AdjustStats extends React.Component {
                             onChange={this.handleLivesExempt}
                             autoComplete="off"
                         />
-                        {this.renderFieldValidation('livesExemptValid', 'Lives exempt', 10)}
+                        {this.renderFieldValidation('livesExemptValid', 'Lives exempt', 5, 10)}
                     </Form.Group></div>
                     <div className="col-4"><Form.Group controlId="setLivesPurchased">
                         <Form.Label>Lives Purchased</Form.Label>
@@ -458,7 +526,7 @@ class AdjustStats extends React.Component {
                             onChange={this.handleLivesPurchased}
                             autoComplete="off"
                         />
-                        {this.renderFieldValidation('livesPurchasedValid', 'Lives purchased', 10)}
+                        {this.renderFieldValidation('livesPurchasedValid', 'Lives purchased', 5, 10)}
                     </Form.Group></div>
                 </Form.Row>
                 <Form.Row>
@@ -469,7 +537,7 @@ class AdjustStats extends React.Component {
                             onChange={this.handleLivesLost}
                             autoComplete="off"
                         />
-                        {this.renderFieldValidation('livesLostValid', 'Lives lost', 10)}
+                        {this.renderFieldValidation('livesLostValid', 'Lives lost', 5, 10)}
                     </Form.Group></div>
                     <div className="col-4"><Form.Group controlId="setKillCount">
                         <Form.Label>Kill Count</Form.Label>
@@ -478,7 +546,7 @@ class AdjustStats extends React.Component {
                             onChange={this.handleKillCount}
                             autoComplete="off"
                         />
-                        {this.renderFieldValidation('killCountValid', 'Kill count', 20)}
+                        {this.renderFieldValidation('killCountValid', 'Kill count', 10, 20)}
                     </Form.Group></div>
                     <div className="col-4"><Form.Group controlId="setImmunity">
                         <Form.Label>Has Immunity?</Form.Label>
@@ -497,7 +565,7 @@ class AdjustStats extends React.Component {
         );
     }
 
-    renderFieldValidation = (stateName, fieldName, warnThreshold) => {
+    renderFieldValidation = (stateName, fieldName, warnThreshold, absThreshold) => {
         if(this.state[stateName] === 2){
             return(
                 <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
@@ -519,13 +587,13 @@ class AdjustStats extends React.Component {
         } else if(this.state[stateName] === 5) {
             return(
                 <p className="coolor-text-yellow-darken-3" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#9888;</span> Value should be less than {warnThreshold}
+                    <span role="img" aria-label="check/x">&#9888;</span> Warning threshold for this value is set to {warnThreshold}. Please proceed with caution.
                 </p>
             );
         } else if(this.state[stateName] === 6) {
             return(
                 <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Value must be less than 50
+                    <span role="img" aria-label="check/x">&#10071;</span> Value must be less than {absThreshold}
                 </p>
             );
         } else if(this.state[stateName] === 7) {

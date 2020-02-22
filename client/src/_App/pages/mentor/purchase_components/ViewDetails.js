@@ -46,15 +46,12 @@ class ViewDetails extends React.Component{
                 <div className="row"><span className="font-weight-bold">Cost:</span><span>&nbsp;${purchase.cost}</span></div>
                 <div className="row"><span className="font-weight-bold">Quantity:</span><span>&nbsp;{purchase.quantity}</span></div>
                 <div className="row"><span className="font-weight-bold">Status:</span><span>&nbsp;{this.capitalizeFirst(purchase.status)}</span></div>
-                <div className="row"><span className="font-weight-bold">Notes:</span><span>&nbsp;{this.capitalizeFirst(purchase.notes)}</span></div>
             </div>
         );
     }
-
     capitalizeFirst(string){
         return string.slice(0, 1).toUpperCase() + string.slice(1, string.length).toLowerCase();
     }
-
     getTributeName = (email) => {
         for (let tribute of this.props.tributes){
             if(email === tribute.email){
@@ -63,7 +60,6 @@ class ViewDetails extends React.Component{
         }
         return 'Unrecognized Tribute';
     }
-
     getMentorName = (email) => {
         for (let user of this.props.mentors){
             if(email === user.email){
@@ -72,7 +68,6 @@ class ViewDetails extends React.Component{
         }
         return 'Unrecognized Tribute';
     }
-
     formatTimeFromInt(time){
         const hours = Math.floor(time / 60);
         const minutes = (time % 60).toLocaleString(undefined, { minimumIntegerDigits: 2 });

@@ -367,9 +367,9 @@ class GameStatus extends React.Component {
                             <li className={`list-group-item ${bgCoolor}`} key={tribute.id}>
                                 <div className="row">
                                     <div className="col">{tribute.first_name} {tribute.last_name}</div>
-                                    <div className="col">{tribute.funds_remaining}</div>
-                                    <div className="col">{tribute.total_donations}</div>
-                                    <div className="col">{tribute.total_purchases}</div>
+                                    <div className="col">${tribute.funds_remaining}</div>
+                                    <div className="col">${tribute.total_donations}</div>
+                                    <div className="col">${tribute.total_purchases}</div>
                                     <div className="col">{warnings}</div>
                                 </div>
                             </li>
@@ -492,13 +492,13 @@ class GameStatus extends React.Component {
             warnings += ' ~ Tribute has 2 lives remaining';
             bgCoolor = 'coolor-bg-yellow-lighten-4';
         } else if(tribute.lives_remaining === 1){
-            warnings += ' ~ Tribute has 1 lives remaining';
+            warnings += ' ~ Tribute has 1 life remaining';
             bgCoolor = 'coolor-bg-red-lighten-4';
         } else if(tribute.lives_remaining === 0){
             warnings = 'Tribute has been eliminated';
             bgCoolor = 'coolor-bg-red-lighten-1';
         }
-        if(tribute.funds < 100){
+        if(tribute.funds_remaining < 100){
             warnings += ' ~ Tribute is running low on funds';
             if(!bgCoolor.includes('coolor-bg-red-lighten')) bgCoolor = 'coolor-bg-orange-lighten-4';
         }

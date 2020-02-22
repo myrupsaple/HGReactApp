@@ -257,7 +257,7 @@ class AdjustSettings extends React.Component {
                 <div className="row"><span className="font-weight-bold">Water Required:</span><span>&nbsp;{this.state.water_required}</span></div>
                 <div className="row"><span className="font-weight-bold">Medicine Required:</span><span>&nbsp;{this.state.medicine_required}</span></div>
                 <div className="row"><span className="font-weight-bold">Current Price Tier:</span><span>&nbsp;{this.state.current_price_tier}</span></div>
-                <div className="row"><span className="font-weight-bold">Game Active?</span><span>&nbsp;{this.state.game_active}</span></div>
+                <div className="row"><span className="font-weight-bold">Game Active?</span><span>&nbsp;{this.state.game_active ? 'Yes' : 'No'}</span></div>
             </div>
         );
     }

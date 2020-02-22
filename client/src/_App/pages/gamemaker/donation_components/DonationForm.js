@@ -125,6 +125,8 @@ class DonationForm extends React.Component {
             this.setState({ amountValid: 3 });
         } else if(Math.floor(input) <= 0){
             this.setState({ amountValid: 4 });
+        } else if(Math.floor(input) > 1000){
+            this.setState({ amountValid: 5 });
         } else {
             this.setState({ amountValid: 0 });
         }
@@ -354,6 +356,12 @@ class DonationForm extends React.Component {
             return(
                 <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
                     <span role="img" aria-label="check/x">&#10071;</span> Amount must be positive
+                </p>
+            );
+        } else if(this.state.amountValid === 5) {
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Amount cannot exceed $1000
                 </p>
             );
         } else if(this.state.amountValid === 0) {

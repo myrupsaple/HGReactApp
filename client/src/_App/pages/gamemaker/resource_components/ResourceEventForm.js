@@ -39,7 +39,9 @@ class ResourceEventForm extends React.Component {
             notes: 'None',
             // Validation
             emailValid: 1,
+            notesValid: 0,
             formValid: 1,
+            typeWarning: false,
             // Handle Modal
             showModal: true,
             submitted: false,
@@ -63,8 +65,16 @@ class ResourceEventForm extends React.Component {
             }
 
             var notes = this.props.resourceEvent.notes;
-            if(this.props.resourceEvent.method === 'code' && this.props.resourceEvent.notes.includes('golden')){
+            var type = this.props.resourceEvent.type;
+            var typeSecondary = type;
+
+            if(this.props.resourceEvent.method === 'code' && this.props.resourceEvent.notes.includes('(golden)')){
                 notes = notes.split(' ')[0];
+                const baseType = type;
+                type = 'golden';
+                typeSecondary = `golden-${baseType}`;
+                this.handleType({ target: { value: type }});
+                this.handleMethod({ target: { value: baseType }});
             }
             
             const time = this.props.resourceEvent.time;
@@ -76,15 +86,19 @@ class ResourceEventForm extends React.Component {
                 this.setState({
                     tribute: `${this.getTributeName(resourceEvent.tribute_email)} || ${resourceEvent.tribute_email}`,
                     tribute_email: resourceEvent.tribute_email,
+                    tributeName: this.getTributeName(resourceEvent.tribute_email),
                     originalEmail: resourceEvent.tribute_email,
-                    type: resourceEvent.type,
-                    originalType: resourceEvent.type,
+                    type: type,
+                    typeSecondary: typeSecondary,
+                    originalType: typeSecondary,
                     method: resourceEvent.method,
+                    originalMethod: resourceEvent.method,
                     time: time,
                     timeFormatted: `${hours}:${minutes}`,
                     notes: notes,
                     originalNotes: notes,
-                    emailValid: 0
+                    emailValid: 0,
+                    notesValid: 0
                 })
             }
         }
@@ -105,7 +119,7 @@ class ResourceEventForm extends React.Component {
         if(input === 'golden'){
             this.setState({ type: 'golden', typeSecondary: 'golden-food', method: 'code' })
         } else {
-            this.setState({ type: input, typeSecondary: input });
+            this.setState({ type: input, typeSecondary: input, method: 'code' });
         }
     }
     handleMethod(event){
@@ -128,50 +142,62 @@ class ResourceEventForm extends React.Component {
         });
     }
     handleNotes(event){
-        this.setState({ notes: event.target.value });
+        const input = event.target.value;
+        this.setState({ notes: input });
+
+        if(input.includes('(golden)')){
+            this.setState({ notesValid: 2 });
+        } else {
+            this.setState({ notesValid: 0 });
+        }
+        
     }
 
-    handleFormSubmit = async () => {
+    handleFormSubmit = async (event) => {
+        event.preventDefault();
+        
         if(this.state.emailValid === 1){
             this.setState({ emailValid: 2 });
         }
 
-        if(this.state.emailValid !== 0){
+        if(this.state.emailValid + this.state.notesValid !== 0){
             this.setState({ formValid: 2 });
             return null;
-        }       
+        }
+
+        console.log(this.state.typeSecondary);
 
         const resourceEventObject = {
             email: this.state.tribute_email,
-            type: this.state.secondaryType,
+            type: this.state.typeSecondary,
             method: this.state.method,
             time: this.state.time,
             notes: encodeURIComponent(this.state.notes)
         };
 
+        console.log(resourceEventObject)
+
         var code = '';
         if(resourceEventObject.method === 'code'){
             code = resourceEventObject.notes.toLowerCase();
 
-            if(this.props.mode === 'create'){
-                const response = await this.props.fetchResourceListItemByCode(code);
-                if(!response){
-                    this.setState({ apiError: true });
-                    return null;
-                } else {
-                    this.setState({ apiError: false });
-                }
-                // If empty, code was invalid
-                if(Object.keys(this.props.code).length === 0){
-                    this.setState({ formValid: 3 });
-                    return null;
-                } else if(this.props.code.type !== resourceEventObject.type && this.props.code.type !== 'golden'){
-                    this.setState({ formValid: 4 });
-                    return null;
-                } else if(this.props.code.times_used >= this.props.code.max_uses){
-                    this.setState({ formValid: 5 });
-                    return null;
-                }
+            const response = await this.props.fetchResourceListItemByCode(code);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            } else {
+                this.setState({ apiError: false });
+            }
+            // If empty, code was invalid
+            if(Object.keys(this.props.code).length === 0){
+                this.setState({ formValid: 3 });
+                return null;
+            } else if(this.props.code.type !== resourceEventObject.type && this.props.code.type !== 'golden'){
+                this.setState({ formValid: 4 });
+                return null;
+            } else if(this.props.code.times_used >= this.props.code.max_uses){
+                this.setState({ formValid: 5 });
+                return null;
             }
 
             if(resourceEventObject.type.includes('golden')){
@@ -185,12 +211,14 @@ class ResourceEventForm extends React.Component {
         }
 
         // Give an error if an identical life event is found since this is the only way of accessing the paired event
-        const response = await this.props.fetchLifeEventByTerms(resourceEventObject.email, resourceEventObject.time, resourceEventObject.notes);
-        if(!response){
-            this.setState({ apiError: true });
-            return null;
-        } else if(Object.keys(this.props.lifeEvent).length !== 0 && this.props.mode === 'create'){
-            this.setState({ formValid: 6 });
+        if(resourceEventObject.type === 'life'){
+            const response = await this.props.fetchLifeEventByTerms(resourceEventObject.email, resourceEventObject.time, resourceEventObject.notes);
+            if(!response){
+                this.setState({ apiError: true });
+                return null;
+            } else if(Object.keys(this.props.lifeEvent).length !== 0 && this.props.mode === 'create'){
+                this.setState({ formValid: 6 });
+            }
         }
 
         if(this.props.mode === 'edit'){
@@ -226,18 +254,20 @@ class ResourceEventForm extends React.Component {
             }
 
             // Resource list counts updating (will delete 'used_by' if updated)
-            if(resourceEventObject.method === 'code'){
-                const response = await this.props.fetchTributes();
-                if(!response){
-                    this.setState({ apiError: true });
-                    return null;
-                }
+            const response4 = await this.props.fetchTributes();
+            if(!response4){
+                this.setState({ apiError: true });
+                return null;
+            }
+            if(this.state.originalMethod === 'code'){
                 const response2 = await this.props.resourceEventUpdateResourceList(
-                    this.state.originalNotes, code, 'edit');
+                    this.state.originalEmail, this.state.originalNotes, 'edit');
                 if(!response2){
                     this.setState({ apiError: true });
                     return null;
                 }
+            }
+            if(resourceEventObject.method === 'code'){
                 const response3 = await this.props.resourceEventUpdateResourceList(
                     this.getTributeName(resourceEventObject.email), code, 'create');
                 if(!response3){
@@ -336,7 +366,7 @@ class ResourceEventForm extends React.Component {
         date2.setHours(gameTime.getHours() + 5);
         date2.setMinutes(gameTime.getMinutes());
         return(
-            <Form>
+            <Form onSubmit={this.handleFormSubmit}>
                 <Form.Row>
                     <div className="col-4"><Form.Group controlId="time">
                         <Form.Label>Resource Event Time*</Form.Label>
@@ -372,27 +402,22 @@ class ResourceEventForm extends React.Component {
                             value={this.state.type}
                             onChange={this.handleType}
                             as="select"
-                            disabled={this.props.mode === 'edit'}
                         >
-                            <option value="food">Food</option>
-                            <option value="water">Water</option>
-                            <option value="medicine">Medicine</option>
-                            <option value="roulette">Roulette</option>
-                            <option value="life">Life</option>
-                            <option value="golden">Golden</option>
+                            {this.renderTypeChoices()}
                         </Form.Control>
+                        {this.renderTypeWarning()}
                     </Form.Group></div>
                     <div className="col-6"><Form.Group controlId="method">
                         {this.renderMethodChoices(this.state.type)}
                     </Form.Group></div>
                     <div className="col-12"><Form.Group controlId="notes">
-                        <Form.Label>Notes (If a code was used, enter the code here)</Form.Label>    
+                        <Form.Label>{this.state.method === 'code' ? 'Resource Code (case insensitive):' : 'Notes (If a code was used, enter the code here)'}</Form.Label>    
                         <Form.Control 
                             value={this.state.notes}
                             autoComplete="off"
                             onChange={this.handleNotes}
-                            disabled={this.props.mode === 'edit'}
                         />
+                        {this.renderNotesValidation()}
                     </Form.Group></div>
                 </Form.Row>
             </Form>
@@ -410,6 +435,28 @@ class ResourceEventForm extends React.Component {
             return(
                 <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
                     <span role="img" aria-label="check/x">&#10003;</span> Tribute
+                </p>
+            );
+        } else {
+            return null;
+        }
+    }
+    renderTypeWarning = () => {
+        if(this.state.type === 'life'){
+            return(
+                <p className="coolor-text-yellow-darken-3" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#9888;</span> For life resource entries, type, method, and notes cannot be edited after submission.
+                </p>
+            );
+        } else {
+            return null;
+        }
+    }
+    renderNotesValidation = () => {
+        if(this.state.notesValid === 2){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Notes cannot contain the string '(golden)'.
                 </p>
             );
         } else {
@@ -489,16 +536,40 @@ class ResourceEventForm extends React.Component {
         );
     }
 
+    renderTypeChoices(){
+        if(this.props.mode === 'edit'){
+            return (
+                <>
+                    <option value="food">Food</option>
+                    <option value="water">Water</option>
+                    <option value="medicine">Medicine</option>
+                    <option value="roulette">Roulette</option>
+                    <option value="golden">Golden</option>
+                </>
+            );
+        } else {
+            return (
+                <>
+                    <option value="food">Food</option>
+                    <option value="water">Water</option>
+                    <option value="medicine">Medicine</option>
+                    <option value="roulette">Roulette</option>
+                    <option value="life">Life</option>
+                    <option value="golden">Golden</option>
+                </>
+            );
+        }
+    }
+
     renderMethodChoices(type){
         if(type.split('-')[0] === 'golden'){
             return(
                 <>
                 <Form.Label>Use As*</Form.Label>    
                 <Form.Control 
-                    value={this.state.type.split('-')[1]}
+                    value={this.state.typeSecondary.split('-')[1]}
                     onChange={this.handleMethod}
                     as="select"
-                    disabled={this.props.mode === 'edit'}
                 >
                     <option value="food">Food</option>
                     <option value="water">Water</option>
@@ -507,6 +578,20 @@ class ResourceEventForm extends React.Component {
                 </>
             );
             
+        } else if(type === 'roulette' || type === 'life'){
+            return(
+                <>
+                <Form.Label>Method*</Form.Label>    
+                <Form.Control 
+                value={this.state.method}
+                onChange={this.handleMethod}
+                as="select"
+                disabled={this.props.mode === 'edit' && type === 'life'}
+                >
+                    <option value="code">Code</option>
+                </Form.Control>
+                </>
+            );
         } else {
             return(
                 <>
@@ -515,7 +600,6 @@ class ResourceEventForm extends React.Component {
                 value={this.state.method}
                 onChange={this.handleMethod}
                 as="select"
-                disabled={this.props.mode === 'edit'}
                 >
                     <option value="code">Code</option>
                     <option value="purchased">Purchased</option>
@@ -558,7 +642,8 @@ class ResourceEventForm extends React.Component {
         }
     }
 
-    render(){
+    render = () => {
+        console.log(this.state);
         return(
             <Modal show={this.state.showModal} onHide={this.handleClose}>
                 <Modal.Header>

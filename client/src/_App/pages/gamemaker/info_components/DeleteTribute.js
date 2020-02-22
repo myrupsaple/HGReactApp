@@ -64,6 +64,7 @@ class DeleteTribute extends React.Component {
             modalBody = (
                 <h4>
                     Are you sure you would like to delete the account {this.props.tribute.email} for {this.props.tribute.first_name} {this.props.tribute.last_name}?
+                    This will delete their tribute stats and all associated information. This cannot be undone.
                 </h4>
             );
             renderActions = (

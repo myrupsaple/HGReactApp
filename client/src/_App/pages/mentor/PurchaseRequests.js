@@ -11,7 +11,8 @@ import {
     fetchPurchaseRequests,
     fetchAllPurchaseRequests,
     deletePurchaseRequest,
-    clearPurchasesList
+    clearPurchasesList,
+    fetchGameState
 } from '../../../actions';
 import ViewDetails from './purchase_components/ViewDetails';
 import PurchaseForm from './purchase_components/PurchaseForm';
@@ -31,7 +32,7 @@ class PurchaseRequests extends React.Component {
             displayMode: 'pending',
             // Causes a different message to be rendered during and after loading, if
             // no tributes are found
-            queried: false,
+            loadQueried: false,
             showCreate: false,
             showEdit: false,
             showDelete: false,
@@ -107,12 +108,13 @@ class PurchaseRequests extends React.Component {
         const response1 = await this.props.fetchTributes();
         const response2 = await this.props.fetchAllPurchaseRequests();
         const response3 = await this.props.fetchMentors();
-        if(!response1 || !response2 || !response3){
+        const response4 = await this.props.fetchGameState();
+        if(!response1 || !response2 || !response3 || !response4){
             this.setState({ apiInitialLoadError: true });
         }
 
         if(this._isMounted){
-            this.setState({ queried: true })
+            this.setState({ loadQueried: true })
         }
     }
 
@@ -189,13 +191,14 @@ class PurchaseRequests extends React.Component {
     }
 
     fetchAllPurchaseRequests = async () => {
-        this.setState({ searchTerm: '', searchQueried: false })
+        this.setState({ searchTerm: '', loadQueried: false });
         const response = await this.props.fetchAllPurchaseRequests();
         if(!response){
             this.setState({ apiError: true });
         } else {
             this.setState({ apiError: false });
         }
+        this.setState({ loadQueried: true });
     }
 
     handleSearchSubmit = async (event) => {
@@ -245,7 +248,7 @@ class PurchaseRequests extends React.Component {
             );
         }
         if(Object.keys(purchases).length === 0){
-            if(!this.state.queried) {
+            if(!this.state.loadQueried) {
                 return(
                     <h5>
                         Retrieving list of purchase requests...
@@ -259,7 +262,7 @@ class PurchaseRequests extends React.Component {
                     } else {
                         return(
                             <>
-                                <h5>All caught up :)</h5>
+                                <h5>We're all caught up :)</h5>
                                 <h6>No pending purchase requests were found.</h6>
                             </>
                         );
@@ -441,11 +444,8 @@ class PurchaseRequests extends React.Component {
             this.setState({ showApproval: false })
         }
         if(this.state.searchTerm === ''){
-            const response = await this.props.fetchAllPurchaseRequests();
-            if(!response){
-                this.setState({ apiError: true });
-                return null;
-            }
+            console.log('a');
+            this.fetchAllPurchaseRequests();
         } else {
             const response = await this.props.fetchPurchaseRequests(this.state.searchTerm);
             if(!response){
@@ -479,6 +479,8 @@ class PurchaseRequests extends React.Component {
         } else if(this.state.showDelete){
             return(
                 <DeleteRequest 
+                    tributes={this.props.tributes}
+                    mentors={this.props.mentors}
                     id={this.state.selectedId}
                     onSubmitCallback={this.onSubmitCallback} 
                 />
@@ -527,12 +529,16 @@ class PurchaseRequests extends React.Component {
         }
     }
 
-    render(){
-        const mode = this.state.displayMode === 'pending' ? ': Pending Requests' : ': Processed Requests';
-        const message = this.state.auth.loading ? '' : mode;
+    render = () => {
+        console.log(this.state);
+        const mode = this.state.displayMode === 'pending' ? 'Viewing: Pending Requests' : 'Viewing: Processed Requests';
+        const priceTierMessage = this.state.auth.loading ? '' : `Current Price Tier: ${this.props.gameState.current_price_tier}`;
+        const message2 = this.state.auth.loading ? '' : mode;
         return(
             <>
-                <h3 style={{ padding: "10px" }}>View and Manage Purchase Requests{message}</h3>
+                <h1>View and Manage Purchase Requests</h1>
+                <h3>{priceTierMessage}</h3>
+                <h3>{message2}</h3>
                 {this.renderContent()}
             </>
         )
@@ -551,7 +557,8 @@ const mapStateToProps = state => {
         userEmail: state.auth.userEmail,
         userPerms: state.auth.userPerms,
         purchases: Object.values(state.purchases),
-        mentors: Object.values(state.users)
+        mentors: Object.values(state.users),
+        gameState: state.gameState
     }
 }
 
@@ -562,5 +569,6 @@ export default connect(mapStateToProps, {
     fetchPurchaseRequests,
     fetchAllPurchaseRequests,
     deletePurchaseRequest,
-    clearPurchasesList
+    clearPurchasesList,
+    fetchGameState
     })(PurchaseRequests);

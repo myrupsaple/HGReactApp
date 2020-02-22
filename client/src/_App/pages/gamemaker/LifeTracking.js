@@ -597,7 +597,7 @@ class ManageFunds extends React.Component {
                 </Button>
             );
         } else if(lifeEvent.method === 'resource'){
-            return null;
+            return 'This item can be deleted in Resource Events';
         }
         return(
             <div className="row">

@@ -146,7 +146,7 @@ class TributeAccountInfo extends React.Component {
                                 <div className="col">{tribute.email}</div>
                                 <div className="col">{tribute.phone}</div>
                                 <div className="col">{tribute.district}</div>
-                                <div className="col">{this.formatArea(tribute.area)}</div>
+                                <div className="col">{tribute.area}</div>
                                 <div className="col">{this.renderAdmin(tribute)}</div>
                             </div>
                         </li>
@@ -155,24 +155,6 @@ class TributeAccountInfo extends React.Component {
             </ul>
             </>
         );
-    }
-
-    // Converts SQL formatted areas to a more conventional format
-    formatArea(area){
-        switch(area){
-            case 'dank_denykstra':
-                return 'Dank Denykstra';
-            case 'sunsprout':
-                return 'SunSprout';
-            case 'hedrick':
-                return 'Hedrick';
-            case 'rieber':
-                return 'Rieber';
-            case 'off_campus':
-                return 'Off Campus';
-            default:
-                return null;
-        }
     }
 
     renderAdmin(tribute) {

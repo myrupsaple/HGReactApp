@@ -1843,9 +1843,12 @@ app.get(`/tribute-stats/get/limited`, (req, res) => {
 })
 
 // UPDATE_TRIBUTE_STATS
-app.put(`/tribute-stats/put/:id/:fUsed/:fMissed/:wUsed/:wMissed/:mUsed/:mMissed/:rUsed/:gUsed/:lRemaining/:lResources/:lExempt/:lPurchased/:lLost/:killCount/:immunity`, (req, res) => {
+app.put(`/tribute-stats/put/:id/:fundsRem/:totDon/:totPurch/:fUsed/:fMissed/:wUsed/:wMissed/:mUsed/:mMissed/:rUsed/:gUsed/:lRemaining/:lResources/:lExempt/:lPurchased/:lLost/:killCount/:immunity`, (req, res) => {
     const {
         id,
+        fundsRem,
+        totDon,
+        totPurch,
         fUsed,
         fMissed,
         wUsed,
@@ -1862,7 +1865,8 @@ app.put(`/tribute-stats/put/:id/:fUsed/:fMissed/:wUsed/:wMissed/:mUsed/:mMissed/
         killCount,
         immunity
     } = req.params;
-    const queryStringUpdateTributeStats = `UPDATE tribute_stats SET food_used = ${fUsed},
+    const queryStringUpdateTributeStats = `UPDATE tribute_stats SET funds_remaining = ${fundsRem},
+    total_donations = ${totDon}, total_purchases = ${totPurch}, food_used = ${fUsed},
     food_missed = ${fMissed}, water_used = ${wUsed}, water_missed = ${wMissed}, 
     medicine_used = ${mUsed}, medicine_missed = ${mMissed}, roulette_used = ${rUsed},
     golden_used = ${gUsed}, lives_remaining = ${lRemaining}, life_resources = ${lResources},

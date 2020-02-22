@@ -17,7 +17,7 @@ const ModifyUsers = (
 
 const ManageGameState = (
     <NavDropdown.Item as={Nav.Link} href="/App/gamemaker/manage-game">
-        Manage Game State
+        Game Settings
     </NavDropdown.Item>
 );
 

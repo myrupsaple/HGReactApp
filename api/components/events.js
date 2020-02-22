@@ -44,6 +44,19 @@ const checkForEvents = async (connection) => {
             });
         }
 
+        if(gameActive){
+            await connection.query(`SELECT game_active FROM game_state`, (err, results, fields) => {
+                if(err){
+                    console.log('Failed to query for tables: ' + err);
+                    return;
+                }
+                if(results[0].game_active === 0){
+                    gameActive = false;
+                    console.log('Game is no longer active. Events will be processed once game is made active again.');
+                }
+            })
+        }
+
         await Wait(15000);
 
         if(!eventsCreated || !gameStateCreated || !gameActive){

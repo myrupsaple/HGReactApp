@@ -112,7 +112,7 @@ class ShowComments extends React.Component {
                         </Form.Group>
                     </Form.Row>
                     <Form.Row>
-                        <Form.Group controlId="name">
+                        <Form.Group controlId="contents">
                             <Form.Label>Comment</Form.Label>
                             <Form.Control
                                 as="textarea"
@@ -233,7 +233,6 @@ class ShowComments extends React.Component {
     }
 
     render = () => {
-        console.log(this.state);
         return(
             <>
                 {this.renderContents()}

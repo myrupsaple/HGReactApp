@@ -59,29 +59,11 @@ class TributeDetails extends React.Component {
                 <div className="row"><span className="font-weight-bold">Phone Number:</span><span>&nbsp;{this.state.phone}</span></div>
                 <div className="row"><span className="font-weight-bold">District:</span><span>&nbsp;{this.state.district}</span></div>
                 <div className="row"><span className="font-weight-bold">District Partner:</span><span>&nbsp;{this.state.districtPartner}</span></div>
-                <div className="row"><span className="font-weight-bold">Area:</span><span>&nbsp;{this.formatArea(this.state.area)}</span></div>
+                <div className="row"><span className="font-weight-bold">Area:</span><span>&nbsp;{this.state.area}</span></div>
                 <div className="row"><span className="font-weight-bold">Mentor:</span><span>&nbsp;{this.state.mentor}</span></div>
                 <div className="row"><span className="font-weight-bold">Paid Registration:</span><span>&nbsp;{paidReg}</span></div>
             </div>
         );
-    }
-
-    // Converts the area from SQL syntax to a more conventional form
-    formatArea(area){
-        switch(area){
-            case 'dank_denykstra':
-                return 'Dank Denykstra';
-            case 'sunsprout':
-                return 'SunSprout';
-            case 'hedrick':
-                return 'Hedrick';
-            case 'rieber':
-                return 'Rieber';
-            case 'off_campus':
-                return 'Off Campus';
-            default:
-                return null;
-        }
     }
 
     renderActions(){
