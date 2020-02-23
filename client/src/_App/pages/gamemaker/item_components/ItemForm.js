@@ -106,54 +106,40 @@ class ItemForm extends React.Component {
     handleT1Cost(event) {
         const input = event.target.value;
         this.setState({ tier1_cost: input });
-        if(input === ''){
-            this.setState({ t1Valid: 2 });
-        } else if(isNaN(input)){
-            this.setState({ t1Valid: 3 });
-        } else if(input <= 0){
-            this.setState({ t1Valid: 4 });
-        } else {
-            this.setState({ t1Valid: 0 });
-        }
+        this.handleTierValidation(input, 't1Valid');
     }
     handleT2Cost(event) {
         const input = event.target.value;
         this.setState({ tier2_cost: input });
-        if(input === ''){
-            this.setState({ t2Valid: 2 });
-        } else if(isNaN(input)){
-            this.setState({ t2Valid: 3 });
-        } else if(input <= 0){
-            this.setState({ t2Valid: 4 });
-        } else {
-            this.setState({ t2Valid: 0 });
-        }
+        this.handleTierValidation(input, 't2Valid');
     }
     handleT3Cost(event) {
         const input = event.target.value;
         this.setState({ tier3_cost: input });
-        if(input === ''){
-            this.setState({ t3Valid: 2 });
-        } else if(isNaN(input)){
-            this.setState({ t3Valid: 3 });
-        } else if(input <= 0){
-            this.setState({ t3Valid: 4 });
-        } else {
-            this.setState({ t3Valid: 0 });
-        }
+        this.handleTierValidation(input, 't3Valid');
     }
     handleT4Cost(event) {
         const input = event.target.value;
         this.setState({ tier4_cost: input });
+        this.handleTierValidation(input, 't4Valid');
+    }
+    handleTierValidation(input, key){
+        const stateObject = {};
         if(input === ''){
-            this.setState({ t4Valid: 2 });
+            stateObject[key] = 2;
         } else if(isNaN(input)){
-            this.setState({ t4Valid: 3 });
+            stateObject[key] = 3;
         } else if(input <= 0){
-            this.setState({ t4Valid: 4 });
+            stateObject[key] = 4;
+        } else if(input > 10000) {
+            stateObject[key] = 5;
+        } else if(input % 1 !== 0){
+            stateObject[key] = 6;
         } else {
-            this.setState({ t4Valid: 0 });
+            stateObject[key] = 0;
         }
+
+        this.setState(stateObject);
     }
 
     handleFormSubmit = async () => {
@@ -280,7 +266,7 @@ class ItemForm extends React.Component {
                             onChange={this.handleT1Cost}
                             autoComplete="off"
                         />
-                        {this.renderT1Validation()}
+                        {this.renderTierValidation('t1Valid', 'Tier 1 Cost')}
                     </Form.Group></div>
                     <div className="col-3"><Form.Group controlId="tier2-cost">
                         <Form.Label>Tier 2 Cost*</Form.Label>
@@ -288,7 +274,7 @@ class ItemForm extends React.Component {
                             onChange={this.handleT2Cost}
                             autoComplete="off"
                         />
-                        {this.renderT2Validation()}
+                        {this.renderTierValidation('t2Valid', 'Tier 2 Cost')}
                     </Form.Group></div>
                     <div className="col-3"><Form.Group controlId="tier3-cost">
                         <Form.Label>Tier 3 Cost*</Form.Label>
@@ -296,7 +282,7 @@ class ItemForm extends React.Component {
                             onChange={this.handleT3Cost}
                             autoComplete="off"
                         />
-                        {this.renderT3Validation()}
+                        {this.renderTierValidation('t3Valid', 'Tier 3 Cost')}
                     </Form.Group></div>
                     <div className="col-3"><Form.Group controlId="tier4-cost">
                         <Form.Label>Tier 4 Cost*</Form.Label>
@@ -304,7 +290,7 @@ class ItemForm extends React.Component {
                             onChange={this.handleT4Cost}
                             autoComplete="off"
                         />
-                        {this.renderT4Validation()}
+                        {this.renderTierValidation('t4Valid', 'Tier 4 Cost')}
                     </Form.Group></div>
                 </Form.Row>
             </Form>
@@ -380,116 +366,41 @@ class ItemForm extends React.Component {
             return null;
         }
     }
-    renderT1Validation = () =>{
-        if(this.state.t1Valid === 2){
+    renderTierValidation = (key, identifier) => {
+        if(this.state[key] === 2){
             return(
                 <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
                     <span role="img" aria-label="check/x">&#10071;</span> Cost is required
                 </p>
             );
-        } else if (this.state.t1Valid === 3){
+        } else if (this.state[key] === 3){
             return(
                 <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
                     <span role="img" aria-label="check/x">&#10071;</span> Cost must be a number
                 </p>
             );
-        } else if (this.state.t1Valid === 4){
+        } else if (this.state[key] === 4){
             return(
                 <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
                     <span role="img" aria-label="check/x">&#10071;</span> Cost must be positive
                 </p>
             );
-        } else if(this.state.t1Valid === 0) {
+        } else if (this.state[key] === 5){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Cost cannot exceed $10000
+                </p>
+            );
+        } else if (this.state[key] === 6){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Cost must be a whole number
+                </p>
+            );
+        } else if(this.state[key] === 0) {
             return(
                 <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10003;</span> Tier 1 Cost
-                </p>
-            );
-        } else {
-            return null;
-        }
-    }
-    renderT2Validation = () =>{
-        if(this.state.t2Valid === 2){
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Cost is required
-                </p>
-            );
-        } else if (this.state.t2Valid === 3){
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Cost must be a number
-                </p>
-            );
-        } else if (this.state.t2Valid === 4){
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Cost must be positive
-                </p>
-            );
-        } else if(this.state.t2Valid === 0) {
-            return(
-                <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10003;</span> Tier 2 Cost
-                </p>
-            );
-        } else {
-            return null;
-        }
-    }
-    renderT3Validation = () =>{
-        if(this.state.t3Valid === 2){
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Cost is required
-                </p>
-            );
-        } else if (this.state.t3Valid === 3){
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Cost must be a number
-                </p>
-            );
-        } else if (this.state.t3Valid === 4){
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Cost must be positive
-                </p>
-            );
-        } else if(this.state.t3Valid === 0) {
-            return(
-                <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10003;</span> Tier 3 Cost
-                </p>
-            );
-        } else {
-            return null;
-        }
-    }
-    renderT4Validation = () =>{
-        if(this.state.t4Valid === 2){
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Cost is required
-                </p>
-            );
-        } else if (this.state.t4Valid === 3){
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Cost must be a number
-                </p>
-            );
-        } else if (this.state.t4Valid === 4){
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Cost must be positive
-                </p>
-            );
-        } else if(this.state.t4Valid === 0) {
-            return(
-                <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10003;</span> Tier 4 Cost
+                    <span role="img" aria-label="check/x">&#10003;</span> {identifier}
                 </p>
             );
         } else {

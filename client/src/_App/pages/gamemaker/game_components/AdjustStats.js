@@ -234,7 +234,7 @@ class AdjustStats extends React.Component {
         } else {
             stateObject[key] = 0;
         }
-        this.setState(stateObject)
+        this.setState(stateObject);
     }
 
     handleSubmit = async () => {

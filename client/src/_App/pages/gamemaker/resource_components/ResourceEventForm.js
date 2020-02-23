@@ -402,6 +402,7 @@ class ResourceEventForm extends React.Component {
                             value={this.state.type}
                             onChange={this.handleType}
                             as="select"
+                            disabled={this.props.mode === 'edit' && this.state.originalType === 'life'}
                         >
                             {this.renderTypeChoices()}
                         </Form.Control>
@@ -416,6 +417,7 @@ class ResourceEventForm extends React.Component {
                             value={this.state.notes}
                             autoComplete="off"
                             onChange={this.handleNotes}
+                            disabled={this.props.mode === 'edit' && this.state.originalType === 'life'}
                         />
                         {this.renderNotesValidation()}
                     </Form.Group></div>
@@ -537,7 +539,7 @@ class ResourceEventForm extends React.Component {
     }
 
     renderTypeChoices(){
-        if(this.props.mode === 'edit'){
+        if(this.props.mode === 'edit' && this.state.originalType !== 'life'){
             return (
                 <>
                     <option value="food">Food</option>
