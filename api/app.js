@@ -1192,7 +1192,7 @@ app.put(`/resource-events/life-events/put/:email/:mode`, (req, res) => {
     console.log(queryStringUpdateTributeStatsKills);
     connection.query(queryStringUpdateTributeStatsKills, (err, rows, fields) => {
         if(err){
-            console.log('Failed to query for life events: ' + err);
+            console.log('Failed to query for tribute stats: ' + err);
             res.sendStatus(500);
             res.end();
             return;
@@ -1363,11 +1363,30 @@ app.get(`/purchases/get/single/:id`, (req, res) => {
 })
 
 // FETCH_PURCHASES
-app.get(`/purchases/get/list/:email`, (req, res) => {
+app.get(`/purchases/get/list/receiver/:email`, (req, res) => {
     const email = req.params.email;
     const queryStringGetPurchases = `SELECT * FROM purchases WHERE receiver_email = '${email}'`;
     console.log(queryStringGetPurchases);
     connection.query(queryStringGetPurchases, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for purchases: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
+// FETCH_PURCHASES_PENDING
+app.get(`/purchases/get/list/pending/:email`, (req, res) => {
+    const email = req.params.email;
+    const queryStringGetPurchasesPending = `SELECT * FROM purchases WHERE receiver_email = '${email}' AND status = 'pending'`;
+    console.log(queryStringGetPurchasesPending);
+    connection.query(queryStringGetPurchasesPending, (err, rows, fields) => {
         if(err){
             console.log('Failed to query for purchases: ' + err);
             res.sendStatus(500);
@@ -1643,6 +1662,26 @@ app.put(`/purchases/tribute-stats/immunity/put/:email`, (req, res) => {
     });
 })
 
+// UPDATE_TOTAL_PURCHASES
+app.put(`/purchases/tribute-stats/total-purchases/put/:email/:amount`, (req, res) => {
+    const { email, amount } = req.params;
+    const queryStringUpdateTotalPurchases = `UPDATE tribute_stats SET total_purchases = 
+    total_purchases + ${amount} WHERE email = '${email}'`;
+    console.log(queryStringUpdateTotalPurchases);
+    connection.query(queryStringUpdateTotalPurchases, (err, rows, fields) => {
+        if(err){
+            console.log('Failed to query for tribute stats: ' + err);
+            res.sendStatus(500);
+            res.end();
+            return;
+        }
+
+        _CORS_ALLOW(res);
+
+        res.json(rows);
+    });
+})
+
 //######################## (8) Game State Management #########################//
 
 // FETCH_SERVER_TIME
@@ -1718,7 +1757,7 @@ app.put(`/game-state/put/game-time/:time`, (req, res) => {
 })
 
 // UPDATE_GAME_STATE
-app.put(`/game-state/put/:maxDistricts/:areas/:food_required/:water_required/:medicine_required/:current_price_tier/:game_active`, (req, res) => {
+app.put(`/game-state/put/:maxDistricts/:areas/:food_required/:water_required/:medicine_required/:current_price_tier/:max_lives/:game_active`, (req, res) => {
     const { 
         maxDistricts, 
         areas, 
@@ -1726,11 +1765,12 @@ app.put(`/game-state/put/:maxDistricts/:areas/:food_required/:water_required/:me
         water_required,
         medicine_required,
         current_price_tier,
+        max_lives,
         game_active
     } = req.params;
     const queryStringUpdateGameState = `UPDATE game_state SET max_districts = '${maxDistricts}', areas = '${areas}',
     food_required = ${food_required}, water_required = ${water_required}, medicine_required = ${medicine_required},
-    current_price_tier = ${current_price_tier}, game_active = ${game_active}`;
+    current_price_tier = ${current_price_tier}, max_lives = ${max_lives}, game_active = ${game_active}`;
     console.log(queryStringUpdateGameState);
     connection.query(queryStringUpdateGameState, (err, rows, fields) => {
         if(err){
@@ -1768,7 +1808,7 @@ app.get(`/tribute-stats/get/single/:id`, (req, res) => {
 })
 
 // FETCH_TRIBUTE_STAT_BY_EMAIL
-app.get(`/tribute-stats/get/single/email/:email`, (req, res) => {
+app.get(`/tribute-stats/get/email/:email`, (req, res) => {
     const email = req.params.email;
     const queryStringGetTributeStat = `SELECT * FROM tribute_stats WHERE email = '${email}'`;
     console.log(queryStringGetTributeStat);
@@ -1786,7 +1826,7 @@ app.get(`/tribute-stats/get/single/email/:email`, (req, res) => {
     })
 })
 
-// FETCH_TRIBUTE_STATS
+// FETCH_TRIBUTE_STATS (MENTOR EMAIL)
 app.get(`/tribute-stats/get/list/:email`, (req, res) => {
     const email = req.params.email;
     const queryStringGetTributeStats = `SELECT * FROM tribute_stats WHERE mentor_email = '${email}'`;

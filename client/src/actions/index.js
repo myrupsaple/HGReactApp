@@ -942,7 +942,7 @@ export const lifeEventUpdateTributeStatsLives = (email, type, method, mode) => a
 }
 
 export const lifeEventUpdateTributeStatsKills = (email, mode) => async () => {
-    // console.log('Actions: Donations: Update tribute stats for kill count');
+    // console.log('Actions: Lives: Update tribute stats for kill count');
     var response = null;
     await app.put(`/tribute-stats/life-events/kills/put/${email}/${mode}`)
         .then(res => {
@@ -1092,9 +1092,27 @@ export const fetchPurchaseRequest = (id) => async (dispatch) => {
 }
 
 export const fetchPurchaseRequests = (email) => async (dispatch) => {
-    // console.log(`Actions: Fetch purchase requests with status 'pending' from ${email}`);
+    // console.log(`Actions: Fetch purchase requests with receiver email ${email}`);
     var response = null;
-    await app.get(`/purchases/get/list/${email}`)
+    await app.get(`/purchases/get/list/receiver/${email}`)
+        .then(res => {
+            // console.log('Successfully fetched purchase requests');
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    
+    if(response && response.data){
+        dispatch ({ type: FETCH_PURCHASES, payload: response.data });
+    }
+    return response;
+}
+
+export const fetchPurchaseRequestsPending = (email) => async (dispatch) => {
+    // console.log(`Actions: Fetch purchase requests with receiver email ${email}`);
+    var response = null;
+    await app.get(`/purchases/get/list/pending/${email}`)
         .then(res => {
             // console.log('Successfully fetched purchase requests');
             response = res;
@@ -1339,6 +1357,20 @@ export const transferFunds = (emailFrom, emailTo, amount) => async () => {
     return response;
 }
 
+export const purchaseUpdateTotalPurchases = (email, amount) => async () => {
+    // console.log(`Actions: Purchases: Update total purchases in tribute stats`);
+    var response = null;
+    await app.put(`/purchases/tribute-stats/total-purchases/put/${email}/${amount}`)
+        .then(res => {
+            // console.log('Successfully updated tribute stats');
+            response = res;
+        })
+        .catch(err => {
+            console.log(err);
+        });
+    return response;
+}
+
 //######################## (8) Game State Management #########################//
 
 export const fetchServerTime = () => async (dispatch) => {
@@ -1414,11 +1446,12 @@ export const updateGameState = (gameState) => async () => {
         water_required,
         medicine_required,
         current_price_tier,
+        max_lives,
         game_active
     } = gameState;
     // console.log(`Actions: Update Game State initiated`);
     var response = null;
-    await app.put(`/game-state/put/${max_districts}/${areas}/${food_required}/${water_required}/${medicine_required}/${current_price_tier}/${game_active}`)
+    await app.put(`/game-state/put/${max_districts}/${areas}/${food_required}/${water_required}/${medicine_required}/${current_price_tier}/${max_lives}/${game_active}`)
         .then(res => {
             // console.log(`Successfully updated game state`);
             response = res;
@@ -1451,7 +1484,7 @@ export const fetchTributeStat = id => async (dispatch) => {
 export const fetchTributeStatEmail = email => async (dispatch) => {
     // console.log(`Actions: Fetch tribute stats with email: ${email}`);
     var response = null;
-    await app.get(`/tribute-stats/get/single/email/${email}`)
+    await app.get(`/tribute-stats/get/email/${email}`)
         .then(res => {
             // console.log(`Successfully fetched tribute stats`);
             response = res;

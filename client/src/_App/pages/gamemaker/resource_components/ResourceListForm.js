@@ -62,11 +62,11 @@ class ResourceListForm extends React.Component {
     }
 
     handleCode(event){
-        const input = event.target.value;
+        const input = event.target.value.replace(/[\W_]+/g, '').toLowerCase();
         this.setState({ code: input });
         if(input.replace(/\s/g, '') === ''){
             this.setState({ codeValid: 2 });
-        } else{
+        } else {
             this.setState({ codeValid: 0 });
         }
     }
@@ -182,7 +182,7 @@ class ResourceListForm extends React.Component {
             <Form>
                 <Form.Row>
                     <div className="col-12"><Form.Group controlId="tribute">
-                        <Form.Label>Resource Code (case insensitive)*</Form.Label>    
+                        <Form.Label>Resource Code (case insensitive; characters and numbers only)*</Form.Label>    
                         <Form.Control 
                             value={this.state.code} 
                             onChange={this.handleCode} 
@@ -234,7 +234,7 @@ class ResourceListForm extends React.Component {
         if(this.state.codeValid === 2){
             return(
                 <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Code is required
+                    <span role="img" aria-label="check/x">&#10071;</span> Code is required (Only characters and numbers may be entered)
                 </p>
             );
         } else if(this.state.codeValid === 3){

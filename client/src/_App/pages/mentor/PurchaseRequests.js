@@ -529,8 +529,7 @@ class PurchaseRequests extends React.Component {
         }
     }
 
-    render = () => {
-        console.log(this.state);
+    render(){
         const mode = this.state.displayMode === 'pending' ? 'Viewing: Pending Requests' : 'Viewing: Processed Requests';
         const priceTierMessage = this.state.auth.loading ? '' : `Current Price Tier: ${this.props.gameState.current_price_tier}`;
         const message2 = this.state.auth.loading ? '' : mode;

@@ -34,6 +34,7 @@ class DonationForm extends React.Component {
             donorValid: 1,
             methodValid: 1,
             amountValid: 1,
+            tagsValid: 1,
             formValid: 1,
             // Handle the Modal
             showModal: true,
@@ -74,7 +75,8 @@ class DonationForm extends React.Component {
                     emailValid: 0,
                     methodValid: 0,
                     donorValid: 0,
-                    amountValid: 0
+                    amountValid: 0,
+                    tagsValid: 0
                 })
             }
         }
@@ -94,6 +96,8 @@ class DonationForm extends React.Component {
         this.setState({ donor_name: input });
         if(input.replace(/\s/g, '') === ''){
             this.setState({ donorValid: 2 });
+        } else if(input.length > 40){
+            this.setState({ donorValid: 3 });
         } else {
             this.setState({ donorValid: 0 });
         }
@@ -103,6 +107,8 @@ class DonationForm extends React.Component {
         this.setState({ method: input });
         if(input.replace(/\s/g, '') === ''){
             this.setState({ methodValid: 2 });
+        } else if(input.length > 20){
+            this.setState({ methodValid: 3 });
         } else {
             this.setState({ methodValid: 0 });
         }
@@ -117,7 +123,7 @@ class DonationForm extends React.Component {
         });
     }
     handleAmount(event){
-        const input = event.target.value
+        var input = event.target.value;
         this.setState({ amount: input });
         if(input === ''){
             this.setState({ amountValid: 2 });
@@ -132,7 +138,13 @@ class DonationForm extends React.Component {
         }
     }
     handleTags(event){
-        this.setState({ tags: event.target.value });
+        const input = event.target.value;
+        this.setState({ tags: input });
+        if(input.length > 50){
+            this.setState({ tagsValid: 3 });
+        } else {
+            this.setState({ tagsValid: 0 });
+        }
     }
 
     handleFormSubmit = async () => {
@@ -159,7 +171,7 @@ class DonationForm extends React.Component {
             donor: encodeURIComponent(this.state.donor_name),
             method: encodeURIComponent(this.state.method),
             date: this.state.date,
-            amount: this.state.amount,
+            amount: Math.floor(this.state.amount),
             tags: encodeURIComponent(this.state.tags) 
         };
         if (!donationObject.tags.replace(/\s/g, '').length) {
@@ -282,6 +294,7 @@ class DonationForm extends React.Component {
                             autoComplete="off"
                             onChange={this.handleTags}
                         />
+                        {this.renderTagsValidation()}
                     </Form.Group></div>
                 </Form.Row>
             </Form>
@@ -312,6 +325,12 @@ class DonationForm extends React.Component {
                     <span role="img" aria-label="check/x">&#10071;</span> Donor name is required
                 </p>
             );
+        } else if(this.state.donorValid === 3){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Donor must be 40 characters or less.
+                </p>
+            );
         } else if(this.state.donorValid === 0) {
             return(
                 <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
@@ -327,6 +346,12 @@ class DonationForm extends React.Component {
             return(
                 <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
                     <span role="img" aria-label="check/x">&#10071;</span> Donation method is required
+                </p>
+            );
+        } else if(this.state.methodValid === 3){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Method must be 20 characters or less.
                 </p>
             );
         } else if(this.state.methodValid === 0) {
@@ -368,6 +393,17 @@ class DonationForm extends React.Component {
             return(
                 <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
                     <span role="img" aria-label="check/x">&#10003;</span> Amount
+                </p>
+            );
+        } else {
+            return null;
+        }
+    }
+    renderTagsValidation = () =>{
+        if(this.state.tagsValid === 3){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Tags must be 50 characters or less.
                 </p>
             );
         } else {

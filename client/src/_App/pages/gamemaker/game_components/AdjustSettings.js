@@ -16,6 +16,9 @@ class AdjustSettings extends React.Component {
         this.state = { 
             max_districts: gameState.max_districts,
             areas: gameState.areas,
+            max_lives: gameState.max_lives,
+            life_base_price: gameState.life_base_price,
+            life_increment_price: gameState.life_increment_price,
             food_required: gameState.food_required,
             water_required: gameState.water_required,
             medicine_required: gameState.medicine_required,
@@ -27,6 +30,9 @@ class AdjustSettings extends React.Component {
             finalConfirm: false,
             districtsValid: 0,
             areasValid: 0,
+            maxLivesValid: 0,
+            lifeBasePriceValid: 0,
+            lifeIncrementPriceValid: 0,
             foodValid: 0, 
             waterValid: 0,
             medicineValid: 0,
@@ -36,6 +42,9 @@ class AdjustSettings extends React.Component {
 
         this.handleDistricts = this.handleDistricts.bind(this);
         this.handleAreas = this.handleAreas.bind(this);
+        this.handleMaxLives = this.handleMaxLives.bind(this);
+        this.handleLifeBasePrice = this.handleLifeBasePrice.bind(this);
+        this.handleLifeIncrementPrice = this.handleLifeIncrementPrice.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleFood = this.handleFood.bind(this);
         this.handleWater = this.handleWater.bind(this);
@@ -51,19 +60,8 @@ class AdjustSettings extends React.Component {
     handleDistricts(event) {
         const input = event.target.value;
         this.setState({ max_districts: input });
-        if(input === ''){
-            this.setState({ districtsValid: 2 });
-        } else if(isNaN(input)){
-            this.setState({ districtsValid: 3 });
-        } else if(input <= 0){
-            this.setState({ districtsValid: 4 });
-        } else if(Math.floor(input) >= 20){
-            this.setState({ districtsValid: 5 });
-        } else if(input % 1 !== 0){
-            this.setState({ districtsValid: 6 });
-        } else {
-            this.setState({ districtsValid: 0 });
-        }
+
+        this.handleNumericsValid(input, 'districtsValid', 20);
     }
     handleAreas(event){
         const input = event.target.value;
@@ -76,62 +74,66 @@ class AdjustSettings extends React.Component {
             this.setState({ areasValid: 0 });
         }
     }
+    handleMaxLives(event) {
+        const input = event.target.value;
+        this.setState({ max_lives: input });
+        
+        this.handleNumericsValid(input, 'maxLivesValid', 10);
+    }
+    handleLifeBasePrice(event) {
+        const input = event.target.value;
+        this.setState({ life_base_price: input });
+        
+        this.handleNumericsValid(input, 'lifeBasePriceValid', 100);
+    }
+    handleLifeIncrementPrice(event) {
+        const input = event.target.value;
+        this.setState({ life_increment_price: input });
+        
+        this.handleNumericsValid(input, 'lifeIncrementPriceValid', 50);
+    }
     handleFood(event) {
         const input = event.target.value;
         this.setState({ food_required: input });
-        if(input === ''){
-            this.setState({ foodValid: 2 });
-        } else if(isNaN(input)){
-            this.setState({ foodValid: 3 });
-        } else if(input <= 0){
-            this.setState({ foodValid: 4 });
-        } else if(Math.floor(input) >= 10){
-            this.setState({ foodValid: 5 });
-        } else if(input % 1 !== 0){
-            this.setState({ foodValid: 6 });
-        } else {
-            this.setState({ foodValid: 0 });
-        }
+        
+        this.handleNumericsValid(input, 'foodValid', 10);
     }
     handleWater(event) {
         const input = event.target.value;
         this.setState({ water_required: input });
-        if(input === ''){
-            this.setState({ waterValid: 2 });
-        } else if(isNaN(input)){
-            this.setState({ waterValid: 3 });
-        } else if(input <= 0){
-            this.setState({ waterValid: 4 });
-        } else if(Math.floor(input) >= 10){
-            this.setState({ waterValid: 5 });
-        } else if(input % 1 !== 0){
-            this.setState({ waterValid: 6 });
-        } else {
-            this.setState({ waterValid: 0 });
-        }
+        
+        this.handleNumericsValid(input, 'waterValid', 10);
     }
     handleMedicine(event) {
         const input = event.target.value;
         this.setState({ medicine_required: input });
-        if(input === ''){
-            this.setState({ medicineValid: 2 });
-        } else if(isNaN(input)){
-            this.setState({ medicineValid: 3 });
-        } else if(input <= 0){
-            this.setState({ medicineValid: 4 });
-        } else if(Math.floor(input) >= 10){
-            this.setState({ medicineValid: 5 });
-        } else if(input % 1 !== 0){
-            this.setState({ medicineValid: 6 });
-        } else {
-            this.setState({ medicineValid: 0 });
-        }
+        
+        this.handleNumericsValid(input, 'medicineValid', 10);
     }
     handlePriceTier(event){
         this.setState({ current_price_tier: event.target.value });
     }
     handleGameActive(event){
         this.setState({ game_active: event.target.value });
+    }
+
+    handleNumericsValid = (input, stateKey, upperLimit) => {
+        const stateObject = {};
+        if(input === ''){
+            stateObject[stateKey] = 2;
+        } else if(isNaN(input)){
+            stateObject[stateKey] = 3;
+        } else if(input <= 0){
+            stateObject[stateKey] = 4;
+        } else if(Math.floor(input) >= upperLimit){
+            stateObject[stateKey] = 5;
+        } else if(input % 1 !== 0){
+            stateObject[stateKey] = 6;
+        } else {
+            stateObject[stateKey] = 0;
+        }
+
+        this.setState(stateObject);
     }
 
     handleSubmit = async () => {
@@ -152,6 +154,9 @@ class AdjustSettings extends React.Component {
         const gameState = {
             max_districts: this.state.max_districts,
             areas: encodeURIComponent(areas),
+            max_lives: this.state.max_lives,
+            life_base_price: this.state.life_base_price,
+            life_increment_price: this.state.life_increment_price,
             food_required: this.state.food_required,
             water_required: this.state.water_required,
             medicine_required: this.state.medicine_required,
@@ -253,6 +258,9 @@ class AdjustSettings extends React.Component {
             <div style={{ marginLeft: "20px" }}>
                 <div className="row"><span className="font-weight-bold">Max Districts:</span><span>&nbsp;{this.state.max_districts}</span></div>
                 <div className="row"><span className="font-weight-bold">Areas:</span><span>&nbsp;{this.renderAreaList(this.state.areas)}</span></div>
+                <div className="row"><span className="font-weight-bold">Maximum Lives:</span><span>&nbsp;{this.state.max_lives}</span></div>
+                <div className="row"><span className="font-weight-bold">Life Base Price:</span><span>&nbsp;{this.state.life_base_price}</span></div>
+                <div className="row"><span className="font-weight-bold">Life Increment Price:</span><span>&nbsp;{this.state.life_increment_price}</span></div>
                 <div className="row"><span className="font-weight-bold">Food Required:</span><span>&nbsp;{this.state.food_required}</span></div>
                 <div className="row"><span className="font-weight-bold">Water Required:</span><span>&nbsp;{this.state.water_required}</span></div>
                 <div className="row"><span className="font-weight-bold">Medicine Required:</span><span>&nbsp;{this.state.medicine_required}</span></div>
@@ -276,6 +284,7 @@ class AdjustSettings extends React.Component {
     renderForm = () => {
         return(
             <Form>
+                <Form.Label><span className="font-weight-bold">**GENERAL SETTINGS**</span></Form.Label>
                 <Form.Row>
                     <div className="col-8"><Form.Group controlId="setDistricts">
                         <Form.Label>Maximum Districts</Form.Label>
@@ -284,7 +293,7 @@ class AdjustSettings extends React.Component {
                             onChange={this.handleDistricts}
                             autoComplete="off"
                         />
-                        {this.renderDistrictsValidation()}
+                        {this.renderNumericsValidation('districtsValid', 'Maximum districts', 20)}
                     </Form.Group></div>
                 </Form.Row>
                 <Form.Row>
@@ -298,6 +307,37 @@ class AdjustSettings extends React.Component {
                         {this.renderAreasValidation()}
                     </Form.Group></div>
                 </Form.Row>
+                <Form.Label><span className="font-weight-bold">**LIVES**</span></Form.Label>
+                <Form.Row>
+                    <div className="col-4"><Form.Group controlId="setMaxLives">
+                        <Form.Label>Max Lives</Form.Label>
+                        <Form.Control
+                            value={this.state.max_lives}
+                            onChange={this.handleMaxLives}
+                            autoComplete="off"
+                        />
+                        {this.renderNumericsValidation('maxLivesValid', 'Max lives', 10)}
+                    </Form.Group></div>
+                    <div className="col-4"><Form.Group controlId="setLifeBasePrice">
+                        <Form.Label>Life Base Price</Form.Label>
+                        <Form.Control
+                            value={this.state.life_base_price}
+                            onChange={this.handleLifeBasePrice}
+                            autoComplete="off"
+                        />
+                        {this.renderNumericsValidation('lifeBasePriceValid', 'Life base price', 100)}
+                    </Form.Group></div>
+                    <div className="col-4"><Form.Group controlId="setLifeIncrementPrice">
+                        <Form.Label>Life Increment Price</Form.Label>
+                        <Form.Control
+                            value={this.state.life_increment_price}
+                            onChange={this.handleLifeIncrementPrice}
+                            autoComplete="off"
+                        />
+                        {this.renderNumericsValidation('lifeIncrementPriceValid', 'Life increment price', 50)}
+                    </Form.Group></div>
+                </Form.Row>
+                <Form.Label><span className="font-weight-bold">**RESOURCES**</span></Form.Label>
                 <Form.Row>
                     <div className="col-4"><Form.Group controlId="setFood">
                         <Form.Label>Food Required</Form.Label>
@@ -306,7 +346,7 @@ class AdjustSettings extends React.Component {
                             onChange={this.handleFood}
                             autoComplete="off"
                         />
-                        {this.renderFoodValidation()}
+                        {this.renderNumericsValidation('foodValid', 'Food required', 10)}
                     </Form.Group></div>
                     <div className="col-4"><Form.Group controlId="setWater">
                         <Form.Label>Water Required</Form.Label>
@@ -315,7 +355,7 @@ class AdjustSettings extends React.Component {
                             onChange={this.handleWater}
                             autoComplete="off"
                         />
-                        {this.renderWaterValidation()}
+                        {this.renderNumericsValidation('waterValid', 'Water required', 10)}
                     </Form.Group></div>
                     <div className="col-4"><Form.Group controlId="setMedicine">
                         <Form.Label>Medicine Required</Form.Label>
@@ -324,9 +364,10 @@ class AdjustSettings extends React.Component {
                             onChange={this.handleMedicine}
                             autoComplete="off"
                         />
-                        {this.renderMedicineValidation()}
+                        {this.renderNumericsValidation('medicineValid', 'Medicine required', 10)}
                     </Form.Group></div>
                 </Form.Row>
+                <Form.Label><span className="font-weight-bold">**PRICING**</span></Form.Label>
                 <Form.Row>
                     <div className="col-4"><Form.Group controlId="setFood">
                         <Form.Label>Current Price Tier</Form.Label>
@@ -342,6 +383,9 @@ class AdjustSettings extends React.Component {
                             <option value={4}>4</option>
                         </Form.Control>
                     </Form.Group></div>
+                </Form.Row>
+                <Form.Label><span className="font-weight-bold">**GAME ACTIVE**</span></Form.Label>
+                <Form.Row>
                     <div className="col-4"><Form.Group controlId="setWater">
                         <Form.Label>Game Active?</Form.Label>
                         <Form.Control
@@ -359,47 +403,6 @@ class AdjustSettings extends React.Component {
         );
     }
 
-    renderDistrictsValidation = () => {
-        if(this.state.districtsValid === 2){
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Max districts is required
-                </p>
-            );
-        } else if (this.state.districtsValid === 3){
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Max districts must be a number
-                </p>
-            );
-        } else if(this.state.districtsValid === 4) {
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Max districts must be positive
-                </p>
-            );
-        } else if(this.state.districtsValid === 5) {
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Please choose a value less than 20
-                </p>
-            );
-        } else if(this.state.districtsValid === 6) {
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Please enter a whole number
-                </p>
-            );
-        } else if(this.state.districtsValid === 0) {
-            return(
-                <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10003;</span> Max districts
-                </p>
-            );
-        } else {
-            return null;
-        }
-    }
     renderAreasValidation = () => {
         if(this.state.areasValid === 2){
             return(
@@ -423,123 +426,41 @@ class AdjustSettings extends React.Component {
             return null;
         }
     }
-    renderFoodValidation = () => {
-        if(this.state.foodValid === 2){
+    renderNumericsValidation = (stateKey, textName, upperLimit) => {
+        if(this.state[stateKey] === 2){
             return(
                 <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> # Food Resources is required
+                    <span role="img" aria-label="check/x">&#10071;</span> {textName} is required
                 </p>
             );
-        } else if (this.state.foodValid === 3){
+        } else if (this.state[stateKey] === 3){
             return(
                 <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Food required must be a number
+                    <span role="img" aria-label="check/x">&#10071;</span> {textName} must be a number
                 </p>
             );
-        } else if(this.state.foodValid === 4) {
+        } else if(this.state[stateKey] === 4) {
             return(
                 <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Food required must be positive
+                    <span role="img" aria-label="check/x">&#10071;</span> {textName} must be positive
                 </p>
             );
-        } else if(this.state.foodValid === 5) {
+        } else if(this.state[stateKey] === 5) {
             return(
                 <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Please choose a value less than 10
+                    <span role="img" aria-label="check/x">&#10071;</span> Please choose a value less than {upperLimit}
                 </p>
             );
-        } else if(this.state.foodValid === 6) {
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Please enter a whole number
-                </p>
-            );
-        } else if(this.state.foodValid === 0) {
-            return(
-                <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10003;</span> Food required
-                </p>
-            );
-        } else {
-            return null;
-        }
-    }
-    renderWaterValidation = () => {
-        if(this.state.waterValid === 2){
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> # Water resources is required
-                </p>
-            );
-        } else if (this.state.waterValid === 3){
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Water required must be a number
-                </p>
-            );
-        } else if(this.state.waterValid === 4) {
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Water required must be positive
-                </p>
-            );
-        } else if(this.state.waterValid === 5) {
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Please choose a value less than 10
-                </p>
-            );
-        } else if(this.state.waterValid === 6) {
+        } else if(this.state[stateKey] === 6) {
             return(
                 <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
                     <span role="img" aria-label="check/x">&#10071;</span> Please enter a whole number
                 </p>
             );
-        } else if(this.state.waterValid === 0) {
+        } else if(this.state[stateKey] === 0) {
             return(
                 <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10003;</span> Water Required
-                </p>
-            );
-        } else {
-            return null;
-        }
-    }
-    renderMedicineValidation = () => {
-        if(this.state.medicineValid === 2){
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> # Med. Resources is required
-                </p>
-            );
-        } else if (this.state.medicineValid === 3){
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Med. Resources must be a number
-                </p>
-            );
-        } else if(this.state.medicineValid === 4) {
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Med. Resources must be positive
-                </p>
-            );
-        } else if(this.state.medicineValid === 5) {
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Please choose a value less than 10
-                </p>
-            );
-        } else if(this.state.medicineValid === 6) {
-            return(
-                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10071;</span> Please enter a whole number
-                </p>
-            );
-        } else if(this.state.medicineValid === 0) {
-            return(
-                <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
-                    <span role="img" aria-label="check/x">&#10003;</span> Medicine Required
+                    <span role="img" aria-label="check/x">&#10003;</span> {textName}
                 </p>
             );
         } else {

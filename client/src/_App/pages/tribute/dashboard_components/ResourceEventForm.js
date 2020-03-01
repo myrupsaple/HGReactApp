@@ -5,6 +5,8 @@ import { Form, Modal, Button } from 'react-bootstrap';
 import { 
     fetchServerTime,
     fetchTributes,
+    fetchTributeStatEmail,
+    fetchGameState,
     createResourceEvent,
     fetchResourceListItemByCode,
     fetchLifeEventByTerms,
@@ -22,7 +24,7 @@ class ResourceEventForm extends React.Component {
         this.state = {
             type: 'food',
             typeSecondary: 'food',
-            code: 'None',
+            code: '',
             // Validation
             emailValid: 1,
             formValid: 1,
@@ -56,7 +58,7 @@ class ResourceEventForm extends React.Component {
         this.setState({ typeSecondary: `golden-${input}` })
     }
     handleCode(event){
-        this.setState({ code: event.target.value });
+        this.setState({ code: event.target.value.toLowerCase() });
     }
 
     handleFormSubmit = async (event) => {
@@ -75,8 +77,8 @@ class ResourceEventForm extends React.Component {
 
         const code = resourceEventObject.notes.toLowerCase();
 
-        const response1 = await this.props.fetchResourceListItemByCode(code);
-        if(!response1){
+        const response = await this.props.fetchResourceListItemByCode(code);
+        if(!response){
             this.setState({ apiError: true });
             return null;
         } else {
@@ -108,22 +110,48 @@ class ResourceEventForm extends React.Component {
             this.setState({ formValid: 6 });
         }
 
+        // Check to see if the tribute already has the maximum number of lives, or has already
+        // satisfied all resource requirements
+        const response3 = await this.props.fetchTributeStatEmail(this.props.email);
+        const response4 = await this.props.fetchGameState();
+        const gameState = this.props.gameState;
+        const tributeStats = this.props.tributeStats;
+        if(!response3 || !response4){
+            this.setState({ apiError: true });
+        }
+        if(this.state.type === 'life' && tributeStats.lives_remaining >= gameState.max_lives){
+            this.setState({ formValid: 7 });
+            return null;
+        } else if(this.state.type === 'food' || this.state.typeSecondary.split('-')[1] === 'food' 
+            && tributeStats.food_used + tributeStats.food_missed >= gameState.food_required){
+            this.setState({ formValid: 8 });
+            return null;
+        } else if(this.state.type === 'water' || this.state.typeSecondary.split('-')[1] === 'water' 
+        && tributeStats.water_used + tributeStats.water_missed >= gameState.water_required){
+            this.setState({ formValid: 9 });
+            return null;
+        } else if(this.state.type === 'medicine' || this.state.typeSecondary.split('-')[1] === 'medicine' 
+        && tributeStats.medicine_used + tributeStats.medicine_missed >= gameState.medicine_required){
+            this.setState({ formValid: 10 });
+            return null;
+        }
+
         // Point of no return
         if(this._isMounted && !this.state.firstSubmit){
             this.setState({ firstSubmit: true, formValid: 1 });
             return null;
         }
 
-        const response3 = await this.props.createResourceEvent(resourceEventObject);
-        if(!response3){
+        const response5 = await this.props.createResourceEvent(resourceEventObject);
+        if(!response5){
             this.setState({ apiError: true });
             return null;
         }
 
         // Tribute stats updating
-        const response4 = await this.props.resourceEventUpdateTributeStats(resourceEventObject.email,
+        const response6 = await this.props.resourceEventUpdateTributeStats(resourceEventObject.email,
             resourceEventObject.type, 'create');
-        if(!response4){
+        if(!response6){
             this.setState({ apiError: true });
             return null;
         }
@@ -139,14 +167,14 @@ class ResourceEventForm extends React.Component {
         }
 
         // Resource list counts updating
-        const response5 = await this.props.fetchTributes();
-        if(!response5){
+        const response7 = await this.props.fetchTributes();
+        if(!response7){
             this.setState({ apiError: true });
             return null;
         }
-        const response6 = await this.props.resourceEventUpdateResourceList(
+        const response8 = await this.props.resourceEventUpdateResourceList(
             this.getTributeName(resourceEventObject.email), code, 'create');
-        if(!response6){
+        if(!response8){
             this.setState({ apiError: true });
             return null;
         }
@@ -228,6 +256,7 @@ class ResourceEventForm extends React.Component {
                         <Form.Control 
                             value={this.state.code}
                             onChange={this.handleCode}
+                            placeholder="Resource Code..."
                             autoComplete="off"
                         />
                     </Form.Group></div>
@@ -269,7 +298,39 @@ class ResourceEventForm extends React.Component {
             return(
                 <div style={{ display: "flex", justifyContent: "flex-end" }}>
                     <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
-                        <span role="img" aria-label="check/x">&#10071;</span> Please try again in a couple of minutes.
+                        <span role="img" aria-label="check/x">&#10071;</span> An error occurred. Please try again in a couple of minutes.
+                    </p>
+                </div>
+            );
+        } else if(this.state.formValid === 7){
+            return(
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                        <span role="img" aria-label="check/x">&#10071;</span> You already have the maximum number of lives.
+                    </p>
+                </div>
+            );
+        } else if(this.state.formValid === 8){
+            return(
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                        <span role="img" aria-label="check/x">&#10071;</span> You already have enough food.
+                    </p>
+                </div>
+            );
+        } else if(this.state.formValid === 9){
+            return(
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                        <span role="img" aria-label="check/x">&#10071;</span> You already have enough water.
+                    </p>
+                </div>
+            );
+        } else if(this.state.formValid === 10){
+            return(
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                        <span role="img" aria-label="check/x">&#10071;</span> You already have enough medicine.
                     </p>
                 </div>
             );
@@ -354,6 +415,7 @@ class ResourceEventForm extends React.Component {
     }
 
     render = () => {
+        console.log(this.state);
         return(
             <Modal show={this.state.showModal} onHide={this.handleClose}>
                 <Modal.Header>
@@ -378,7 +440,9 @@ const mapStateToProps = state => {
     return {
         lifeEvent: state.selectedLifeEvent,
         resource: state.selectedResource,
-        tributes: Object.values(state.tributes)
+        tributes: Object.values(state.tributes),
+        tributeStats: state.selectedTributeStats,
+        gameState: state.gameState
     };
 }
 
@@ -386,6 +450,8 @@ export default connect(mapStateToProps,
 { 
     fetchServerTime,
     fetchTributes,
+    fetchTributeStatEmail,
+    fetchGameState,
     createResourceEvent,
     fetchResourceListItemByCode,
     fetchLifeEventByTerms,

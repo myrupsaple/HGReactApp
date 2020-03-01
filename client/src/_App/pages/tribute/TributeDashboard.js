@@ -25,7 +25,8 @@ class SubmitResource extends React.Component {
             },
             apiInitialLoadError: false,
             displayMode: 'stats',
-            showCreate: false
+            showCreate: false,
+            eliminated: false
         };
 
         this.handleDisplayMode = this.handleDisplayMode.bind(this);
@@ -90,6 +91,10 @@ class SubmitResource extends React.Component {
         const response3 = await this.props.fetchResourceEvents('tribute_email', this.props.userEmail);
         if(!response || !response.data || !response2 || !response3){
             this.setState({ apiInitialLoadError: true });
+        }
+
+        if(this.props.stats.lives_remaining === 0){
+            this.setState({ eliminated: true });
         }
     }
 
@@ -233,8 +238,10 @@ class SubmitResource extends React.Component {
     renderResourceForm(){
         if(this.state.showCreate){
             return <ResourceEventForm email={this.props.userEmail} onSubmitCallback={this.onSubmitCallback}/>;
-        } else {
+        } else if(!this.state.eliminated) {
             return <Button variant="info" onClick={() => this.setState({ showCreate: true })}>Submit Resource Code</Button>
+        } else {
+            return null;
         }
     }
 
@@ -305,6 +312,9 @@ class SubmitResource extends React.Component {
                 this.setState({ apiError: false });
             }
         }
+        if(this.props.stats.lives_remaining === 0){
+            this.setState({ eliminated: true });
+        }
     }
 
     renderContent = () => {
@@ -354,10 +364,23 @@ class SubmitResource extends React.Component {
         }
     }
 
+    renderEliminated = () => {
+        if(this.state.eliminated){
+            return (
+                <h1 className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> You have been eliminated and will no longer be able to submit resource codes. Please contact the Gamemakers if you believe this is an error.
+                </h1>
+            );
+        } else {
+            return null;
+        }
+    }
+
     render(){
         return(
             <>
                 <h1>{this.props.stats.first_name} {this.props.stats.last_name}</h1>
+                {this.renderEliminated()}
                 {this.renderViewModeChanger()}
                 <Button onClick={() => this.refreshData(this.state.displayMode)}>Refresh Data</Button>
                 {this.renderContent()}

@@ -142,6 +142,7 @@ class ShowComments extends React.Component {
             return <h3>No comments were found :(</h3>
         } else {
             const comments = this.state.comments;
+            comments.sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
             return(
                 <ul className="list-group col-10">
 
@@ -232,7 +233,7 @@ class ShowComments extends React.Component {
         }
     }
 
-    render = () => {
+    render(){
         return(
             <>
                 {this.renderContents()}

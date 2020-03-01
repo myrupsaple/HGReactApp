@@ -26,6 +26,9 @@ class GameStatus extends React.Component {
                 seconds: 0
             },
             serverTime: null,
+            resourceEventExists: false,
+            specialEventExists: false,
+            pastEventExists: false,
             
             apiError: false
         };
@@ -89,6 +92,23 @@ class GameStatus extends React.Component {
         if(!response || !response2 || !response3){
             this.setState({ apiError: true });
         }
+
+        var resourceEventExists = false;
+        var specialEventExists = false;
+        var pastEventExists = false;
+        for(let event of this.props.globalEvents){
+            if(event.status === 'active'){
+                if(['food_required', 'water_required', 'medicine_required'].includes(event.type)){
+                    resourceEventExists = true
+                } else {
+                    specialEventExists = true;
+                }
+            } else if(event.status === 'completed'){
+                pastEventExists = true;
+            }
+        }
+        this.setState({ resourceEventExists, specialEventExists, pastEventExists });
+
         const startTime = new Date(Date.parse(this.props.gameState.start_time));
         if(this._isMounted){
             this.setState({
@@ -192,6 +212,9 @@ class GameStatus extends React.Component {
     }
 
     renderResourcesNeeded = () => {
+        if(!this.state.resourceEventExists){
+            return <h5>None</h5>;
+        }
         return(
             <ul className="list-group">
                 {this.props.globalEvents.map(event => {
@@ -226,6 +249,9 @@ class GameStatus extends React.Component {
         );
     }
     renderSpecialEvents = () => {
+        if(!this.state.specialEventExists){
+            return <h5>None</h5>;
+        }
         return(
             <ul className="list-group">
                 {this.props.globalEvents.map(event => {
@@ -236,6 +262,38 @@ class GameStatus extends React.Component {
                     var bgCoolor = 'coolor-bg-white';
                     if(event.event_end_time - this.state.serverTime <= 5) bgCoolor = 'coolor-bg-red-lighten-4';
                     else if(event.event_end_time - this.state.serverTime <= 15) bgCoolor = 'coolor-bg-yellow-lighten-4';
+
+                    const hours1 = Math.floor(event.notification_time / 60).toLocaleString(undefined, { minimumIntegerDigits: 2 });
+                    const minutes1 = (event.notification_time % 60).toLocaleString(undefined, { minimumIntegerDigits: 2 });
+                    const eventNotificationTime = `${hours1}:${minutes1}`
+                    const hours2 = Math.floor(event.event_end_time / 60).toLocaleString(undefined, { minimumIntegerDigits: 2 });
+                    const minutes2 = (event.event_end_time % 60).toLocaleString(undefined, { minimumIntegerDigits: 2 });
+                    const eventEndTime = `${hours2}:${minutes2}`;
+
+                    const displayText = `${event.message} starting at ${eventNotificationTime} and ending at ${eventEndTime}`;
+                    return(
+                        <li className={`list-group-item ${bgCoolor}`} key={event.id}>
+                            <div className="row">
+                                <div className="col">{displayText}</div>
+                            </div>
+                        </li>
+                    );
+                })}
+            </ul>
+        );
+    }
+    renderPastEvents = () => {
+        if(!this.state.pastEventExists){
+            return <h5>None</h5>;
+        }
+        return(
+            <ul className="list-group">
+                {this.props.globalEvents.map(event => {
+                    if(event.status !== 'completed'){
+                        return null;
+                    }
+
+                    var bgCoolor = 'coolor-bg-grey-lighten-3';
 
                     const hours1 = Math.floor(event.notification_time / 60).toLocaleString(undefined, { minimumIntegerDigits: 2 });
                     const minutes1 = (event.notification_time % 60).toLocaleString(undefined, { minimumIntegerDigits: 2 });
@@ -310,6 +368,7 @@ class GameStatus extends React.Component {
                         {this.renderConditionalText()}
                         <h3>Resources Needed:</h3>{this.renderResourcesNeeded()}
                         <h3>Special Events:</h3>{this.renderSpecialEvents()}
+                        <h3>Past Events:</h3>{this.renderPastEvents()}
                     </div>
                     <div className="col-8">
                         {this.renderScoreBoard()}

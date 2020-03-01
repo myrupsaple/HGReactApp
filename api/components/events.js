@@ -120,6 +120,20 @@ const handleEvents = async (event, currentState, connection) => {
                 console.log('Failed to query for events: ' + err);
                 return;
             }})
+        var queryString = '';
+        switch(actionCode){
+            case 1:
+                queryString = `UPDATE game_state SET food_required = food_required + 1`;
+                break;
+            case 2:
+                queryString = `UPDATE game_state SET water_required = water_required + 1`;
+                break;
+            case 3:
+                queryString = `UPDATE game_state SET medicine_required = medicine_required + 1`;
+                break;
+            default: 
+                break;
+        }
     } else if (currentState === 'active'){
         const queryStringUpdateEvent = `UPDATE global_events SET status = 'completed' WHERE id = ${event.id}`;
         connection.query(queryStringUpdateEvent, (err, results, fields) => {
@@ -130,22 +144,18 @@ const handleEvents = async (event, currentState, connection) => {
         
         const actionCode = event.action_code;
         var queryString = '';
-        var queryString2 = '';
         switch(actionCode){
             case 1:
-                queryString = `UPDATE game_state SET food_required = food_required + 1`;
-                queryString2 = `UPDATE tribute_stats SET food_missed = food_missed + 1, 
-                lives_remaining = lives_remaining - 1 WHERE food_used + food_missed < (SELECT food_required FROM game_state) + 1`;
+                queryString = `UPDATE tribute_stats SET food_missed = food_missed + 1, 
+                lives_remaining = lives_remaining - 1 WHERE food_used + food_missed < (SELECT food_required FROM game_state)`;
                 break;
             case 2:
-                queryString = `UPDATE game_state SET water_required = water_required + 1`;
-                queryString2 = `UPDATE tribute_stats SET water_missed = water_missed + 1, 
-                lives_remaining = lives_remaining - 1 WHERE water_used + water_missed < (SELECT water_required FROM game_state) + 1`;
+                queryString = `UPDATE tribute_stats SET water_missed = water_missed + 1, 
+                lives_remaining = lives_remaining - 1 WHERE water_used + water_missed < (SELECT water_required FROM game_state)`;
                 break;
             case 3:
-                queryString = `UPDATE game_state SET medicine_required = medicine_required + 1`;
-                queryString2 = `UPDATE tribute_stats SET medicine_missed = medicine_missed + 1, 
-                lives_remaining = lives_remaining - 1 WHERE medicine_used + medicine_missed < (SELECT medicine_required FROM game_state) + 1`;
+                queryString = `UPDATE tribute_stats SET medicine_missed = medicine_missed + 1, 
+                lives_remaining = lives_remaining - 1 WHERE medicine_used + medicine_missed < (SELECT medicine_required FROM game_state)`;
                 break;
             case 101:
                 queryString = `UPDATE game_state SET current_price_tier = 1`;
@@ -159,18 +169,6 @@ const handleEvents = async (event, currentState, connection) => {
             case 104:
                 queryString = `UPDATE game_state SET current_price_tier = 4`;
                 break;
-        }
-
-        // Do this first because the async await isn't reliable
-        // queryString2 is configured with a +1 to account for the fact that the
-        // queryString1 query hasn't been sent yet.
-        if(queryString2 !== ''){
-            console.log(queryString2);
-            await connection.query(queryString2, (err, results, fields) => {
-                if (err) {
-                    console.log('Failed to query (2): ' + err);
-                    return;
-                }})
         }
 
         console.log(queryString);

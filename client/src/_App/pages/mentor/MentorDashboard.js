@@ -28,9 +28,6 @@ class GameStatus extends React.Component {
             },
             serverTime: null,
             viewMode: 'overview',
-            foodPending: 0,
-            waterPending: 0,
-            medicinePending: 0,
             resourceEventExists: false,
             specialEventExists: false,
             apiError: false
@@ -102,17 +99,6 @@ class GameStatus extends React.Component {
         var specialEventExists = false;
         for(let event of this.props.globalEvents){
             if(event.status === 'active'){
-                if(event.type === 'food_required'){
-                    const foodPending = this.state.foodPending + 1;
-                    this.setState({ foodPending: foodPending });
-                } else if(event.type === 'water_required'){
-                    const waterPending = this.state.waterPending + 1;
-                    this.setState({ waterPending: waterPending });
-                } else if(event.type === 'medicine_required'){
-                    const medicinePending = this.state.medicinePending + 1;
-                    this.setState({ medicinePending: medicinePending });
-                }
-
                 if(['food_required', 'water_required', 'medicine_required'].includes(event.type)){
                     resourceEventExists = true
                 } else {
@@ -120,7 +106,7 @@ class GameStatus extends React.Component {
                 }
             }
         }
-        this.setState({ resourceEventExists, specialEventExists })
+        this.setState({ resourceEventExists, specialEventExists });
 
         const startTime = new Date(Date.parse(this.props.gameState.start_time));
         if(this._isMounted){
@@ -476,15 +462,15 @@ class GameStatus extends React.Component {
     showTributeWarnings(tribute){
         var bgCoolor = 'coolor-bg-white';
         var warnings = '';
-        if(tribute.food_used + tribute.food_missed < this.props.gameState.food_required + this.state.foodPending){
+        if(tribute.food_used + tribute.food_missed < this.props.gameState.food_required){
             warnings += ' ~ Food is needed by the deadline';
             bgCoolor = 'coolor-bg-yellow-lighten-4';
         }
-        if(tribute.water_used + tribute.water_missed < this.props.gameState.water_required + this.state.waterPending){
+        if(tribute.water_used + tribute.water_missed < this.props.gameState.water_required){
             warnings += ' ~ Water is needed by the deadline';
             bgCoolor = 'coolor-bg-yellow-lighten-4';
         }
-        if(tribute.medicine_used + tribute.medicine_missed < this.props.gameState.medicine_required + this.state.medicinePending){
+        if(tribute.medicine_used + tribute.medicine_missed < this.props.gameState.medicine_required){
             warnings += ' ~ Medicine is needed by the deadline';
             bgCoolor = 'coolor-bg-yellow-lighten-4';
         }

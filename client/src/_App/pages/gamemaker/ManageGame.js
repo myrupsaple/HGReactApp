@@ -344,6 +344,7 @@ class ManageGame extends React.Component {
                 {this.renderTableHeader()}
                 <li className="list-group-item" key={gameState.gameActive}>
                     <div className="row">
+                        <div className="col">{gameState.max_lives}</div>
                         <div className="col">{gameState.food_required}</div>
                         <div className="col">{gameState.water_required}</div>
                         <div className="col">{gameState.medicine_required}</div>
@@ -531,6 +532,7 @@ class ManageGame extends React.Component {
         } else if(this.state.displayMode === 'game_state'){
             return (
                 <h4 className="row">
+                    <div className="col">Max Lives</div>
                     <div className="col">Food Required</div>
                     <div className="col">Water Required</div>
                     <div className="col">Medicine Required</div>

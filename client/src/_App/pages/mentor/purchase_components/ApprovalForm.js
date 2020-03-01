@@ -4,11 +4,14 @@ import { Button, Modal, Form } from 'react-bootstrap';
 
 import {
     fetchPurchaseRequest,
+    fetchTributeStatEmail,
+    fetchGameState,
     purchaseUpdateStatus,
     purchaseUpdateFunds,
     purchaseUpdateItemQuantity,
     purchaseCreateResourceEvent,
     purchaseCreateLifeEvent,
+    purchaseUpdateTotalPurchases,
     purchaseUpdateTributeResources,
     purchaseUpdateTributeLives,
     purchaseGiveImmunity
@@ -24,6 +27,8 @@ class ApprovalForm extends React.Component{
             submitted: false,
             notes: '',
             notesValid: 1,
+            originalPurchase: null,
+            warning: null,
             apiError: false
         }
 
@@ -32,7 +37,34 @@ class ApprovalForm extends React.Component{
 
     componentDidMount = async () => {
         this._isMounted = true;
-        await this.props.fetchPurchaseRequest(this.props.id);
+        const response = await this.props.fetchPurchaseRequest(this.props.id);
+        const response2 = await this.props.fetchGameState();
+        const response3 = await this.props.fetchTributeStatEmail(this.props.purchase.receiver_email);
+        if(!response || !response2 || !response3){
+            this.setState({ apiError: true });
+            return null;
+        }
+
+        const purchase = this.props.purchase;
+        const receiverStats = this.props.receiverStats;
+        const gameState = this.props.gameState;
+        
+        // To check upon submission if purchase has been updated since form was opened
+        this.setState({ originalPurchase: purchase });
+
+        if(receiverStats.lives_remaining <= 0){
+            this.setState({ warning: 'eliminated' });
+        } else if(purchase.category === 'life' && (receiverStats.lives_remaining >= gameState.max_lives)){
+            this.setState({ warning: 'life' });
+        } else if(purchase.category === 'resource'){
+            if(purchase.item_name === 'food' && (receiverStats.food_used + receiverStats.food_missed >= gameState.food_required)){
+                this.setState({ warning: 'food' });
+            } else if(purchase.item_name === 'water' && (receiverStats.water_used + receiverStats.water_missed >= gameState.water_required)){
+                this.setState({ warning: 'water' });
+            } else if(purchase.item_name === 'medicine' && (receiverStats.medicine_used + receiverStats.medicine_missed >= gameState.medicine_required)){
+                this.setState({ warning: 'medicine' });
+            }
+        }
     }
 
     handleNotes(event){
@@ -59,7 +91,40 @@ class ApprovalForm extends React.Component{
         } else if(!this.props.purchase.payer_email){
             return <h3>An error occured while retrieving purchase data. Please try again.</h3> 
         } 
+        
         const purchase = this.props.purchase;
+        var warning = null;
+        var message = null;
+        switch(this.state.warning){
+            case 'eliminated':
+                message = 'Tribute has been eliminated. Please deny the request.'
+                break;
+            case 'eliminated2':
+                message = 'Tribute has been eliminated. The request must be denied.'
+                break;
+            case 'changed':
+                message = 'The purchase has been edited. Please close the window and try again with the new data.'
+                break;
+            case 'life':
+                message = 'Tribute already has the maximum number of lives.'
+                break;
+            case 'food':
+                message = 'Tribute already has the required amount of food.'
+                break;
+            case 'water':
+                message = 'Tribute already has the required amount of water.'
+                break;
+            case 'medicine':
+                message = 'Tribute already has the required amount of medicine.'
+                break;
+        }
+        if(message !== null){
+            warning = (
+                <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> {message}
+                </p>
+            );
+        }
         return(
            <div style={{ marginLeft: "20px" }}>
                 <div className="row"><span className="font-weight-bold">Purchasing Tribute:</span><span>&nbsp;{this.getTributeName(purchase.payer_email)}</span></div>
@@ -77,6 +142,7 @@ class ApprovalForm extends React.Component{
                         {this.renderNotesValidation()}
                     </Form.Row>
                 </Form>
+                {warning}
             </div>
         );
     }
@@ -126,12 +192,45 @@ class ApprovalForm extends React.Component{
             await this.setState({ notes: 'None' })
         }
 
+        if(this.state.warning === 'eliminated' || this.state.warning === 'eliminated2'){
+            this.setState({ warning: 'eliminated2' });
+            return null;
+        }
+        if(this.state.warning === 'changed'){
+            return null;
+        }
+
+        
+        const response = await this.props.fetchPurchaseRequest(this.props.id);
         const purchase = this.props.purchase;
 
-        const response = await this.props.purchaseUpdateStatus(purchase.id, 'approved', this.state.notes);
         if(!response){
             this.setState({ apiError: true });
             return null;
+        }
+
+        // Check to see if the purchase has been edited since the form was opened
+        if((purchase.receiver_email !== this.state.originalPurchase.receiver_email) || 
+        (purchase.category !== this.state.originalPurchase.category) || 
+        (purchase.item_name !== this.state.originalPurchase.item_name) ||
+        (purchase.cost !== this.state.originalPurchase.cost) ||
+        (purchase.quantity !== this.state.originalPurchase.quantity)){
+            this.setState({ warning: 'changed' });
+            return null;
+        }
+
+
+        const response2 = await this.props.purchaseUpdateStatus(purchase.id, 'approved', this.state.notes);
+        if(!response2){
+            this.setState({ apiError: true });
+            return null;
+        }
+
+        if(purchase.category !== 'transfer'){
+            const response = await this.props.purchaseUpdateTotalPurchases(purchase.payer_email, purchase.cost);
+            if(!response){
+                this.setState({ apiError: true });
+            }
         }
 
         if(purchase.category === 'item'){
@@ -246,6 +345,7 @@ class ApprovalForm extends React.Component{
     }
 
     render = () => {
+        console.log(this.state);
         return(
             <>
                 <Modal show={this.state.showModal} onHide={this.handleClose}>
@@ -270,18 +370,23 @@ class ApprovalForm extends React.Component{
 
 const mapStateToProps = state => {
     return {
-        purchase: state.selectedPurchase
+        purchase: state.selectedPurchase,
+        gameState: state.gameState,
+        receiverStats: state.selectedTributeStats
     };
 }
 
 export default connect(mapStateToProps, 
     { 
         fetchPurchaseRequest,
+        fetchTributeStatEmail,
+        fetchGameState,
         purchaseUpdateStatus,
         purchaseUpdateFunds,
         purchaseUpdateItemQuantity,
         purchaseCreateResourceEvent,
         purchaseCreateLifeEvent,
+        purchaseUpdateTotalPurchases,
         purchaseUpdateTributeResources,
         purchaseUpdateTributeLives,
         purchaseGiveImmunity

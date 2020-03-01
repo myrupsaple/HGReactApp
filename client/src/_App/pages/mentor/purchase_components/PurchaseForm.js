@@ -5,12 +5,16 @@ import { Form, Button, Modal } from 'react-bootstrap';
 import {
     createPurchaseRequest,
     updatePurchaseRequest,
-    fetchPurchaseRequest,
     purchaseCheckFunds,
+    fetchTributeStatEmail,
     purchaseUpdateFunds,
     purchaseUpdateItemQuantity,
     fetchAllItems,
+    fetchPurchaseRequest,
+    fetchPurchaseRequestsPending,
+    clearPurchasesList,
     fetchItem,
+    fetchGameState,
     fetchGameStatePriceTier,
     fetchServerTime
 } from '../../../../actions';
@@ -32,12 +36,14 @@ class PurchaseForm extends React.Component{
             quantity: 1,
             currentPriceTier: 'tier1_cost',
             originalPriceTier: 'tier1_cost',
+            lifeMinCost: 0,
             // Validation
             payerValid: 1,
             receiverValid: 1,
             categoryValid: 1,
             itemValid: 1,
             costValid: 0,
+            quantityValid: 0,
             formValid: 1,
             currentFunds: '',
             // Handle Modal
@@ -109,7 +115,8 @@ class PurchaseForm extends React.Component{
                 })
 
                 const response = await this.props.fetchItem(purchase.item_id);
-                if(!response){
+                const response2 = await this.props.fetchGameState();
+                if(!response || !response2){
                     this.setState({ apiError: true });
                     return null;
                 }
@@ -123,6 +130,10 @@ class PurchaseForm extends React.Component{
     }
 
     handlePayer(event){
+        // Reset form validation in case message reads 'tribute has insufficient funds'
+        // and name is changed. Otherwise, the error will show inaccurate information
+        this.resetFormValid();
+
         const input = event.target.value;
         this.setState({ payer_email: input });
         if(input === ''){
@@ -134,7 +145,12 @@ class PurchaseForm extends React.Component{
             }
         }
     }
-    handleReceiver(event){
+    async handleReceiver(event){
+        // Reset in case form previously read 'max lives' or 'pending life purchase'
+        this.resetFormValid();
+        // Reset category since life cost will change depending on the receiving tribute
+        this.setState({ category: '' })
+
         const input = event.target.value;
         this.setState({ receiver_email: input });
         if(input === ''){
@@ -145,8 +161,22 @@ class PurchaseForm extends React.Component{
                 this.setState({ receiverValid: 4 });
             }
         }
+
+        const response = await this.props.fetchTributeStatEmail(input);
+        if(!response){
+            this.setState({ apiError: true });
+            return null;
+        }
+        const selectedStats = this.props.selectedStats;
+        const gameState = this.props.gameState;
+        const lifeMinCost = gameState.life_base_price + 
+            gameState.life_increment_price*(selectedStats.lives_remaining + selectedStats.lives_lost - selectedStats.lives_exempt);
+        this.setState({ lifeMinCost: lifeMinCost });
     }
     async handleCategory(event){
+        // Reset in case form previously read 'max lives' or 'pending life purchase'
+        this.resetFormValid();
+
         const input = event.target.value;
         
         this.setState({ item_name: '', item_id: '', cost: 0, formValid: 1 });
@@ -212,7 +242,11 @@ class PurchaseForm extends React.Component{
             }
             const item = this.props.selectedItem;
     
-            this.setState({ item_id: item.id, cost: this.fetchCurrentPrice(item) * this.state.quantity });
+            if(input === 'life'){
+                this.setState({ item_id: item.id, cost: Math.max(this.fetchCurrentPrice(item), this.state.lifeMinCost) * this.state.quantity });    
+            } else {
+                this.setState({ item_id: item.id, cost: this.fetchCurrentPrice(item) * this.state.quantity });
+            }
         }
     }
     async handleItem(event){
@@ -266,7 +300,7 @@ class PurchaseForm extends React.Component{
         const input = event.target.value;
         const cost = (this.state.cost / this.state.quantity) * input ;
 
-        this.setState({ quantity: event.target.value, cost: cost });
+        this.setState({ quantity: event.target.value, cost: cost, quantityValid: 0 });
     }
     // For transfers only
     handleCost(event){
@@ -278,9 +312,14 @@ class PurchaseForm extends React.Component{
             this.setState({ costValid: 5 });
         } else if(Math.floor(input) <= 0){
             this.setState({ costValid: 6 });
+        } else if(input > 200) {
+            this.setState({ costValid: 7 });
         } else {
             this.setState({ costValid: 0 });
         }
+    }
+    resetFormValid = () => {
+        this.setState({ formValid: 1 });
     }
 
     fetchCurrentPrice = (item) => {
@@ -299,6 +338,9 @@ class PurchaseForm extends React.Component{
 
     handleSubmit = async (event) => {
         event.preventDefault();
+
+        await this.resetFormValid();
+
         if(this.state.payerValid === 1){
             this.setState({ payerValid: 2 });
         } else if(this.state.payerValid === 3){
@@ -349,12 +391,13 @@ class PurchaseForm extends React.Component{
             }
         }
 
-        if(this.state.payerValid + this.state.receiverValid + 
-            this.state.categoryValid + this.state.itemValid + this.state.costValid !== 0){
+        if(this.state.payerValid + this.state.receiverValid + this.state.categoryValid + 
+            this.state.itemValid + this.state.costValid + this.state.quantityValid !== 0){
             this.setState({ formValid: 2 });
             return null;
         }
 
+        // Check to see if the price tier has changed since the form was opened
         var newPriceTier = await this.props.fetchGameStatePriceTier();
         switch (newPriceTier){
             case 1:
@@ -378,6 +421,98 @@ class PurchaseForm extends React.Component{
             return null;
         }
 
+        // *** CHECK FOR ANY ISSUES WITH THE PURCHASE REQUEST *** //
+
+        // Check to see if the item quantity has reached 0 since the form was opened
+        const response = await this.props.fetchItem(this.state.item_id);
+        if(!response){
+            this.setState({ apiError: true });
+            return null;
+        }
+        if(this.props.selectedItem.quantity <= 0){
+            this.setState({ formValid: 5, quantity: 0, quantityValid: 2 });
+            return null;
+        }
+
+        // Check to see if either tribute has been eliminated
+        const response2 = await this.props.fetchTributeStatEmail(this.state.payer_email)
+        if(!response2){
+            this.setState({ apiError: true });
+        }
+        if(this.props.selectedStats.lives_remaining <= 0 && this.state.category !== 'transfer'){
+            this.setState({ formValid: 8 });
+            return null;
+        }
+
+        const response3 = await this.props.fetchTributeStatEmail(this.state.receiver_email)
+        if(!response3){
+            this.setState({ apiError: true });
+        }
+        if(this.props.selectedStats.lives_remaining <= 0){
+            this.setState({ formValid: 9 });
+            return null;
+        }
+
+        // Check to see if the tribute has immunity already.
+        if(this.state.category === 'immunity' && this.props.selectedStats.has_immunity){
+            this.setState({ formValid: 10 });
+            return null;
+        }
+
+        // If purchasing a life, check to see if the tribute already has the
+        // maximum number of lives. Then check to see if they already have a pending
+        // life purchase request.
+        if(this.state.category === 'life'){
+            // const response = await this.props.fetchTributeStatEmail(this.state.receiver_email);
+            // The receiving tribute has already been selected in 'response3'
+
+            if(this.props.selectedStats.lives_remaining >= this.props.gameState.max_lives){
+                this.setState({ formValid: 6 });
+                return null;
+            } else {
+                await this.props.clearPurchasesList();
+                const response = await this.props.fetchPurchaseRequestsPending(this.state.receiver_email);
+                if(!response){
+                    this.setState({ apiError: true });
+                    return null;
+                }
+                const purchases = this.props.purchases;
+                console.log(purchases);
+                if(purchases.length !== 0){
+                    for(let purchase of purchases){
+                        if(purchase.category === 'life'){
+                            this.setState({ formValid: 7 });
+                            return null;
+                        }
+                    }
+                }
+                this.setState({ formValid: 1 });
+            }   
+        }
+
+        // Check to see if the purchase has been approved or denied already
+        const response4 = await this.props.fetchPurchaseRequest(this.props.id);
+        if(!response4){
+            this.setState({ apiError: true });
+        }
+        if(this.props.purchase.status !== 'pending'){
+            this.setState({ formValid: 11 });
+            return null;
+        }
+
+        // Check to see if the purchasing tribute has sufficient funds
+        const response5 = await this.props.purchaseCheckFunds(this.state.payer_email);
+        if(!response5){
+            this.setState({ apiError: true });
+            return null;
+        }
+        if(response5.data[0].funds_remaining < this.state.cost - this.state.originalCost){
+            this.setState({ formValid: 3, currentFunds: response5.data[0].funds_remaining });
+            return null;
+        }
+
+        // *** END - CHECK FOR ANY ISSUES WITH THE PURCHASE REQUEST *** //
+
         const dateString = await this.props.fetchServerTime();
         const date = new Date(Date.parse(dateString));
         const time = date.getHours() * 60 + date.getMinutes();
@@ -393,16 +528,6 @@ class PurchaseForm extends React.Component{
             item_id: this.state.item_id,
             cost: Math.floor(this.state.cost),
             quantity: this.state.quantity
-        }
-
-        const response = await this.props.purchaseCheckFunds(this.state.payer_email);
-        if(!response){
-            this.setState({ apiError: true });
-            return null;
-        }
-        if(response.data[0].funds_remaining < this.state.cost - this.state.originalCost){
-            this.setState({ formValid: 3, currentFunds: response.data[0].funds_remaining });
-            return null;
         }
 
         if(!this.state.firstConfirm){
@@ -434,8 +559,8 @@ class PurchaseForm extends React.Component{
             }
         }
 
-        const response2 = await this.props.purchaseUpdateFunds(this.state.payer_email, (this.state.cost - this.state.originalCost) * -1);
-        if(!response2){
+        const response6 = await this.props.purchaseUpdateFunds(this.state.payer_email, (this.state.cost - this.state.originalCost) * -1);
+        if(!response6){
             this.setState({ apiError: true });
             return null;
         }
@@ -558,7 +683,7 @@ class PurchaseForm extends React.Component{
                             as="select"
                             disabled={this.props.mode === 'edit'}
                         >
-                            {this.renderTributeChoices()}
+                            {this.renderTributeChoices('payer_email')}
                         </Form.Control>
                         {this.renderPayerValidation()}
                     </Form.Group></div>
@@ -571,7 +696,7 @@ class PurchaseForm extends React.Component{
                             onChange={this.handleReceiver}
                             as="select"
                         >
-                            {this.renderTributeChoices()}
+                            {this.renderTributeChoices('receiver_email')}
                         </Form.Control>
                         {this.renderReceiverValidation()}
                     </Form.Group></div>
@@ -694,7 +819,7 @@ class PurchaseForm extends React.Component{
         }
     }
     renderCostValidation = () =>{
-        if(this.state.itemValid === 3) {
+        if(this.state.costValid === 3) {
             return(
                 <p className="coolor-text-blue" style={{ fontSize: "8pt" }}>
                     <span role="img" aria-label="check/x">&#63;</span> The amount that will be transferred from the paying tribute to the receiving tribute
@@ -718,10 +843,33 @@ class PurchaseForm extends React.Component{
                     <span role="img" aria-label="check/x">&#10071;</span> Transfer amount must be at least $1
                 </p>
             );
+        } else if(this.state.costValid === 7) {
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Transfers are limited to $200 per transaction
+                </p>
+            );
         } else if(this.state.costValid === 0) {
             return(
                 <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
                     <span role="img" aria-label="check/x">&#10003;</span> Transfer amount
+                </p>
+            );
+        } else {
+            return null;
+        }
+    }
+    renderQuantityValidation = () =>{
+        if(this.state.quantityValid === 2) {
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Please select
+                </p>
+            );
+        } else if(this.state.quantityValid === 0) {
+            return(
+                <p className="coolor-text-green" style={{ fontSize: "8pt" }}>
+                    <span role="img" aria-label="check/x">&#10003;</span> Quantity
                 </p>
             );
         } else {
@@ -742,11 +890,53 @@ class PurchaseForm extends React.Component{
                     <span role="img" aria-label="check/x">&#10071;</span> Pricing has changed. Please close the form and try again.
                 </p>
             );
+        } else if(this.state.formValid === 5){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> This item is no longer available.
+                </p>
+            );
+        } else if(this.state.formValid === 6){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Tribute already has the maximum number of lives.
+                </p>
+            );
+        } else if(this.state.formValid === 7){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Tribute already has a pending life purchase request. Please wait until this request is processed.
+                </p>
+            );
+        } else if(this.state.formValid === 8){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Paying tribute has been eliminated. Please use the transfer funds option instead.
+                </p>
+            );
+        } else if(this.state.formValid === 9){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Receiving tribute has been eliminated.
+                </p>
+            );
+        } else if(this.state.formValid === 10){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> Receiving already has immunity.
+                </p>
+            );
+        } else if(this.state.formValid === 11){
+            return(
+                <p className="coolor-text-red" style={{ fontSize: "12pt" }}>
+                    <span role="img" aria-label="check/x">&#10071;</span> This request was recently processed, and is no longer editable.
+                </p>
+            );
         } else if(this.state.firstConfirm || this.state.payerValid + this.state.receiverValid + 
             this.state.categoryValid + this.state.itemValid + this.state.costValid === 15){
                 return null;
         } else if(this.state.payerValid + this.state.receiverValid + this.state.categoryValid +
-            this.state.itemValid === 0) {
+            this.state.itemValid + this.state.quantityValid + this.state.costValid === 0) {
             return(
                 <p className="coolor-text-green" style={{ fontSize: "12pt" }}>
                     <span role="img" aria-label="check/x">&#10003;</span> Ready to submit?
@@ -763,10 +953,14 @@ class PurchaseForm extends React.Component{
         }
     }
 
-    renderTributeChoices = () => {
+    renderTributeChoices = (type) => {
+        var defaultValue = null;
+        if(this.state[type] === ''){
+            defaultValue = <option value="">Please select a Tribute...</option>;
+        }
         return(
             <>
-                <option value="">Please select a Tribute...</option>
+                {defaultValue}
                 {this.props.tributes.map(tribute => {
                     if(tribute.mentor_email !== this.props.userEmail){
                         return null;
@@ -782,13 +976,17 @@ class PurchaseForm extends React.Component{
     }
 
     renderCategoryChoices = () => {
+        var defaultValue = null;
+        if(this.state.category === ''){
+            defaultValue = <option value="">Please select a Category...</option>;
+        }
         if(this.state.payer_email !== '' && this.state.receiver_email !== ''){
             return(
                 <>
-                <option value="">Please select a Category...</option>
+                {defaultValue}
                 <option value="item">Item</option>
                 <option value="resource">Resource</option>
-                <option value="life">Life (currently ${this.fetchCurrentPrice(this.props.items[0])})</option>
+                <option value="life">Life (currently ${Math.max(this.fetchCurrentPrice(this.props.items[0]), this.state.lifeMinCost)})</option>
                 <option value="immunity">Immunity (currently ${this.fetchCurrentPrice(this.props.items[1])})</option>
                 <option value="transfer">Transfer Funds</option>
                 </>
@@ -900,6 +1098,7 @@ class PurchaseForm extends React.Component{
                             return <option key={choice} value={choice}>{choice}</option>;
                         })} 
                     </Form.Control>
+                    {this.renderQuantityValidation()}
                 </Form.Group></div>
             </Form.Row>
         );
@@ -951,8 +1150,7 @@ class PurchaseForm extends React.Component{
         }
     }
 
-    render = () => {
-        console.log(this.state);
+    render(){
         return(
             <>
                 <Modal show={this.state.showModal} onHide={this.handleClose}>
@@ -979,9 +1177,12 @@ class PurchaseForm extends React.Component{
 const mapStateToProps = state => {
     return {
         purchase: state.selectedPurchase,
+        purchases: Object.values(state.purchases),
         items: Object.values(state.items),
         selectedItem: state.selectedItem,
-        userEmail: state.auth.userEmail
+        userEmail: state.auth.userEmail,
+        selectedStats: state.selectedTributeStats,
+        gameState: state.gameState
     };
 }
 
@@ -989,12 +1190,16 @@ export default connect(mapStateToProps,
     {
         createPurchaseRequest,
         updatePurchaseRequest,
-        fetchPurchaseRequest,
         purchaseUpdateFunds,
         purchaseCheckFunds,
+        fetchTributeStatEmail,
         purchaseUpdateItemQuantity,
         fetchAllItems,
+        fetchPurchaseRequest,
+        fetchPurchaseRequestsPending,
+        clearPurchasesList,
         fetchItem,
+        fetchGameState,
         fetchGameStatePriceTier,
         fetchServerTime
     })(PurchaseForm);
